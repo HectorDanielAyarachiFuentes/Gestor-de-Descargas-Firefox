@@ -1,3 +1,5 @@
+console.log("🚀 Gestor de Descargas: Background script inicializado!");
+
 import { STORAGE_KEYS, DEFAULT_SETTINGS } from './constants.js';
 import { sanitize } from './utils.js';
 import { getFolderNameByExtension, applyRenamePattern } from './rules-engine.js';
@@ -5,7 +7,7 @@ import { showNotification, showErrorNotification } from './notifications.js';
 import { saveToDownloadHistory } from './storage.js';
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
-const IS_FIREFOX = typeof browser !== 'undefined';
+const IS_FIREFOX = navigator.userAgent.toLowerCase().includes('firefox') || typeof browser !== 'undefined';
 
 let lastClickedTabUrl = '';
 
@@ -315,6 +317,17 @@ async function processDownloadSuccess(downloadItem, result, originUrl) {
 const firefoxRestartedDownloads = new Set();
 
 api.downloads.onCreated.addListener(async (downloadItem) => {
+    console.log("📥 [Gestor de Descargas] EVENTO onCreated DISPARADO!", downloadItem);
+
+    if (IS_FIREFOX) {
+        api.notifications.create({
+            type: 'basic',
+            iconUrl: api.runtime.getURL("assets/icon.svg"),
+            title: 'Extensión Activa',
+            message: `Descarga detectada: ${downloadItem.filename || "sin-nombre"} | URL: ${String(downloadItem.url).substring(0, 30)}`
+        });
+    }
+
     if (IS_FIREFOX && firefoxRestartedDownloads.has(downloadItem.url)) {
         return;
     }
@@ -336,8 +349,7 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
 
     if (IS_FIREFOX) {
         // --- LÓGICA DE FIREFOX (Cancel & Restart) ---
-        // Evitar interceptar blob/data URLs porque no se pueden re-descargar desde el background
-        if (downloadItem.url.startsWith("blob:") || downloadItem.url.startsWith("data:")) {
+        if (!downloadItem.url || downloadItem.url.startsWith("blob:") || downloadItem.url.startsWith("data:")) {
             return;
         }
 
@@ -357,22 +369,38 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
                     console.log("No se pudo cancelar/borrar descarga original", e);
                 }
 
-                const newId = await api.downloads.download({
-                    url: downloadItem.url,
-                    filename: finalPath,
-                    conflictAction: 'uniquify',
-                    saveAs: false
-                });
+                try {
+                    const newId = await api.downloads.download({
+                        url: downloadItem.url,
+                        filename: finalPath,
+                        conflictAction: 'uniquify',
+                        saveAs: false
+                    });
 
-                setTimeout(() => {
-                    firefoxRestartedDownloads.delete(downloadItem.url);
-                }, 10000);
-
-                const updatedItem = { ...downloadItem, id: newId, filename: finalPath };
-                processDownloadSuccess(updatedItem, dest, originUrl);
+                    const updatedItem = { ...downloadItem, id: newId, filename: finalPath };
+                    processDownloadSuccess(updatedItem, dest, originUrl);
+                } catch (err) {
+                    console.error("Error al re-descargar", err);
+                    api.notifications.create({
+                        type: 'basic',
+                        iconUrl: api.runtime.getURL("assets/icon.svg"),
+                        title: 'Error de Firefox (Download)',
+                        message: String(err)
+                    });
+                } finally {
+                    setTimeout(() => {
+                        firefoxRestartedDownloads.delete(downloadItem.url);
+                    }, 5000);
+                }
             }
         } catch (error) {
             console.error("Error en Firefox Cancel&Restart", error);
+            api.notifications.create({
+                type: 'basic',
+                iconUrl: api.runtime.getURL("assets/icon.svg"),
+                title: 'Error de Firefox (Cancel)',
+                message: String(error)
+            });
         }
         return;
     }

@@ -22,6 +22,8 @@ let customExtCategories = [];
 let editingCustomExtId = null;
 
 // Estado local
+let rulesSortable = null;
+let extSortable = null;
 
 
 // =====================
@@ -560,7 +562,10 @@ function renderRulesList(rulesArray) {
     rulesList.appendChild(li);
   });
 
-  new Sortable(rulesList, {
+  if (rulesSortable) {
+    rulesSortable.destroy();
+  }
+  rulesSortable = new Sortable(rulesList, {
     animation: 150,
     ghostClass: 'sortable-ghost',
     onEnd: (e) => saveRulesOrder(e.target)
@@ -718,7 +723,10 @@ function renderCustomExtList(categoriesArray) {
     listElement.appendChild(li);
   });
 
-  new Sortable(listElement, {
+  if (extSortable) {
+    extSortable.destroy();
+  }
+  extSortable = new Sortable(listElement, {
     animation: 150,
     ghostClass: 'sortable-ghost',
     onEnd: (e) => saveCustomExtOrder(e.target)
