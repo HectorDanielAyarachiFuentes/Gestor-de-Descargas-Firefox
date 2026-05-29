@@ -3,8 +3,11 @@
 import { initSmartWidget } from './widget.js';
 import { STORAGE_KEYS, DEFAULT_SETTINGS } from './constants.js';
 import { applyI18n } from './utils.js';
+import { initTheme, setThemePreference } from './theme-manager.js';
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
+
+// Nota: Sortable se carga como script clásico en options.html (window.Sortable)
 
 function applyTranslations() {
     applyI18n();
@@ -103,6 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   initSmartWidget();
+  initTheme();
+  loadThemeSelector();
   setTimeout(initTearEffect, 200);
 });
 
@@ -113,25 +118,13 @@ function truncateName(str, max) {
   return str;
 }
 
-// Cargar el script del gestor de temas
-const themeScript = document.createElement('script');
-themeScript.src = '../js/theme-manager.js';
-document.head.appendChild(themeScript);
-
-// Inicializar tema al cargar
-themeScript.onload = () => {
-  initTheme();
-  loadThemeSelector();
-};
-
 // Configurar el selector de tema
-function loadThemeSelector() {
+async function loadThemeSelector() {
   const themeButtons = document.querySelectorAll('.theme-btn');
 
-  api.storage.sync.get({ theme: 'auto' }, (data) => {
-    themeButtons.forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.theme === data.theme);
-    });
+  const data = await api.storage.sync.get({ theme: 'auto' });
+  themeButtons.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === data.theme);
   });
 
   themeButtons.forEach(btn => {

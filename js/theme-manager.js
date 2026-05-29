@@ -7,8 +7,7 @@ const api = typeof browser !== 'undefined' ? browser : chrome;
  * Inicializa el sistema de temas
  * Detecta preferencias del sistema y del usuario
  */
-async function initTheme() {
-  // Obtener preferencia guardada del usuario
+export async function initTheme() {
   const { theme = 'auto' } = await api.storage.sync.get('theme');
   applyTheme(theme);
 }
@@ -17,24 +16,21 @@ async function initTheme() {
  * Aplica el tema según la preferencia
  * @param {string} preference - 'light', 'dark', o 'auto'
  */
-function applyTheme(preference) {
+export function applyTheme(preference) {
   let shouldUseDark = false;
 
   if (preference === 'auto') {
-    // Detectar preferencia del sistema
     shouldUseDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   } else {
     shouldUseDark = preference === 'dark';
   }
 
-  // Aplicar o remover la clase dark-mode
   if (shouldUseDark) {
     document.documentElement.classList.add('dark-mode');
   } else {
     document.documentElement.classList.remove('dark-mode');
   }
 
-  // Guardar el estado actual para acceso rápido
   document.documentElement.setAttribute('data-theme', shouldUseDark ? 'dark' : 'light');
 }
 
@@ -42,7 +38,7 @@ function applyTheme(preference) {
  * Cambiar la preferencia de tema del usuario
  * @param {string} newTheme - 'light', 'dark', o 'auto'
  */
-async function setThemePreference(newTheme) {
+export async function setThemePreference(newTheme) {
   await api.storage.sync.set({ theme: newTheme });
   applyTheme(newTheme);
 }
@@ -51,13 +47,13 @@ async function setThemePreference(newTheme) {
  * Obtener la preferencia actual de tema
  * @returns {Promise<string>} - 'light', 'dark', o 'auto'
  */
-async function getThemePreference() {
+export async function getThemePreference() {
   const { theme = 'auto' } = await api.storage.sync.get('theme');
   return theme;
 }
 
 // Escuchar cambios en la preferencia del sistema (solo para modo auto)
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async (e) => {
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async () => {
   const { theme = 'auto' } = await api.storage.sync.get('theme');
   if (theme === 'auto') {
     applyTheme('auto');
@@ -70,8 +66,3 @@ api.storage.onChanged.addListener((changes, area) => {
     applyTheme(changes.theme.newValue);
   }
 });
-
-// Exportar funciones
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { initTheme, applyTheme, setThemePreference, getThemePreference };
-}

@@ -1,6 +1,7 @@
 // popup.js
 
 import { applyI18n } from './utils.js';
+import { initTheme } from './theme-manager.js';
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
 
@@ -15,18 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelForceBtn = document.getElementById("cancelForceBtn");
 
   // --- Carga de estado y datos iniciales ---
+  initTheme();
   loadAppSettings();
   loadHistory();
   loadFolderSuggestions();
-
-  // Cargar el script del gestor de temas
-  const themeScript = document.createElement('script');
-  themeScript.src = '../js/theme-manager.js';
-  document.head.appendChild(themeScript);
-
-  themeScript.onload = () => {
-    initTheme();
-  };
 
   // --- Listeners de eventos ---
   openOptionsBtn.addEventListener("click", () => {
