@@ -11,6 +11,7 @@ export function getFolderNameByExtension(ext, enabledCats = {}) {
         pdf: true, images: true, video: true, audio: true,
         compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true,
         design: true, code: true, books: true, threed: true, fonts: true,
+        emails: true, diagrams: true, databases: true, certificates: true, templates: true, cad: true,
         ...enabledCats
     };
 
@@ -27,9 +28,9 @@ export function getFolderNameByExtension(ext, enabledCats = {}) {
             return cats.audio ? api.i18n.getMessage("folder_audio") : null;
         case 'zip': case 'rar': case '7z': case 'tar': case 'gz': case 'bz2': case 'xz':
             return cats.compressed ? api.i18n.getMessage("folder_compressed") : null;
-        case 'docx': case 'doc': case 'odt': case 'txt': case 'md': case 'rtf':
+        case 'docx': case 'doc': case 'odt': case 'txt': case 'md': case 'rtf': case 'pages':
             return cats.documents ? api.i18n.getMessage("folder_documents") : null;
-        case 'csv': case 'xlsx': case 'xls': case 'ods':
+        case 'csv': case 'xlsx': case 'xls': case 'ods': case 'tsv': case 'numbers':
             return cats.spreadsheets ? api.i18n.getMessage("folder_spreadsheets") : null;
         case 'ppt': case 'pptx': case 'odp':
             return cats.presentations ? api.i18n.getMessage("folder_presentations") : null;
@@ -45,6 +46,18 @@ export function getFolderNameByExtension(ext, enabledCats = {}) {
             return cats.threed ? api.i18n.getMessage("folder_3d") : null;
         case 'ttf': case 'otf': case 'woff': case 'woff2':
             return cats.fonts ? api.i18n.getMessage("folder_fonts") : null;
+        case 'eml': case 'msg': case 'pst': case 'ost': case 'vcf':
+            return cats.emails ? api.i18n.getMessage("folder_emails") : null;
+        case 'vsd': case 'vsdx': case 'drawio': case 'xmind': case 'mm':
+            return cats.diagrams ? api.i18n.getMessage("folder_diagrams") : null;
+        case 'sqlite': case 'db': case 'accdb': case 'mdb': case 'bak':
+            return cats.databases ? api.i18n.getMessage("folder_databases") : null;
+        case 'crt': case 'pem': case 'pfx': case 'p12': case 'cer': case 'key': case 'ovpn':
+            return cats.certificates ? api.i18n.getMessage("folder_certificates") : null;
+        case 'dotx': case 'xltx': case 'potx': case 'ott': case 'ots': case 'otp':
+            return cats.templates ? api.i18n.getMessage("folder_templates") : null;
+        case 'dwg': case 'dxf':
+            return cats.cad ? api.i18n.getMessage("folder_cad") : null;
         default:
             return null;
     }

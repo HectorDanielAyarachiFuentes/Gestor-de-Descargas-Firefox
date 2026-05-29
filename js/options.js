@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("contextMenu").addEventListener("change", (e) => saveSingleSetting('contextMenu', e.target.checked));
   document.getElementById("notifications").addEventListener("change", (e) => saveSingleSetting('notifications', e.target.value));
 
-  const catIds = ['cat_pdf', 'cat_images', 'cat_video', 'cat_audio', 'cat_compressed', 'cat_documents', 'cat_spreadsheets', 'cat_presentations', 'cat_programs', 'cat_design', 'cat_code', 'cat_books', 'cat_3d', 'cat_fonts'];
+  const catIds = ['cat_pdf', 'cat_images', 'cat_video', 'cat_audio', 'cat_compressed', 'cat_documents', 'cat_spreadsheets', 'cat_presentations', 'cat_programs', 'cat_design', 'cat_code', 'cat_books', 'cat_3d', 'cat_fonts', 'cat_emails', 'cat_diagrams', 'cat_databases', 'cat_certificates', 'cat_templates', 'cat_cad'];
   catIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', saveDefaultCategories);
@@ -84,7 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function loadSettings() {
   api.storage.sync.get({
     autoOrganize: true, notifications: 'always', contextMenu: true,
-    defaultCategories: { pdf: true, images: true, video: true, audio: true, compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true, design: true, code: true, books: true, threed: true, fonts: true }
+    defaultCategories: { 
+      pdf: true, images: true, video: true, audio: true, compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true, design: true, code: true, books: true, threed: true, fonts: true,
+      emails: true, diagrams: true, databases: true, certificates: true, templates: true, cad: true
+    }
   }, (data) => {
     document.getElementById("autoOrganize").checked = data.autoOrganize;
     document.getElementById("notifications").value = data.notifications;
@@ -104,6 +107,12 @@ function loadSettings() {
     document.getElementById("cat_books").checked = cats.books !== false;
     document.getElementById("cat_3d").checked = cats.threed !== false;
     document.getElementById("cat_fonts").checked = cats.fonts !== false;
+    document.getElementById("cat_emails").checked = cats.emails !== false;
+    document.getElementById("cat_diagrams").checked = cats.diagrams !== false;
+    document.getElementById("cat_databases").checked = cats.databases !== false;
+    document.getElementById("cat_certificates").checked = cats.certificates !== false;
+    document.getElementById("cat_templates").checked = cats.templates !== false;
+    document.getElementById("cat_cad").checked = cats.cad !== false;
   });
 }
 
@@ -117,7 +126,10 @@ function saveDefaultCategories() {
     audio: document.getElementById("cat_audio").checked, compressed: document.getElementById("cat_compressed").checked, documents: document.getElementById("cat_documents").checked,
     spreadsheets: document.getElementById("cat_spreadsheets").checked, presentations: document.getElementById("cat_presentations").checked, programs: document.getElementById("cat_programs").checked,
     design: document.getElementById("cat_design").checked, code: document.getElementById("cat_code").checked, books: document.getElementById("cat_books").checked,
-    threed: document.getElementById("cat_3d").checked, fonts: document.getElementById("cat_fonts").checked
+    threed: document.getElementById("cat_3d").checked, fonts: document.getElementById("cat_fonts").checked,
+    emails: document.getElementById("cat_emails").checked, diagrams: document.getElementById("cat_diagrams").checked,
+    databases: document.getElementById("cat_databases").checked, certificates: document.getElementById("cat_certificates").checked,
+    templates: document.getElementById("cat_templates").checked, cad: document.getElementById("cat_cad").checked
   };
   api.storage.sync.set({ defaultCategories });
 }

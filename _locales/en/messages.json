@@ -879,5 +879,53 @@
     "cat_fonts": {
         "description": "Category name for Fonts.",
         "message": "Fonts"
+    },
+    "cat_emails": {
+        "description": "Category name for Emails.",
+        "message": "Emails & Contacts"
+    },
+    "cat_diagrams": {
+        "description": "Category name for Diagrams.",
+        "message": "Diagrams & Workflows"
+    },
+    "cat_databases": {
+        "description": "Category name for Databases.",
+        "message": "Databases"
+    },
+    "cat_certificates": {
+        "description": "Category name for Certificates.",
+        "message": "Certificates & Security"
+    },
+    "cat_templates": {
+        "description": "Category name for Templates.",
+        "message": "Office Templates"
+    },
+    "cat_cad": {
+        "description": "Category name for CAD.",
+        "message": "CAD & Engineering"
+    },
+    "folder_emails": {
+        "description": "Default folder for emails.",
+        "message": "Emails_Contacts"
+    },
+    "folder_diagrams": {
+        "description": "Default folder for diagrams.",
+        "message": "Diagrams"
+    },
+    "folder_databases": {
+        "description": "Default folder for databases.",
+        "message": "Databases"
+    },
+    "folder_certificates": {
+        "description": "Default folder for certificates.",
+        "message": "Certificates"
+    },
+    "folder_templates": {
+        "description": "Default folder for templates.",
+        "message": "Templates"
+    },
+    "folder_cad": {
+        "description": "Default folder for cad.",
+        "message": "CAD_Files"
     }
 }

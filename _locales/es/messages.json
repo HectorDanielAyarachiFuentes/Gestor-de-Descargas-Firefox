@@ -995,5 +995,53 @@
     "cat_fonts": {
         "description": "Category name for Fonts.",
         "message": "Fuentes"
+    },
+    "cat_emails": {
+        "description": "Category name for Emails.",
+        "message": "Correos y Contactos"
+    },
+    "cat_diagrams": {
+        "description": "Category name for Diagrams.",
+        "message": "Diagramas y Flujos"
+    },
+    "cat_databases": {
+        "description": "Category name for Databases.",
+        "message": "Bases de Datos"
+    },
+    "cat_certificates": {
+        "description": "Category name for Certificates.",
+        "message": "Certificados y Seguridad"
+    },
+    "cat_templates": {
+        "description": "Category name for Templates.",
+        "message": "Plantillas de Oficina"
+    },
+    "cat_cad": {
+        "description": "Category name for CAD.",
+        "message": "CAD y Planos"
+    },
+    "folder_emails": {
+        "description": "Default folder for emails.",
+        "message": "Correos_y_Contactos"
+    },
+    "folder_diagrams": {
+        "description": "Default folder for diagrams.",
+        "message": "Diagramas"
+    },
+    "folder_databases": {
+        "description": "Default folder for databases.",
+        "message": "Bases_de_Datos"
+    },
+    "folder_certificates": {
+        "description": "Default folder for certificates.",
+        "message": "Certificados"
+    },
+    "folder_templates": {
+        "description": "Default folder for templates.",
+        "message": "Plantillas"
+    },
+    "folder_cad": {
+        "description": "Default folder for cad.",
+        "message": "CAD_y_Planos"
     }
 }
