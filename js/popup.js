@@ -108,7 +108,7 @@ function getFileTypeIcon(filename) {
 async function loadHistory() {
   const result = await api.storage.local.get({ downloadHistory: [] });
   const historyList = document.getElementById("popupHistory");
-  const downloadCountTextElem = document.getElementById("downloadCountText");
+  const downloadCountTextElem = document.getElementById("downloadCount");
   const totalDownloads = result.downloadHistory.length;
 
   if (!historyList || !downloadCountTextElem) return;
@@ -203,7 +203,7 @@ async function removeGhostFromHistory(downloadId, listItemElement) {
     setTimeout(() => listItemElement.remove(), 300);
   }
   // Actualizar contador
-  const countTextElem = document.getElementById("downloadCountText");
+  const countTextElem = document.getElementById("downloadCount");
   if (countTextElem) {
     countTextElem.textContent = api.i18n.getMessage("popup_downloadCount", String(newHistory.length));
   }
