@@ -4,23 +4,22 @@
   "version": "1.2.0",
   "description": "__MSG_appDesc__",
   "default_locale": "es",
-
   "icons": {
     "16": "assets/icon.svg",
     "48": "assets/icon.svg",
     "128": "assets/icon.svg"
   },
-
   "browser_specific_settings": {
     "gecko": {
       "id": "gestor-descargas-hector@ayarachi.com",
       "strict_min_version": "142.0",
       "data_collection_permissions": {
-        "required": ["none"]
+        "required": [
+          "none"
+        ]
       }
     }
   },
-
   "action": {
     "default_icon": {
       "16": "assets/icon.svg",
@@ -30,17 +29,16 @@
     "default_popup": "pages/popup.html",
     "default_title": "__MSG_appName__"
   },
-
   "background": {
-    "scripts": ["js/background.js"],
+    "scripts": [
+      "js/background.js"
+    ],
     "type": "module"
   },
-
   "options_ui": {
     "page": "pages/options.html",
     "open_in_tab": true
   },
-
   "permissions": [
     "downloads",
     "storage",
@@ -48,15 +46,15 @@
     "contextMenus",
     "tabs"
   ],
-
   "host_permissions": [],
-
   "web_accessible_resources": [
     {
       "resources": [
         "assets/icon.svg"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }
