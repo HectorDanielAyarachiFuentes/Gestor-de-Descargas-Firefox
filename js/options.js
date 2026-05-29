@@ -1275,42 +1275,50 @@ function initTearEffect() {
 
   // Crear una lágrima SVG en posición aleatoria horizontal
   function createTear() {
-    const size = 12 + Math.random() * 14;
+    const size = 15 + Math.random() * 18;
     const x = Math.random() * window.innerWidth;
-    const opacity = 0.35 + Math.random() * 0.45;
+    const opacity = 0.7 + Math.random() * 0.3;
     const hue = 195 + Math.random() * 30; // azules/celestes
+    const dropId = Math.random().toString(36).substring(2, 9); // ID único para el gradiente
 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 20 28');
+    svg.setAttribute('viewBox', '0 0 30 40');
     svg.style.cssText = `
       position: absolute;
       left: ${x}px;
-      top: -40px;
+      top: -50px;
       width: ${size}px;
-      height: ${size * 1.4}px;
+      height: ${size * 1.33}px;
       opacity: ${opacity};
       will-change: transform, left, top;
-      filter: drop-shadow(0 2px 6px hsla(${hue}, 80%, 65%, 0.5));
+      filter: drop-shadow(0 4px 8px hsla(${hue}, 80%, 50%, 0.4));
+      pointer-events: none;
     `;
 
-    // Cuerpo de la lágrima
-    const body = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    body.setAttribute('d', 'M10 0 C10 0 0 11 0 17.5 C0 23.3 4.5 28 10 28 C15.5 28 20 23.3 20 17.5 C20 11 10 0 10 0Z');
-    body.setAttribute('fill', `hsla(${hue}, 85%, 68%, 0.55)`);
-    body.setAttribute('stroke', `hsla(${hue}, 70%, 55%, 0.4)`);
-    body.setAttribute('stroke-width', '0.8');
+    svg.innerHTML = `
+      <defs>
+        <radialGradient id="dropGrad-${dropId}" cx="35%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="hsla(${hue}, 100%, 95%, 0.9)"/>
+          <stop offset="40%" stop-color="hsla(${hue}, 85%, 65%, 0.5)"/>
+          <stop offset="100%" stop-color="hsla(${hue}, 80%, 45%, 0.8)"/>
+        </radialGradient>
+      </defs>
+      <!-- Cuerpo principal 3D -->
+      <path d="M15 2 C15 2 3 18 3 26 C3 32.6 8.4 38 15 38 C21.6 38 27 32.6 27 26 C27 18 15 2 15 2Z" 
+            fill="url(#dropGrad-${dropId})"/>
+      
+      <!-- Brillo curvo lateral (reflejo de luz principal) -->
+      <path d="M8 25 C8 18 11 11 14 7 C10 13 6 20 8 25Z" 
+            fill="rgba(255,255,255,0.7)"/>
+            
+      <!-- Reflejo secundario (abajo a la derecha) -->
+      <path d="M19 34 C22 31 24 27 24 24 C24 28 22 33 19 34Z" 
+            fill="rgba(255,255,255,0.4)"/>
+            
+      <!-- Punto de luz intenso -->
+      <ellipse cx="10" cy="18" rx="2" ry="3" fill="rgba(255,255,255,0.9)" transform="rotate(-30 10 18)"/>
+    `;
 
-    // Reflejo interno
-    const shine = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-    shine.setAttribute('cx', '13.5');
-    shine.setAttribute('cy', '16');
-    shine.setAttribute('rx', '2.5');
-    shine.setAttribute('ry', '3.5');
-    shine.setAttribute('fill', 'rgba(255,255,255,0.32)');
-    shine.setAttribute('transform', 'rotate(-25 13.5 16)');
-
-    svg.appendChild(body);
-    svg.appendChild(shine);
     overlay.appendChild(svg);
 
     const obj = {
@@ -1348,17 +1356,20 @@ function initTearEffect() {
         t.vy += ny * force * 0.6;
       }
 
-      // Gravedad y movimiento
-      t.vy += 0.04;
+      // Gravedad y aceleración real
+      t.vy += 0.08;
+      t.vy *= 1.01; // Caída exponencial leve
       t.x += t.vx;
       t.y += t.vy;
 
-      // Inclinación en dirección de movimiento
+      // Inclinación en dirección de movimiento y deformación (squash and stretch)
       const angle = Math.atan2(t.vx, Math.max(t.vy, 0.5)) * (180 / Math.PI) * 0.5;
+      const stretch = Math.min(1 + t.vy * 0.02, 1.8); 
+      const squash = 1 / stretch;
 
       t.el.style.left = `${t.x}px`;
       t.el.style.top = `${t.y}px`;
-      t.el.style.transform = `rotate(${angle}deg)`;
+      t.el.style.transform = `rotate(${angle}deg) scale(${squash}, ${stretch})`;
 
       // Fuera de pantalla → eliminar
       if (t.y > window.innerHeight + 60 || t.x < -60 || t.x > window.innerWidth + 60) {
