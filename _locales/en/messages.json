@@ -29,7 +29,7 @@
    },
    "appName": {
       "description": "The name of the extension.",
-      "message": "Downloads in Order"
+      "message": "Download Manager"
    },
    "autoOrganizeLabel": {
       "description": "Label for the main toggle switch in the popup.",
@@ -101,7 +101,7 @@
    },
    "contextMenu_saveIn": {
       "description": "The parent title for the context menu item.",
-      "message": "Downloads in Order: Save in..."
+      "message": "Download Manager: Save in..."
    },
    "customFormatPlaceholder": {
       "description": "Placeholder for the custom date format input.",
@@ -350,7 +350,7 @@
    },
    "footerText": {
       "description": "Footer text.",
-      "message": "© 2025 - Downloads in Order"
+      "message": "© 2025 - Download Manager"
    },
    "forceDownloadLabel": {
       "description": "Label for the force download input field.",
@@ -532,11 +532,11 @@
    },
    "optionsHeaderTitle": {
       "description": "Main title on the options page.",
-      "message": "Downloads in Order Settings"
+      "message": "Download Manager Settings"
    },
    "optionsPageTitle": {
       "description": "Title of the options HTML page.",
-      "message": "Settings - Downloads in Order"
+      "message": "Settings - Download Manager"
    },
    "organizeSelectedButton": {
       "description": "Button to organize the selected files from a scan.",
@@ -548,7 +548,7 @@
    },
    "popupTitle": {
       "description": "Title displayed in the popup window.",
-      "message": "Downloads in Order"
+      "message": "Download Manager"
    },
    "popup_downloadCount": {
       "description": "Text showing the total number of organized downloads. $count$ is a placeholder.",

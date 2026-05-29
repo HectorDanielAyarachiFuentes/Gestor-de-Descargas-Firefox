@@ -29,7 +29,7 @@
    },
    "appName": {
       "description": "The name of the extension.",
-      "message": "Descargas en Orden"
+      "message": "Gestor de Descargas"
    },
    "autoOrganizeLabel": {
       "description": "Label for the main toggle switch in the popup.",
@@ -149,7 +149,7 @@
    },
    "contextMenu_saveIn": {
       "description": "El título padre para el elemento del menú contextual.",
-      "message": "Descargas en Orden: Guardar en..."
+      "message": "Gestor de Descargas: Guardar en..."
    },
    "customFormatPlaceholder": {
       "description": "Placeholder for the custom date format input.",
@@ -406,7 +406,7 @@
    },
    "footerText": {
       "description": "Footer text.",
-      "message": "© 2025 - Descargas en Orden"
+      "message": "© 2025 - Gestor de Descargas"
    },
    "forceDownloadLabel": {
       "description": "Label for the force download input field.",
@@ -588,11 +588,11 @@
    },
    "optionsHeaderTitle": {
       "description": "Main title on the options page.",
-      "message": "Configuración de Descargas en Orden"
+      "message": "Configuración de Gestor de Descargas"
    },
    "optionsPageTitle": {
       "description": "Title of the options HTML page.",
-      "message": "Configuración - Descargas en Orden"
+      "message": "Configuración - Gestor de Descargas"
    },
    "organizeSelectedButton": {
       "description": "Button to organize the selected files from a scan.",
@@ -604,7 +604,7 @@
    },
    "popupTitle": {
       "description": "Title displayed in the popup window.",
-      "message": "Descargas en Orden"
+      "message": "Gestor de Descargas"
    },
    "popup_downloadCount": {
       "description": "Texto que muestra el número total de descargas organizadas. $count$ es un marcador.",
@@ -855,7 +855,7 @@
    },
    "welcomeTitle": {
       "description": "Main title on the welcome page.",
-      "message": "¡Bienvenido a Descargas en Orden!"
+      "message": "¡Bienvenido a Gestor de Descargas!"
    },
    "tabGeneralTitle": {
       "description": "Title for the general settings tab.",

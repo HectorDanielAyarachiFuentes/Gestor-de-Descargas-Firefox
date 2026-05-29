@@ -196,7 +196,7 @@ async function updateContextMenu() {
 // Eventos de la Extensión
 // =====================
 chrome.runtime.onInstalled.addListener(async (details) => {
-    console.log("Extensión de Descargas en Orden instalada/actualizada.");
+    console.log("Extensión de Gestor de Descargas instalada/actualizada.");
     updateContextMenu();
 
     // Solo ejecuta esta lógica cuando la extensión se instala por primera vez.
