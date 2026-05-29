@@ -1,5 +1,7 @@
 // rules-engine.js
 
+const api = typeof browser !== 'undefined' ? browser : chrome;
+
 /**
  * Obtiene el nombre de la carpeta según la extensión,
  * respetando si el usuario ha desactivado esa categoría.
@@ -16,25 +18,25 @@ export function getFolderNameByExtension(ext, enabledCats = {}) {
 
     switch (lowerExt) {
         case 'pdf':
-            return cats.pdf ? chrome.i18n.getMessage("folder_pdfs") : null;
+            return cats.pdf ? api.i18n.getMessage("folder_pdfs") : null;
         case 'jpg': case 'jpeg': case 'png': case 'gif': case 'webp':
-            return cats.images ? chrome.i18n.getMessage("folder_images") : null;
+            return cats.images ? api.i18n.getMessage("folder_images") : null;
         case 'mp4': case 'mkv': case 'avi': case 'webm':
-            return cats.video ? chrome.i18n.getMessage("folder_videos") : null;
+            return cats.video ? api.i18n.getMessage("folder_videos") : null;
         case 'mp3': case 'wav': case 'ogg':
-            return cats.audio ? chrome.i18n.getMessage("folder_audio") : null;
+            return cats.audio ? api.i18n.getMessage("folder_audio") : null;
         case 'zip': case 'rar': case '7z':
-            return cats.compressed ? chrome.i18n.getMessage("folder_compressed") : null;
+            return cats.compressed ? api.i18n.getMessage("folder_compressed") : null;
         case 'docx': case 'doc': case 'odt':
-            return cats.documents ? chrome.i18n.getMessage("folder_documents") : null;
+            return cats.documents ? api.i18n.getMessage("folder_documents") : null;
         case 'txt': case 'md':
-            return cats.documents ? chrome.i18n.getMessage("folder_text") : null;
+            return cats.documents ? api.i18n.getMessage("folder_text") : null;
         case 'csv': case 'xlsx': case 'xls':
-            return cats.spreadsheets ? chrome.i18n.getMessage("folder_spreadsheets") : null;
+            return cats.spreadsheets ? api.i18n.getMessage("folder_spreadsheets") : null;
         case 'ppt': case 'pptx': case 'odp':
-            return cats.presentations ? chrome.i18n.getMessage("folder_presentations") : null;
+            return cats.presentations ? api.i18n.getMessage("folder_presentations") : null;
         case 'exe': case 'msi':
-            return cats.programs ? chrome.i18n.getMessage("folder_programs") : null;
+            return cats.programs ? api.i18n.getMessage("folder_programs") : null;
         case 'js': case 'html': case 'css': case 'py': case 'json':
             return null;
         default:
@@ -60,7 +62,7 @@ export function applyRenamePattern(pattern, downloadItem, originUrl) {
     const extension = (filenameParts.pop() || "").toLowerCase();
     const originalFilename = filenameParts.join('.');
     
-    let site = chrome.i18n.getMessage("unknownSite");
+    let site = api.i18n.getMessage("unknownSite");
     if (originUrl) {
         try {
             site = new URL(originUrl).hostname.replace(/^www\./, '').split('.')[0];

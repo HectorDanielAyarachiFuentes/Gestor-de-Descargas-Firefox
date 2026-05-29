@@ -1,13 +1,15 @@
 // theme-manager.js
 // Gestor centralizado de temas para la extensión
 
+const api = typeof browser !== 'undefined' ? browser : chrome;
+
 /**
  * Inicializa el sistema de temas
  * Detecta preferencias del sistema y del usuario
  */
 async function initTheme() {
   // Obtener preferencia guardada del usuario
-  const { theme = 'auto' } = await chrome.storage.sync.get('theme');
+  const { theme = 'auto' } = await api.storage.sync.get('theme');
   applyTheme(theme);
 }
 
@@ -41,7 +43,7 @@ function applyTheme(preference) {
  * @param {string} newTheme - 'light', 'dark', o 'auto'
  */
 async function setThemePreference(newTheme) {
-  await chrome.storage.sync.set({ theme: newTheme });
+  await api.storage.sync.set({ theme: newTheme });
   applyTheme(newTheme);
 }
 
@@ -50,20 +52,20 @@ async function setThemePreference(newTheme) {
  * @returns {Promise<string>} - 'light', 'dark', o 'auto'
  */
 async function getThemePreference() {
-  const { theme = 'auto' } = await chrome.storage.sync.get('theme');
+  const { theme = 'auto' } = await api.storage.sync.get('theme');
   return theme;
 }
 
 // Escuchar cambios en la preferencia del sistema (solo para modo auto)
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async (e) => {
-  const { theme = 'auto' } = await chrome.storage.sync.get('theme');
+  const { theme = 'auto' } = await api.storage.sync.get('theme');
   if (theme === 'auto') {
     applyTheme('auto');
   }
 });
 
 // Escuchar cambios en storage (sincronización entre páginas)
-chrome.storage.onChanged.addListener((changes, area) => {
+api.storage.onChanged.addListener((changes, area) => {
   if (area === 'sync' && changes.theme) {
     applyTheme(changes.theme.newValue);
   }

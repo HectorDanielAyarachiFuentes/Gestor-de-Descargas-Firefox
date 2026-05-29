@@ -1,5 +1,7 @@
 // utils.js
 
+const api = typeof browser !== 'undefined' ? browser : chrome;
+
 /**
  * Retrasa la ejecución de una función (Debounce).
  */
@@ -36,11 +38,11 @@ export function sanitize(name) {
 export function applyI18n() {
     const title = document.querySelector('title');
     if (title && title.dataset.i18n) {
-        document.title = chrome.i18n.getMessage(title.dataset.i18n);
+        document.title = api.i18n.getMessage(title.dataset.i18n);
     }
 
     document.querySelectorAll('[data-i18n]').forEach(element => {
-        const message = chrome.i18n.getMessage(element.dataset.i18n);
+        const message = api.i18n.getMessage(element.dataset.i18n);
         if (element.dataset.i18n === "footerText") {
             const currentYear = new Date().getFullYear();
             element.innerHTML = message.replace('2025', currentYear);
@@ -52,9 +54,9 @@ export function applyI18n() {
     });
 
     document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-        element.placeholder = chrome.i18n.getMessage(element.dataset.i18nPlaceholder);
+        element.placeholder = api.i18n.getMessage(element.dataset.i18nPlaceholder);
     });
     document.querySelectorAll('[data-i18n-title]').forEach(element => {
-        element.title = chrome.i18n.getMessage(element.dataset.i18nTitle);
+        element.title = api.i18n.getMessage(element.dataset.i18nTitle);
     });
 }

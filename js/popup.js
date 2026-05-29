@@ -2,6 +2,8 @@
 
 import { applyI18n } from './utils.js';
 
+const api = typeof browser !== 'undefined' ? browser : chrome;
+
 document.addEventListener("DOMContentLoaded", () => {
   applyI18n(); // <-- Llama a la función de traducción
 
@@ -28,11 +30,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Listeners de eventos ---
   openOptionsBtn.addEventListener("click", () => {
-    chrome.runtime.openOptionsPage();
+    api.runtime.openOptionsPage();
   });
 
   autoOrganizeToggle.addEventListener("change", (e) => {
-    chrome.storage.sync.set({ autoOrganize: e.target.checked });
+    api.storage.sync.set({ autoOrganize: e.target.checked });
   });
 
   forceNextDownloadBtn.addEventListener("click", activateForceMode);
@@ -40,39 +42,37 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function loadAppSettings() {
-  const { autoOrganize = true } = await chrome.storage.sync.get("autoOrganize");
+  const { autoOrganize = true } = await api.storage.sync.get("autoOrganize");
   document.getElementById("autoOrganizeToggle").checked = autoOrganize;
 
-  const { forceNextDownload } = await chrome.storage.local.get("forceNextDownload");
+  const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
   if (forceNextDownload && forceNextDownload.folder) {
     showActiveForceView(forceNextDownload.folder);
   }
 }
 
-function activateForceMode() {
+async function activateForceMode() {
   const folder = document.getElementById("forceFolderInput").value.trim();
   if (!folder) return;
 
   const forceRule = { folder: folder };
-  chrome.storage.local.set({ forceNextDownload: forceRule }, () => {
-    chrome.action.setBadgeText({ text: '1' });
-    chrome.action.setBadgeBackgroundColor({ color: '#007bff' });
-    showActiveForceView(folder);
-  });
+  await api.storage.local.set({ forceNextDownload: forceRule });
+  api.action.setBadgeText({ text: '1' });
+  api.action.setBadgeBackgroundColor({ color: '#007bff' });
+  showActiveForceView(folder);
 }
 
-function deactivateForceMode() {
-  chrome.storage.local.remove("forceNextDownload", () => {
-    chrome.action.setBadgeText({ text: '' });
-    showIdleForceView();
-  });
+async function deactivateForceMode() {
+  await api.storage.local.remove("forceNextDownload");
+  api.action.setBadgeText({ text: '' });
+  showIdleForceView();
 }
 
 function showActiveForceView(folder) {
   document.getElementById("force-idle-view").style.display = "none";
   const activeView = document.getElementById("force-active-view");
   // Usamos getMessage con un marcador de posición
-  activeView.querySelector(".force-active-text").innerHTML = chrome.i18n.getMessage("popup_forceActiveText", folder);
+  activeView.querySelector(".force-active-text").innerHTML = api.i18n.getMessage("popup_forceActiveText", folder);
   activeView.style.display = "block";
 }
 
@@ -83,7 +83,7 @@ function showIdleForceView() {
 }
 
 async function loadFolderSuggestions() {
-  const { customRules = [] } = await chrome.storage.sync.get("customRules");
+  const { customRules = [] } = await api.storage.sync.get("customRules");
   const uniqueFolders = [...new Set(customRules.map(rule => rule.folder))];
 
   const suggestionsDatalist = document.getElementById("folder-suggestions");
@@ -112,75 +112,71 @@ function getFileTypeIcon(filename) {
   return fileIcons[ext] || fileIcons.default;
 }
 
-function loadHistory() {
-  chrome.storage.local.get({ downloadHistory: [] }, (result) => {
-    const historyList = document.getElementById("popupHistory");
-    const downloadCountElem = document.getElementById("downloadCount");
-    const totalDownloads = result.downloadHistory.length;
+async function loadHistory() {
+  const result = await api.storage.local.get({ downloadHistory: [] });
+  const historyList = document.getElementById("popupHistory");
+  const downloadCountElem = document.getElementById("downloadCount");
+  const totalDownloads = result.downloadHistory.length;
 
-    if (!historyList || !downloadCountElem) return;
+  if (!historyList || !downloadCountElem) return;
 
-    // Usamos getMessage con un marcador de posición
-    downloadCountElem.textContent = chrome.i18n.getMessage("popup_downloadCount", String(totalDownloads));
-    historyList.innerHTML = "";
+  // Usamos getMessage con un marcador de posición
+  downloadCountElem.textContent = api.i18n.getMessage("popup_downloadCount", String(totalDownloads));
+  historyList.innerHTML = "";
 
-    if (totalDownloads === 0) {
-      // Usamos getMessage para el texto
-      historyList.innerHTML = `<li>${chrome.i18n.getMessage("popup_noHistory")}</li>`;
-      return;
+  if (totalDownloads === 0) {
+    // Usamos getMessage para el texto
+    historyList.innerHTML = `<li>${api.i18n.getMessage("popup_noHistory")}</li>`;
+    return;
+  }
+
+  const lastDownloads = result.downloadHistory.slice(-5).reverse();
+  lastDownloads.forEach(entry => {
+    const listItem = document.createElement("li");
+
+    listItem.innerHTML = `
+        <div class="history-item-icon">${getFileTypeIcon(entry.filename)}</div>
+        <div class="history-item-details">
+          <strong>${entry.filename}</strong>
+          <small>${new Date(entry.date).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} → 📂 ${entry.folder}</small>
+        </div>
+        <div class="popup-history-actions"></div>
+      `;
+
+    const actionsContainer = listItem.querySelector(".popup-history-actions");
+
+    if (entry.id !== undefined) {
+      const openFolderBtn = document.createElement("button");
+      openFolderBtn.textContent = api.i18n.getMessage("openFolderButton");
+      openFolderBtn.title = api.i18n.getMessage("openFolderTooltip");
+      openFolderBtn.addEventListener("click", () => openFolderInExplorer(entry.id, listItem));
+      actionsContainer.appendChild(openFolderBtn);
+    }
+    if (entry.url) {
+      const reDownloadBtn = document.createElement("button");
+      reDownloadBtn.textContent = api.i18n.getMessage("redownloadButton");
+      reDownloadBtn.title = api.i18n.getMessage("redownloadTooltip");
+      reDownloadBtn.addEventListener("click", () => api.downloads.download({ url: entry.url }));
+      actionsContainer.appendChild(reDownloadBtn);
     }
 
-    const lastDownloads = result.downloadHistory.slice(-5).reverse();
-    lastDownloads.forEach(entry => {
-      const listItem = document.createElement("li");
-
-      listItem.innerHTML = `
-          <div class="history-item-icon">${getFileTypeIcon(entry.filename)}</div>
-          <div class="history-item-details">
-            <strong>${entry.filename}</strong>
-            <small>${new Date(entry.date).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} → 📂 ${entry.folder}</small>
-          </div>
-          <div class="popup-history-actions"></div>
-        `;
-
-      const actionsContainer = listItem.querySelector(".popup-history-actions");
-
-      if (entry.id !== undefined) {
-        const openFolderBtn = document.createElement("button");
-        openFolderBtn.textContent = chrome.i18n.getMessage("openFolderButton");
-        openFolderBtn.title = chrome.i18n.getMessage("openFolderTooltip");
-        openFolderBtn.addEventListener("click", () => openFolderInExplorer(entry.id, listItem));
-        actionsContainer.appendChild(openFolderBtn);
-      }
-      if (entry.url) {
-        const reDownloadBtn = document.createElement("button");
-        reDownloadBtn.textContent = chrome.i18n.getMessage("redownloadButton");
-        reDownloadBtn.title = chrome.i18n.getMessage("redownloadTooltip");
-        reDownloadBtn.addEventListener("click", () => chrome.downloads.download({ url: entry.url }));
-        actionsContainer.appendChild(reDownloadBtn);
-      }
-
-      historyList.appendChild(listItem);
-    });
+    historyList.appendChild(listItem);
   });
 }
 
-function openFolderInExplorer(downloadId, listItemElement) {
+async function openFolderInExplorer(downloadId, listItemElement) {
   const numId = Number(downloadId);
   if (isNaN(numId)) return;
 
-  chrome.downloads.search({ id: numId }, (results) => {
-    if (chrome.runtime.lastError) {
-      showFeedback(chrome.i18n.getMessage("feedback_errorFindDownload"), false);
-      return;
-    }
+  try {
+    const results = await api.downloads.search({ id: numId });
     if (!results || !results.length) {
-      showFeedback(chrome.i18n.getMessage("feedback_errorNotInHistory"), false);
+      showFeedback(api.i18n.getMessage("feedback_errorNotInHistory"), false);
       return;
     }
     if (!results[0].exists) {
       // El archivo es un fantasma (se borró del disco duro)
-      showFeedback(chrome.i18n.getMessage("feedback_errorFileNotExists"), false);
+      showFeedback(api.i18n.getMessage("feedback_errorFileNotExists"), false);
 
       // Lógica inteligente: Eliminar el fantasma del historial
       removeGhostFromHistory(numId, listItemElement);
@@ -188,31 +184,31 @@ function openFolderInExplorer(downloadId, listItemElement) {
     }
 
     // Todo bien, abrir carpeta
-    chrome.downloads.show(numId);
-  });
+    api.downloads.show(numId);
+  } catch (e) {
+    showFeedback(api.i18n.getMessage("feedback_errorFindDownload"), false);
+  }
 }
 
-function removeGhostFromHistory(downloadId, listItemElement) {
-  chrome.storage.local.get({ downloadHistory: [] }, (result) => {
-    const newHistory = result.downloadHistory.filter(item => item.id !== downloadId);
+async function removeGhostFromHistory(downloadId, listItemElement) {
+  const result = await api.storage.local.get({ downloadHistory: [] });
+  const newHistory = result.downloadHistory.filter(item => item.id !== downloadId);
 
-    chrome.storage.local.set({ downloadHistory: newHistory }, () => {
-      // Eliminar visualmente de la lista con una animación
-      if (listItemElement) {
-        listItemElement.style.transition = "all 0.3s ease";
-        listItemElement.style.opacity = "0";
-        listItemElement.style.height = "0";
-        listItemElement.style.padding = "0";
-        listItemElement.style.border = "none";
-        setTimeout(() => listItemElement.remove(), 300);
-      }
-      // Actualizar contador
-      const countElem = document.getElementById("downloadCount");
-      if (countElem) {
-        countElem.textContent = chrome.i18n.getMessage("popup_downloadCount", String(newHistory.length));
-      }
-    });
-  });
+  await api.storage.local.set({ downloadHistory: newHistory });
+  // Eliminar visualmente de la lista con una animación
+  if (listItemElement) {
+    listItemElement.style.transition = "all 0.3s ease";
+    listItemElement.style.opacity = "0";
+    listItemElement.style.height = "0";
+    listItemElement.style.padding = "0";
+    listItemElement.style.border = "none";
+    setTimeout(() => listItemElement.remove(), 300);
+  }
+  // Actualizar contador
+  const countElem = document.getElementById("downloadCount");
+  if (countElem) {
+    countElem.textContent = api.i18n.getMessage("popup_downloadCount", String(newHistory.length));
+  }
 }
 
 function showFeedback(message, success = true) {

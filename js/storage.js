@@ -2,28 +2,30 @@
 import { debounce } from './utils.js';
 import { STORAGE_KEYS, DEFAULT_SETTINGS } from './constants.js';
 
+const api = typeof browser !== 'undefined' ? browser : chrome;
+
 /**
- * Obtiene datos de chrome.storage.sync
+ * Obtiene datos de storage.sync
  */
 export async function getSyncSettings() {
-    return await chrome.storage.sync.get(DEFAULT_SETTINGS);
+    return await api.storage.sync.get(DEFAULT_SETTINGS);
 }
 
 /**
- * Guarda un dato en chrome.storage.sync (directo)
+ * Guarda un dato en storage.sync (directo)
  */
 export async function saveSync(key, value) {
-    await chrome.storage.sync.set({ [key]: value });
+    await api.storage.sync.set({ [key]: value });
 }
 
 /**
- * Guarda un dato en chrome.storage.local (directo)
+ * Guarda un dato en storage.local (directo)
  */
 export async function saveLocal(key, value) {
-    await chrome.storage.local.set({ [key]: value });
+    await api.storage.local.set({ [key]: value });
 }
 
-// Wrapper debounced para proteger la cuota de escritura de chrome.storage.sync
+// Wrapper debounced para proteger la cuota de escritura de storage.sync
 // Usaremos un diccionario interno para almacenar las operaciones pendientes
 const pendingSyncSaves = {};
 
@@ -38,14 +40,14 @@ const executeSyncSave = debounce(async () => {
     });
 
     try {
-        await chrome.storage.sync.set(dataToSave);
+        await api.storage.sync.set(dataToSave);
     } catch (e) {
         console.error("Error saving to sync storage (quota exceeded?):", e);
     }
 }, 500); // 500ms debounce
 
 /**
- * Guarda un dato en chrome.storage.sync usando debounce para evitar quota exceeded.
+ * Guarda un dato en storage.sync usando debounce para evitar quota exceeded.
  */
 export function saveSyncDebounced(key, value) {
     pendingSyncSaves[key] = value;
@@ -55,12 +57,15 @@ export function saveSyncDebounced(key, value) {
 /**
  * Guarda una entrada en el historial local de descargas, manteniendo el límite (50).
  */
-export function saveToDownloadHistory(filename, folderName, downloadId, fileUrl) {
-    chrome.storage.local.get({ [STORAGE_KEYS.DOWNLOAD_HISTORY]: [] }, (result) => {
+export async function saveToDownloadHistory(filename, folderName, downloadId, fileUrl) {
+    try {
+        const result = await api.storage.local.get({ [STORAGE_KEYS.DOWNLOAD_HISTORY]: [] });
         const history = result[STORAGE_KEYS.DOWNLOAD_HISTORY];
         if (history.length >= 50) { history.shift(); }
         const newEntry = { filename, folder: folderName, date: new Date().toISOString(), id: downloadId, url: fileUrl };
         history.push(newEntry);
-        chrome.storage.local.set({ [STORAGE_KEYS.DOWNLOAD_HISTORY]: history });
-    });
+        await api.storage.local.set({ [STORAGE_KEYS.DOWNLOAD_HISTORY]: history });
+    } catch (e) {
+        console.error("Error guardando historial:", e);
+    }
 }

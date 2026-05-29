@@ -1,6 +1,8 @@
 // widget.js
 import { truncateName } from './utils.js';
 
+const api = typeof browser !== 'undefined' ? browser : chrome;
+
 // Estado global del widget
 const widgetState = {
     currentTab: 'visible',
@@ -30,8 +32,8 @@ export function initSmartWidget() {
 
     refreshWidgetData();
 
-    chrome.downloads.onCreated.addListener(() => setTimeout(refreshWidgetData, 1000));
-    chrome.downloads.onChanged.addListener(() => setTimeout(refreshWidgetData, 1000));
+    api.downloads.onCreated.addListener(() => setTimeout(refreshWidgetData, 1000));
+    api.downloads.onChanged.addListener(() => setTimeout(refreshWidgetData, 1000));
 }
 
 function switchTab(tab) {
@@ -41,11 +43,10 @@ function switchTab(tab) {
     renderSmartGrid();
 }
 
-function refreshWidgetData() {
-    chrome.storage.local.get({ downloadHistory: [] }, (result) => {
-        widgetState.historyCache = result.downloadHistory || [];
-        renderSmartGrid();
-    });
+async function refreshWidgetData() {
+    const result = await api.storage.local.get({ downloadHistory: [] });
+    widgetState.historyCache = result.downloadHistory || [];
+    renderSmartGrid();
 }
 
 function renderSmartGrid() {
@@ -64,8 +65,8 @@ function renderSmartGrid() {
     if (foldersToShow.length === 0) {
         const isVisibleTab = widgetState.currentTab === 'visible';
         const msg = isVisibleTab
-            ? chrome.i18n.getMessage("widgetMsgNoActive")
-            : chrome.i18n.getMessage("widgetMsgTrashEmpty");
+            ? api.i18n.getMessage("widgetMsgNoActive")
+            : api.i18n.getMessage("widgetMsgTrashEmpty");
 
         const svgIcon = isVisibleTab
             ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`
@@ -90,7 +91,7 @@ function renderSmartGrid() {
         const removeSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
         const addSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
         const rightBtnIcon = widgetState.currentTab === 'visible' ? removeSvg : addSvg;
-        const rightBtnTitle = widgetState.currentTab === 'visible' ? chrome.i18n.getMessage("widgetBtnMoveHidden") : chrome.i18n.getMessage("widgetBtnRestore");
+        const rightBtnTitle = widgetState.currentTab === 'visible' ? api.i18n.getMessage("widgetBtnMoveHidden") : api.i18n.getMessage("widgetBtnRestore");
 
         let htmlContent = `
             <button class="action-folder-btn ${rightBtnClass}" title="${rightBtnTitle}">${rightBtnIcon}</button>
@@ -101,7 +102,7 @@ function renderSmartGrid() {
         `;
 
         if (widgetState.currentTab === 'hidden') {
-            const tooltip = chrome.i18n.getMessage("widgetBtnForget");
+            const tooltip = api.i18n.getMessage("widgetBtnForget");
             const trashSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
             htmlContent += `<button class="delete-forever-btn" title="${tooltip}">${trashSvg}</button>`;
         }
@@ -122,7 +123,7 @@ function renderSmartGrid() {
         if (deleteBtn) {
             deleteBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
-                if (confirm(chrome.i18n.getMessage("widgetConfirmForget", folderName))) {
+                if (confirm(api.i18n.getMessage("widgetConfirmForget", folderName))) {
                     forgetFolderForever(folderName);
                 }
             });
@@ -132,18 +133,16 @@ function renderSmartGrid() {
     });
 }
 
-function forgetFolderForever(folderName) {
-    chrome.storage.local.get({ downloadHistory: [] }, (result) => {
-        let history = result.downloadHistory;
-        const newHistory = history.filter(item => item.folder !== folderName);
+async function forgetFolderForever(folderName) {
+    const result = await api.storage.local.get({ downloadHistory: [] });
+    const history = result.downloadHistory;
+    const newHistory = history.filter(item => item.folder !== folderName);
 
-        chrome.storage.local.set({ downloadHistory: newHistory }, () => {
-            widgetState.ignoredFolders = widgetState.ignoredFolders.filter(f => f !== folderName);
-            localStorage.setItem("ignoredFolders", JSON.stringify(widgetState.ignoredFolders));
-            widgetState.historyCache = newHistory;
-            renderSmartGrid();
-        });
-    });
+    await api.storage.local.set({ downloadHistory: newHistory });
+    widgetState.ignoredFolders = widgetState.ignoredFolders.filter(f => f !== folderName);
+    localStorage.setItem("ignoredFolders", JSON.stringify(widgetState.ignoredFolders));
+    widgetState.historyCache = newHistory;
+    renderSmartGrid();
 }
 
 function toggleFolderVisibility(folderName) {
@@ -160,7 +159,7 @@ async function openResilientFolder(folderName) {
     const filesInFolder = widgetState.historyCache.filter(item => item.folder === folderName).reverse();
 
     if (filesInFolder.length === 0) {
-        alert(chrome.i18n.getMessage("widgetAlertNoFiles"));
+        alert(api.i18n.getMessage("widgetAlertNoFiles"));
         return;
     }
 
@@ -171,7 +170,7 @@ async function openResilientFolder(folderName) {
         if (!file.id) continue;
         const exists = await checkFileExists(file.id);
         if (exists) {
-            chrome.downloads.show(file.id);
+            api.downloads.show(file.id);
             opened = true;
             break;
         }
@@ -180,22 +179,20 @@ async function openResilientFolder(folderName) {
     document.body.style.cursor = 'default';
 
     if (!opened) {
-        if (confirm(chrome.i18n.getMessage("widgetConfirmGhost", folderName))) {
+        if (confirm(api.i18n.getMessage("widgetConfirmGhost", folderName))) {
             toggleFolderVisibility(folderName);
         }
     }
 }
 
-function checkFileExists(downloadId) {
-    return new Promise((resolve) => {
-        chrome.downloads.search({ id: downloadId }, (results) => {
-            if (chrome.runtime.lastError || !results || !results.length) {
-                resolve(false);
-            } else {
-                resolve(results[0].exists);
-            }
-        });
-    });
+async function checkFileExists(downloadId) {
+    try {
+        const results = await api.downloads.search({ id: downloadId });
+        if (!results || !results.length) return false;
+        return results[0].exists;
+    } catch (e) {
+        return false;
+    }
 }
 
 function initDraggableWidget() {

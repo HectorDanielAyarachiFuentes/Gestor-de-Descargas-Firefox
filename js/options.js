@@ -4,6 +4,8 @@ import { initSmartWidget } from './widget.js';
 import { STORAGE_KEYS, DEFAULT_SETTINGS } from './constants.js';
 import { applyI18n } from './utils.js';
 
+const api = typeof browser !== 'undefined' ? browser : chrome;
+
 function applyTranslations() {
     applyI18n();
 }
@@ -76,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("searchHistory").addEventListener("input", (e) => filterHistory(e.target.value.toLowerCase()));
 
   // Listener para mostrar feedback desde otros scripts (como popup.js)
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  api.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.type === "showFeedback") {
       showStatus(request.message, request.success ? 'success' : 'error');
     }
@@ -90,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderPatternPreview();
 
-  chrome.storage.onChanged.addListener((changes, area) => {
+  api.storage.onChanged.addListener((changes, area) => {
     if (area === 'sync') {
       if (changes.customRules) loadCustomRules();
       if (changes.customCategories) loadCustomExtCategories();
@@ -126,7 +128,7 @@ themeScript.onload = () => {
 function loadThemeSelector() {
   const themeButtons = document.querySelectorAll('.theme-btn');
 
-  chrome.storage.sync.get({ theme: 'auto' }, (data) => {
+  api.storage.sync.get({ theme: 'auto' }, (data) => {
     themeButtons.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.theme === data.theme);
     });
@@ -140,7 +142,7 @@ function loadThemeSelector() {
       themeButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      showStatus(chrome.i18n.getMessage("statusThemeChanged"), "success");
+      showStatus(api.i18n.getMessage("statusThemeChanged"), "success");
     });
   });
 }
@@ -154,9 +156,9 @@ function setupDynamicPlaceholders() {
   ruleTypeSelect.addEventListener("change", () => {
     const selectedType = ruleTypeSelect.value;
     if (selectedType === "keyword") {
-      ruleValueInput.placeholder = chrome.i18n.getMessage("ruleValuePlaceholder");
+      ruleValueInput.placeholder = api.i18n.getMessage("ruleValuePlaceholder");
     } else if (selectedType === "url") {
-      ruleValueInput.placeholder = chrome.i18n.getMessage("placeholder_urlExample");
+      ruleValueInput.placeholder = api.i18n.getMessage("placeholder_urlExample");
     }
   });
 }
@@ -166,10 +168,10 @@ function setupDynamicPlaceholders() {
 // ===============================================
 
 async function enterEditMode(ruleId) {
-  const { customRules = [] } = await chrome.storage.sync.get('customRules');
+  const { customRules = [] } = await api.storage.sync.get('customRules');
   const ruleToEdit = customRules.find(r => r.id === ruleId);
   if (!ruleToEdit) {
-    showStatus(chrome.i18n.getMessage("feedback_errorRuleNotFound"), "error");
+    showStatus(api.i18n.getMessage("feedback_errorRuleNotFound"), "error");
     return;
   }
 
@@ -182,7 +184,7 @@ async function enterEditMode(ruleId) {
   renamePatternComponents = parseRenamePattern(ruleToEdit.renamePattern || "");
   renderPatternPreview();
 
-  document.getElementById("rule-form-title").textContent = chrome.i18n.getMessage("title_editingRule");
+  document.getElementById("rule-form-title").textContent = api.i18n.getMessage("title_editingRule");
   document.getElementById("addRuleBtn").style.display = "none";
   document.getElementById("updateRuleBtn").style.display = "inline-block";
   document.getElementById("cancelEditBtn").style.display = "inline-block";
@@ -198,7 +200,7 @@ function exitEditMode() {
   document.getElementById("ruleFolder").value = "";
   clearRenameBuilder();
 
-  document.getElementById("rule-form-title").textContent = chrome.i18n.getMessage("newCustomRuleTitle");
+  document.getElementById("rule-form-title").textContent = api.i18n.getMessage("newCustomRuleTitle");
   document.getElementById("addRuleBtn").style.display = "inline-block";
   document.getElementById("updateRuleBtn").style.display = "none";
   document.getElementById("cancelEditBtn").style.display = "none";
@@ -269,7 +271,7 @@ function setupRenameBuilder() {
     let component;
     switch (type) {
       case 'text':
-        const text = prompt(chrome.i18n.getMessage("prompt_enterFreeText"), "_");
+        const text = prompt(api.i18n.getMessage("prompt_enterFreeText"), "_");
         if (text) component = createComponent('text', text);
         break;
       case 'sitio':
@@ -322,7 +324,7 @@ function renderPatternPreview() {
   if (renamePatternComponents.length === 0) {
     // --- CASO: NO HAY COMPONENTES ---
     // a. Obtener el texto traducido desde los archivos messages.json.
-    const placeholderText = chrome.i18n.getMessage("renamePreviewPlaceholder");
+    const placeholderText = api.i18n.getMessage("renamePreviewPlaceholder");
 
     // b. Insertar el texto en el contenedor.
     previewContainer.textContent = placeholderText;
@@ -342,15 +344,15 @@ function renderPatternPreview() {
       // b. Determinar el texto a mostrar para cada tipo de componente.
       let displayValue = component.value;
       if (component.type === 'fecha') {
-        displayValue = chrome.i18n.getMessage("label_dateComponent", component.value);
+        displayValue = api.i18n.getMessage("label_dateComponent", component.value);
       } else if (component.type === 'sitio') {
-        displayValue = chrome.i18n.getMessage("addSiteComponent").replace('+', '').trim();
+        displayValue = api.i18n.getMessage("addSiteComponent").replace('+', '').trim();
       } else if (component.type === 'nombre_original') {
-        displayValue = chrome.i18n.getMessage("addOriginalNameComponent").replace('+', '').trim();
+        displayValue = api.i18n.getMessage("addOriginalNameComponent").replace('+', '').trim();
       }
 
       // c. Crear el HTML interno del componente, incluyendo el botón de eliminar.
-      const removeButtonTitle = chrome.i18n.getMessage("tooltip_removeComponent");
+      const removeButtonTitle = api.i18n.getMessage("tooltip_removeComponent");
       el.innerHTML = `<span>${displayValue}</span><button type="button" class="remove-component-btn" title="${removeButtonTitle}">✖</button>`;
 
       // d. Añadir el componente recién creado al contenedor de la vista previa.
@@ -455,7 +457,7 @@ function formatDate(date, format) {
 // ===================================================
 
 function loadSettings() {
-  chrome.storage.sync.get({
+  api.storage.sync.get({
     autoOrganize: true,
     notifications: 'always',
     contextMenu: true,
@@ -486,14 +488,14 @@ function loadSettings() {
 }
 
 function saveSingleSetting(key, value) {
-  chrome.storage.sync.set({ [key]: value }, () => {
-    showStatus(chrome.i18n.getMessage("statusSettingsSaved"), "success");
+  api.storage.sync.set({ [key]: value }, () => {
+    showStatus(api.i18n.getMessage("statusSettingsSaved"), "success");
   });
 }
 
 // --- FUNCIÓN CORREGIDA ---
 function loadCustomRules() {
-  chrome.storage.sync.get({ customRules: [] }, (data) => {
+  api.storage.sync.get({ customRules: [] }, (data) => {
     let rules = data.customRules;
     let migrationNeeded = false;
 
@@ -507,7 +509,7 @@ function loadCustomRules() {
 
     // 2. Si se hizo algún cambio, guarda la lista actualizada
     if (migrationNeeded) {
-      chrome.storage.sync.set({ customRules: rules }, () => {
+      api.storage.sync.set({ customRules: rules }, () => {
         console.log("Migración de reglas completada: Se añadieron IDs a reglas antiguas.");
         renderRulesList(rules);
       });
@@ -538,10 +540,10 @@ function renderRulesList(rulesArray) {
     const li = document.createElement("li");
     li.dataset.id = rule.id;
 
-    const typeStr = rule.type === 'url' ? chrome.i18n.getMessage('ruleDesc_url') : chrome.i18n.getMessage('ruleDesc_name');
-    let ruleText = `${chrome.i18n.getMessage('ruleDesc_if')} <b>${typeStr}</b> ${chrome.i18n.getMessage('ruleDesc_contains')} "<b>${rule.value}</b>", ${chrome.i18n.getMessage('ruleDesc_saveIn')} "<b>${rule.folder}</b>"`;
+    const typeStr = rule.type === 'url' ? api.i18n.getMessage('ruleDesc_url') : api.i18n.getMessage('ruleDesc_name');
+    let ruleText = `${api.i18n.getMessage('ruleDesc_if')} <b>${typeStr}</b> ${api.i18n.getMessage('ruleDesc_contains')} "<b>${rule.value}</b>", ${api.i18n.getMessage('ruleDesc_saveIn')} "<b>${rule.folder}</b>"`;
     if (rule.renamePattern) {
-      ruleText += ` ${chrome.i18n.getMessage('ruleDesc_andRenameAs')} "<b>${rule.renamePattern}</b>"`;
+      ruleText += ` ${api.i18n.getMessage('ruleDesc_andRenameAs')} "<b>${rule.renamePattern}</b>"`;
     }
     li.innerHTML = `<span class="history-item-text">${ruleText}</span>`;
 
@@ -549,12 +551,12 @@ function renderRulesList(rulesArray) {
     actionsDiv.className = "history-item-actions";
 
     const editBtn = document.createElement("button");
-    editBtn.textContent = chrome.i18n.getMessage("editButton");
+    editBtn.textContent = api.i18n.getMessage("editButton");
     editBtn.addEventListener("click", () => enterEditMode(rule.id));
     actionsDiv.appendChild(editBtn);
 
     const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = chrome.i18n.getMessage("deleteButton");
+    deleteBtn.textContent = api.i18n.getMessage("deleteButton");
     deleteBtn.style.backgroundColor = "var(--error-bg-color)";
     deleteBtn.style.borderColor = "var(--error-border-color)";
     deleteBtn.style.color = "var(--error-text-color)";
@@ -579,18 +581,18 @@ function addRule() {
   const renamePattern = getRenamePatternString();
 
   if (!value || !folder) {
-    showStatus(chrome.i18n.getMessage("feedback_errorCompleteFields"), "error");
+    showStatus(api.i18n.getMessage("feedback_errorCompleteFields"), "error");
     return;
   }
 
-  chrome.storage.sync.get({ customRules: [] }, (data) => {
+  api.storage.sync.get({ customRules: [] }, (data) => {
     const newRule = {
       id: `rule_${Date.now()}`,
       type, value, folder, renamePattern
     };
     const newRules = [...data.customRules, newRule];
-    chrome.storage.sync.set({ customRules: newRules }, () => {
-      showStatus(chrome.i18n.getMessage("statusRuleAdded"), "success");
+    api.storage.sync.set({ customRules: newRules }, () => {
+      showStatus(api.i18n.getMessage("statusRuleAdded"), "success");
       exitEditMode();
     });
   });
@@ -605,23 +607,23 @@ function updateRule() {
   const renamePattern = getRenamePatternString();
 
   if (!value || !folder) {
-    showStatus(chrome.i18n.getMessage("feedback_errorCompleteFields"), "error");
+    showStatus(api.i18n.getMessage("feedback_errorCompleteFields"), "error");
     return;
   }
 
-  chrome.storage.sync.get({ customRules: [] }, (data) => {
+  api.storage.sync.get({ customRules: [] }, (data) => {
     const rules = data.customRules;
     const ruleIndex = rules.findIndex(r => r.id === editingRuleId);
     if (ruleIndex === -1) {
-      showStatus(chrome.i18n.getMessage("feedback_errorUpdateNotFound"), "error");
+      showStatus(api.i18n.getMessage("feedback_errorUpdateNotFound"), "error");
       exitEditMode();
       return;
     }
 
     rules[ruleIndex] = { id: editingRuleId, type, value, folder, renamePattern };
 
-    chrome.storage.sync.set({ customRules: rules }, () => {
-      showStatus(chrome.i18n.getMessage("statusRuleUpdated"), "success");
+    api.storage.sync.set({ customRules: rules }, () => {
+      showStatus(api.i18n.getMessage("statusRuleUpdated"), "success");
       exitEditMode();
     });
   });
@@ -629,13 +631,13 @@ function updateRule() {
 
 function removeRule(ruleId) {
   if (!ruleId) {
-    showStatus(chrome.i18n.getMessage("feedback_errorDeleteNoId"), "error");
+    showStatus(api.i18n.getMessage("feedback_errorDeleteNoId"), "error");
     return;
   }
-  chrome.storage.sync.get({ customRules: [] }, (data) => {
+  api.storage.sync.get({ customRules: [] }, (data) => {
     const newRules = data.customRules.filter(rule => rule.id !== ruleId);
-    chrome.storage.sync.set({ customRules: newRules }, () => {
-      showStatus(chrome.i18n.getMessage("statusRuleDeleted"), "success");
+    api.storage.sync.set({ customRules: newRules }, () => {
+      showStatus(api.i18n.getMessage("statusRuleDeleted"), "success");
     });
   });
 }
@@ -643,7 +645,7 @@ function removeRule(ruleId) {
 async function saveRulesOrder(rulesListElement) {
   const newRulesOrder = [];
   const listItems = rulesListElement.querySelectorAll("li");
-  const { customRules = [] } = await chrome.storage.sync.get('customRules');
+  const { customRules = [] } = await api.storage.sync.get('customRules');
 
   listItems.forEach(item => {
     const ruleId = item.dataset.id;
@@ -659,7 +661,7 @@ async function saveRulesOrder(rulesListElement) {
     newRulesOrder.push(...unorderedRules);
   }
 
-  chrome.storage.sync.set({ customRules: newRulesOrder });
+  api.storage.sync.set({ customRules: newRulesOrder });
 }
 
 // ===================================================
@@ -667,7 +669,7 @@ async function saveRulesOrder(rulesListElement) {
 // ===================================================
 
 function loadCustomExtCategories() {
-  chrome.storage.sync.get({ customCategories: [] }, (data) => {
+  api.storage.sync.get({ customCategories: [] }, (data) => {
     customExtCategories = data.customCategories;
     renderCustomExtList(customExtCategories);
   });
@@ -707,12 +709,12 @@ function renderCustomExtList(categoriesArray) {
     actionsDiv.className = "history-item-actions";
 
     const editBtn = document.createElement("button");
-    editBtn.textContent = chrome.i18n.getMessage("editButton");
+    editBtn.textContent = api.i18n.getMessage("editButton");
     editBtn.addEventListener("click", () => enterCustomExtEditMode(cat.id));
     actionsDiv.appendChild(editBtn);
 
     const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = chrome.i18n.getMessage("deleteButton");
+    deleteBtn.textContent = api.i18n.getMessage("deleteButton");
     deleteBtn.style.backgroundColor = "var(--error-bg-color)";
     deleteBtn.style.borderColor = "var(--error-border-color)";
     deleteBtn.style.color = "var(--error-text-color)";
@@ -736,19 +738,19 @@ function addCustomExtCategory() {
   const extensions = processExtensionsString(extsStr);
 
   if (!folder || extensions.length === 0) {
-    showStatus(chrome.i18n.getMessage("feedback_errorCustomExtFields"), "error");
+    showStatus(api.i18n.getMessage("feedback_errorCustomExtFields"), "error");
     return;
   }
 
-  chrome.storage.sync.get({ customCategories: [] }, (data) => {
+  api.storage.sync.get({ customCategories: [] }, (data) => {
     const newCat = {
       id: `extcat_${Date.now()}`,
       folder,
       extensions
     };
     const newCategories = [...data.customCategories, newCat];
-    chrome.storage.sync.set({ customCategories: newCategories }, () => {
-      showStatus(chrome.i18n.getMessage("statusRuleAdded"), "success");
+    api.storage.sync.set({ customCategories: newCategories }, () => {
+      showStatus(api.i18n.getMessage("statusRuleAdded"), "success");
       exitCustomExtEditMode();
     });
   });
@@ -762,11 +764,11 @@ function updateCustomExtCategory() {
   const extensions = processExtensionsString(extsStr);
 
   if (!folder || extensions.length === 0) {
-    showStatus(chrome.i18n.getMessage("feedback_errorCustomExtFields"), "error");
+    showStatus(api.i18n.getMessage("feedback_errorCustomExtFields"), "error");
     return;
   }
 
-  chrome.storage.sync.get({ customCategories: [] }, (data) => {
+  api.storage.sync.get({ customCategories: [] }, (data) => {
     const categories = data.customCategories;
     const index = categories.findIndex(c => c.id === editingCustomExtId);
     if (index === -1) {
@@ -776,18 +778,18 @@ function updateCustomExtCategory() {
 
     categories[index] = { id: editingCustomExtId, folder, extensions };
 
-    chrome.storage.sync.set({ customCategories: categories }, () => {
-      showStatus(chrome.i18n.getMessage("statusRuleUpdated"), "success");
+    api.storage.sync.set({ customCategories: categories }, () => {
+      showStatus(api.i18n.getMessage("statusRuleUpdated"), "success");
       exitCustomExtEditMode();
     });
   });
 }
 
 function removeCustomExt(id) {
-  chrome.storage.sync.get({ customCategories: [] }, (data) => {
+  api.storage.sync.get({ customCategories: [] }, (data) => {
     const newCategories = data.customCategories.filter(c => c.id !== id);
-    chrome.storage.sync.set({ customCategories: newCategories }, () => {
-      showStatus(chrome.i18n.getMessage("statusRuleDeleted"), "success");
+    api.storage.sync.set({ customCategories: newCategories }, () => {
+      showStatus(api.i18n.getMessage("statusRuleDeleted"), "success");
     });
   });
 }
@@ -795,7 +797,7 @@ function removeCustomExt(id) {
 async function saveCustomExtOrder(listElement) {
   const newOrder = [];
   const listItems = listElement.querySelectorAll("li");
-  const { customCategories = [] } = await chrome.storage.sync.get('customCategories');
+  const { customCategories = [] } = await api.storage.sync.get('customCategories');
 
   listItems.forEach(item => {
     const id = item.dataset.id;
@@ -811,11 +813,11 @@ async function saveCustomExtOrder(listElement) {
     newOrder.push(...unordered);
   }
 
-  chrome.storage.sync.set({ customCategories: newOrder });
+  api.storage.sync.set({ customCategories: newOrder });
 }
 
 function enterCustomExtEditMode(id) {
-  chrome.storage.sync.get({ customCategories: [] }, (data) => {
+  api.storage.sync.get({ customCategories: [] }, (data) => {
     const cat = data.customCategories.find(c => c.id === id);
     if (!cat) return;
 
@@ -842,7 +844,7 @@ function exitCustomExtEditMode() {
 }
 
 function updateHistory() {
-  chrome.storage.local.get({ downloadHistory: [] }, (result) => {
+  api.storage.local.get({ downloadHistory: [] }, (result) => {
     fullHistory = result.downloadHistory;
     renderHistoryList(fullHistory);
   });
@@ -865,7 +867,7 @@ function renderHistoryList(historyArray) {
   const historyList = document.getElementById("downloadHistory");
   historyList.innerHTML = "";
   if (!historyArray.length) {
-    historyList.innerHTML = `<li class="history-list-empty-message">${chrome.i18n.getMessage("feedback_noHistoryResults")}</li>`;
+    historyList.innerHTML = `<li class="history-list-empty-message">${api.i18n.getMessage("feedback_noHistoryResults")}</li>`;
     return;
   }
   const reversed = [...historyArray].reverse();
@@ -873,27 +875,27 @@ function renderHistoryList(historyArray) {
     const listItem = document.createElement("li");
     const textSpan = document.createElement("span");
     textSpan.className = "history-item-text";
-    const displayDate = entry.date ? new Date(entry.date).toLocaleString() : chrome.i18n.getMessage("label_invalidDate");
+    const displayDate = entry.date ? new Date(entry.date).toLocaleString() : api.i18n.getMessage("label_invalidDate");
     textSpan.textContent = `${displayDate}: ${entry.filename} → ${entry.folder}`;
     const actionsDiv = document.createElement("div");
     actionsDiv.className = "history-item-actions";
     if (entry.id !== undefined && entry.id !== null) {
       const openFolderBtn = document.createElement("button");
-      openFolderBtn.textContent = chrome.i18n.getMessage("button_openContainingFolder");
+      openFolderBtn.textContent = api.i18n.getMessage("button_openContainingFolder");
       openFolderBtn.addEventListener("click", () => openFolderInExplorer(entry.id));
       actionsDiv.appendChild(openFolderBtn);
     }
     if (entry.url) {
       const reDownloadBtn = document.createElement("button");
-      reDownloadBtn.textContent = chrome.i18n.getMessage("redownloadButton");
-      reDownloadBtn.addEventListener("click", () => chrome.downloads.download({ url: entry.url }));
+      reDownloadBtn.textContent = api.i18n.getMessage("redownloadButton");
+      reDownloadBtn.addEventListener("click", () => api.downloads.download({ url: entry.url }));
       actionsDiv.appendChild(reDownloadBtn);
       const copyLinkBtn = document.createElement("button");
-      copyLinkBtn.textContent = chrome.i18n.getMessage("button_copyLink");
+      copyLinkBtn.textContent = api.i18n.getMessage("button_copyLink");
       copyLinkBtn.addEventListener("click", () => {
         navigator.clipboard.writeText(entry.url)
-          .then(() => showStatus(chrome.i18n.getMessage("feedback_linkCopied"), "success"))
-          .catch(err => showStatus(chrome.i18n.getMessage("feedback_errorCopyLink"), "error"));
+          .then(() => showStatus(api.i18n.getMessage("feedback_linkCopied"), "success"))
+          .catch(err => showStatus(api.i18n.getMessage("feedback_errorCopyLink"), "error"));
       });
       actionsDiv.appendChild(copyLinkBtn);
     }
@@ -904,9 +906,9 @@ function renderHistoryList(historyArray) {
 }
 
 function clearHistory() {
-  if (confirm(chrome.i18n.getMessage("confirmClearHistory"))) {
-    chrome.storage.local.set({ downloadHistory: [] }, () => {
-      showStatus(chrome.i18n.getMessage("statusHistoryCleared"), "success");
+  if (confirm(api.i18n.getMessage("confirmClearHistory"))) {
+    api.storage.local.set({ downloadHistory: [] }, () => {
+      showStatus(api.i18n.getMessage("statusHistoryCleared"), "success");
     });
   }
 }
@@ -987,15 +989,15 @@ function setupOnDemandOrganizer() {
       query.startedBefore = localEndDate.toISOString();
     }
 
-    const { autoOrganize = true, customRules = [], customCategories = [], defaultCategories = {} } = await chrome.storage.sync.get(['autoOrganize', 'customRules', 'customCategories', 'defaultCategories']);
+    const { autoOrganize = true, customRules = [], customCategories = [], defaultCategories = {} } = await api.storage.sync.get(['autoOrganize', 'customRules', 'customCategories', 'defaultCategories']);
 
     if (!autoOrganize) {
       exitScanMode();
-      showStatus(chrome.i18n.getMessage("feedback_autoOrganizeDisabled"), "error");
+      showStatus(api.i18n.getMessage("feedback_autoOrganizeDisabled"), "error");
       return;
     }
 
-    chrome.downloads.search(query, (downloadItems) => {
+    api.downloads.search(query, (downloadItems) => {
 
       const filteredFiles = downloadItems.filter(item => {
         const passesExistenceCheck = forceInclude || item.exists;
@@ -1038,7 +1040,7 @@ function setupOnDemandOrganizer() {
       }).filter(item => item.suggestedFolder);
 
       loadingSpinner.style.display = "none";
-      const title = chrome.i18n.getMessage("title_scanResults", String(suggestions.length));
+      const title = api.i18n.getMessage("title_scanResults", String(suggestions.length));
       document.getElementById("scanResultsTitle").textContent = title;
       renderScanResults(suggestions);
       resultsContainer.style.display = "block";
@@ -1049,7 +1051,7 @@ function setupOnDemandOrganizer() {
   function renderScanResults(files) {
     resultsList.innerHTML = "";
     if (files.length === 0) {
-      resultsList.innerHTML = `<li class="history-list-empty-message">${chrome.i18n.getMessage("feedback_noScanResults")}</li>`;
+      resultsList.innerHTML = `<li class="history-list-empty-message">${api.i18n.getMessage("feedback_noScanResults")}</li>`;
       document.getElementById("organizeSelectedBtn").style.display = 'none';
     } else {
       document.getElementById("organizeSelectedBtn").style.display = 'inline-block';
@@ -1071,7 +1073,7 @@ function setupOnDemandOrganizer() {
   function organizeSelectedFiles() {
     const selectedCheckboxes = document.querySelectorAll('#scanResultsList input[type="checkbox"]:checked');
     if (selectedCheckboxes.length === 0) {
-      showStatus(chrome.i18n.getMessage("feedback_selectAtLeastOneFile"), "info");
+      showStatus(api.i18n.getMessage("feedback_selectAtLeastOneFile"), "info");
       return;
     }
 
@@ -1079,12 +1081,12 @@ function setupOnDemandOrganizer() {
     selectedCheckboxes.forEach(checkbox => {
       const url = checkbox.dataset.url;
       if (url) {
-        chrome.downloads.download({ url: url, conflictAction: 'uniquify' });
+        api.downloads.download({ url: url, conflictAction: 'uniquify' });
         organizedCount++;
       }
     });
 
-    const message = chrome.i18n.getMessage("feedback_organizationStarted", String(organizedCount));
+    const message = api.i18n.getMessage("feedback_organizationStarted", String(organizedCount));
     showStatus(message, "success");
     exitScanMode();
   }
@@ -1121,13 +1123,13 @@ function getFolderNameByI18n(ext, defaultCats = {}) {
     return null; // Si no hay regla, no hacer nada
   }
 
-  return i18nKey ? chrome.i18n.getMessage(i18nKey) : null;
+  return i18nKey ? api.i18n.getMessage(i18nKey) : null;
 }
 
 function exportRules() {
-  chrome.storage.sync.get({ customRules: [] }, (data) => {
+  api.storage.sync.get({ customRules: [] }, (data) => {
     if (data.customRules.length === 0) {
-      showStatus(chrome.i18n.getMessage("feedback_noRulesToExport"), "info");
+      showStatus(api.i18n.getMessage("feedback_noRulesToExport"), "info");
       return;
     }
     const jsonString = JSON.stringify(data.customRules, null, 2);
@@ -1138,7 +1140,7 @@ function exportRules() {
     a.download = "descargas-en-orden-reglas.json";
     a.click();
     URL.revokeObjectURL(url);
-    showStatus(chrome.i18n.getMessage("feedback_rulesExported"), "success");
+    showStatus(api.i18n.getMessage("feedback_rulesExported"), "success");
   });
 }
 
@@ -1150,16 +1152,16 @@ function importRules(event) {
     try {
       const newRules = JSON.parse(e.target.result);
       if (!Array.isArray(newRules)) {
-        throw new Error(chrome.i18n.getMessage("error_importWrongFormat"));
+        throw new Error(api.i18n.getMessage("error_importWrongFormat"));
       }
-      if (confirm(chrome.i18n.getMessage("confirm_importOverwrite"))) {
+      if (confirm(api.i18n.getMessage("confirm_importOverwrite"))) {
         const rulesWithId = newRules.map(rule => ({ ...rule, id: rule.id || `rule_${Date.now()}_${Math.random()}` }));
-        chrome.storage.sync.set({ customRules: rulesWithId }, () => {
-          showStatus(chrome.i18n.getMessage("feedback_rulesImported"), "success");
+        api.storage.sync.set({ customRules: rulesWithId }, () => {
+          showStatus(api.i18n.getMessage("feedback_rulesImported"), "success");
         });
       }
     } catch (error) {
-      showStatus(chrome.i18n.getMessage("feedback_errorImport", error.message), "error");
+      showStatus(api.i18n.getMessage("feedback_errorImport", error.message), "error");
     } finally {
       event.target.value = null;
     }
@@ -1197,27 +1199,27 @@ function showStatus(message, type = 'info') {
 function openFolderInExplorer(downloadId) {
   const numId = Number(downloadId);
   if (isNaN(numId)) {
-    showStatus(chrome.i18n.getMessage("feedback_errorInvalidDownloadId"), "error");
+    showStatus(api.i18n.getMessage("feedback_errorInvalidDownloadId"), "error");
     return;
   }
 
-  chrome.downloads.search({ id: numId }, (results) => {
-    if (chrome.runtime.lastError) {
-      showStatus(chrome.i18n.getMessage("feedback_errorSearchingDownload", chrome.runtime.lastError.message), "error");
+  api.downloads.search({ id: numId }, (results) => {
+    if (api.runtime.lastError) {
+      showStatus(api.i18n.getMessage("feedback_errorSearchingDownload", api.runtime.lastError.message), "error");
       return;
     }
 
     if (!results || !results.length) {
-      showStatus(chrome.i18n.getMessage("feedback_errorNotInHistory"), "info");
+      showStatus(api.i18n.getMessage("feedback_errorNotInHistory"), "info");
       return;
     }
 
     if (!results[0].exists) {
-      showStatus(chrome.i18n.getMessage("feedback_errorFileNotExists"), "error");
+      showStatus(api.i18n.getMessage("feedback_errorFileNotExists"), "error");
       return;
     }
 
-    chrome.downloads.show(numId);
+    api.downloads.show(numId);
   });
 }
 
@@ -1233,7 +1235,7 @@ function saveDefaultCategories() {
     presentations: document.getElementById("cat_presentations").checked,
     programs: document.getElementById("cat_programs").checked
   };
-  chrome.storage.sync.set({ defaultCategories }, () => {
+  api.storage.sync.set({ defaultCategories }, () => {
     // Feedback silencioso (opcional)
     console.log("Categorías guardadas");
   });
