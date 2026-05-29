@@ -108,20 +108,25 @@ function getFileTypeIcon(filename) {
 async function loadHistory() {
   const result = await api.storage.local.get({ downloadHistory: [] });
   const historyList = document.getElementById("popupHistory");
-  const downloadCountElem = document.getElementById("downloadCount");
+  const downloadCountTextElem = document.getElementById("downloadCountText");
   const totalDownloads = result.downloadHistory.length;
 
-  if (!historyList || !downloadCountElem) return;
+  if (!historyList || !downloadCountTextElem) return;
 
   // Usamos getMessage con un marcador de posición
-  downloadCountElem.textContent = api.i18n.getMessage("popup_downloadCount", String(totalDownloads));
+  downloadCountTextElem.textContent = api.i18n.getMessage("popup_downloadCount", String(totalDownloads));
   historyList.innerHTML = "";
 
+  const emptyHistoryElem = document.getElementById("emptyHistory");
+
   if (totalDownloads === 0) {
-    // Usamos getMessage para el texto
-    historyList.innerHTML = `<li>${api.i18n.getMessage("popup_noHistory")}</li>`;
+    historyList.style.display = "none";
+    if (emptyHistoryElem) emptyHistoryElem.style.display = "flex";
     return;
   }
+  
+  historyList.style.display = "block";
+  if (emptyHistoryElem) emptyHistoryElem.style.display = "none";
 
   const lastDownloads = result.downloadHistory.slice(-5).reverse();
   lastDownloads.forEach(entry => {
@@ -198,9 +203,9 @@ async function removeGhostFromHistory(downloadId, listItemElement) {
     setTimeout(() => listItemElement.remove(), 300);
   }
   // Actualizar contador
-  const countElem = document.getElementById("downloadCount");
-  if (countElem) {
-    countElem.textContent = api.i18n.getMessage("popup_downloadCount", String(newHistory.length));
+  const countTextElem = document.getElementById("downloadCountText");
+  if (countTextElem) {
+    countTextElem.textContent = api.i18n.getMessage("popup_downloadCount", String(newHistory.length));
   }
 }
 
