@@ -164,13 +164,19 @@ async function determineDestination(downloadItem, originUrl) {
     }
     const baseFilename = tempFilename.split(/[/\\]/).pop() || "descarga";
 
-    if (forceNextDownload && forceNextDownload.folder) {
-        return {
-            folderName: forceNextDownload.folder,
-            finalFilename: sanitize(baseFilename),
-            isForce: true,
-            isManual: false
-        };
+    if (forceNextDownload) {
+        if (forceNextDownload.undo) {
+            await api.storage.local.remove("forceNextDownload");
+            return null;
+        }
+        if (forceNextDownload.folder) {
+            return {
+                folderName: forceNextDownload.folder,
+                finalFilename: sanitize(baseFilename),
+                isForce: true,
+                isManual: false
+            };
+        }
     }
 
     const { autoOrganize, customRules = [], customCategories = [], defaultCategories = {} } = await api.storage.sync.get({
@@ -199,19 +205,40 @@ async function determineDestination(downloadItem, originUrl) {
 
     if (!destinationInfo) {
         for (const rule of customRules) {
-            const ruleValue = (rule.value ?? '').toLowerCase();
+            const ruleValue = rule.useRegex ? (rule.value ?? '') : (rule.value ?? '').toLowerCase();
             if (!ruleValue) continue;
             let match = false;
-            if (rule.type === 'keyword' && finalFilename.toLowerCase().includes(ruleValue)) {
-                match = true;
-            } else if (rule.type === 'url') {
-                const downloadUrl = downloadItem.url.toLowerCase();
-                const referrerUrl = (downloadItem.referrer || "").toLowerCase();
-                const originUrlLower = originUrl.toLowerCase();
-                if (downloadUrl.includes(ruleValue) || referrerUrl.includes(ruleValue) || originUrlLower.includes(ruleValue)) {
+            const targetFilename = rule.useRegex ? finalFilename : finalFilename.toLowerCase();
+            const downloadUrl = downloadItem.url;
+            const referrerUrl = downloadItem.referrer || "";
+            const originUrlToUse = originUrl || "";
+            
+            if (rule.useRegex) {
+                try {
+                    const regex = new RegExp(ruleValue, 'i');
+                    if (rule.type === 'keyword' && regex.test(targetFilename)) match = true;
+                    else if (rule.type === 'url' && (regex.test(downloadUrl) || regex.test(referrerUrl) || regex.test(originUrlToUse))) match = true;
+                } catch(e) { console.error("Regex inválida:", e); }
+            } else {
+                if (rule.type === 'keyword' && targetFilename.includes(ruleValue)) {
                     match = true;
+                } else if (rule.type === 'url') {
+                    const dUrlLower = downloadUrl.toLowerCase();
+                    const rUrlLower = referrerUrl.toLowerCase();
+                    const oUrlLower = originUrlToUse.toLowerCase();
+                    if (dUrlLower.includes(ruleValue) || rUrlLower.includes(ruleValue) || oUrlLower.includes(ruleValue)) {
+                        match = true;
+                    }
                 }
             }
+
+            if (match) {
+                if (downloadItem.fileSize && downloadItem.fileSize > 0) {
+                    if (rule.minSize && downloadItem.fileSize < rule.minSize * 1024 * 1024) match = false;
+                    if (rule.maxSize && downloadItem.fileSize > rule.maxSize * 1024 * 1024) match = false;
+                }
+            }
+
             if (match) {
                 destinationInfo = { folder: rule.folder, isManual: false, rule: rule };
                 break;
@@ -273,10 +300,14 @@ async function processDownloadSuccess(downloadItem, result, originUrl) {
     saveToDownloadHistory(result.finalFilename, result.folderName, downloadItem.id, downloadItem.finalUrl || downloadItem.url);
 
     if (!result.isManual) {
-        showNotification(result.finalFilename, result.folderName);
+        showNotification(result.finalFilename, result.folderName, downloadItem.id);
         api.action.setBadgeText({ text: '✓' });
         api.action.setBadgeBackgroundColor({ color: '#4688F1' });
         setTimeout(() => api.action.setBadgeText({ text: '' }), 3000);
+    }
+
+    if (api.notifications.onButtonClicked && !api.notifications.onButtonClicked.hasListener(handleNotificationButtonClick)) {
+        api.notifications.onButtonClicked.addListener(handleNotificationButtonClick);
     }
 
     if (!result.isManual && !result.rule) {
@@ -314,21 +345,10 @@ async function processDownloadSuccess(downloadItem, result, originUrl) {
     }
 }
 
-const firefoxRestartedDownloads = new Set();
-
 api.downloads.onCreated.addListener(async (downloadItem) => {
     console.log("📥 [Gestor de Descargas] EVENTO onCreated DISPARADO!", downloadItem);
 
-    if (IS_FIREFOX) {
-        api.notifications.create({
-            type: 'basic',
-            iconUrl: api.runtime.getURL("assets/icon.svg"),
-            title: 'Extensión Activa',
-            message: `Descarga detectada: ${downloadItem.filename || "sin-nombre"} | URL: ${String(downloadItem.url).substring(0, 30)}`
-        });
-    }
-
-    if (IS_FIREFOX && firefoxRestartedDownloads.has(downloadItem.url)) {
+    if (IS_FIREFOX && downloadItem.byExtensionId === api.runtime.id) {
         return;
     }
 
@@ -360,13 +380,22 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
                 const safeName = sanitize(dest.finalFilename);
                 const finalPath = `${safeFolder}/${safeName}`;
 
-                firefoxRestartedDownloads.add(downloadItem.url);
-
                 try {
                     await api.downloads.cancel(downloadItem.id);
+                } catch(e) {
+                    console.log("No se pudo cancelar la descarga original, intentando eliminar el archivo", e);
+                    try {
+                        if (api.downloads.removeFile) {
+                            await api.downloads.removeFile(downloadItem.id);
+                        }
+                    } catch(e2) {
+                        console.log("No se pudo eliminar el archivo original", e2);
+                    }
+                }
+                try {
                     await api.downloads.erase({ id: downloadItem.id });
                 } catch(e) {
-                    console.log("No se pudo cancelar/borrar descarga original", e);
+                    console.log("No se pudo borrar historial de descarga original", e);
                 }
 
                 try {
@@ -380,17 +409,8 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
                     const updatedItem = { ...downloadItem, id: newId, filename: finalPath };
                     processDownloadSuccess(updatedItem, dest, originUrl);
                 } catch (err) {
-                    console.error("Error al re-descargar", err);
-                    api.notifications.create({
-                        type: 'basic',
-                        iconUrl: api.runtime.getURL("assets/icon.svg"),
-                        title: 'Error de Firefox (Download)',
-                        message: String(err)
-                    });
-                } finally {
-                    setTimeout(() => {
-                        firefoxRestartedDownloads.delete(downloadItem.url);
-                    }, 5000);
+                    console.error("Error al reiniciar descarga en Firefox:", err);
+                    showErrorNotification("Error de Firefox (Cancel)", err.message || JSON.stringify(err));
                 }
             }
         } catch (error) {
@@ -469,3 +489,51 @@ if (!IS_FIREFOX && api.downloads.onDeterminingFilename) {
         return true;
     });
 }
+
+// Helper for Undo button in notifications
+function handleNotificationButtonClick(notifId, btnIdx) {
+    if (btnIdx === 0) { // Undo Organization
+        const downloadId = Number(notifId);
+        if (!isNaN(downloadId)) {
+            api.downloads.search({ id: downloadId }, (results) => {
+                if (results && results[0] && results[0].url) {
+                    api.storage.local.set({ forceNextDownload: { undo: true } }, () => {
+                        api.downloads.download({ url: results[0].url });
+                    });
+                }
+            });
+            api.notifications.clear(notifId);
+        }
+    }
+}
+
+async function updateBadgeText() {
+    if (api.action && api.action.getBadgeText) {
+        try {
+            let result;
+            if (typeof browser !== 'undefined') {
+                result = await api.action.getBadgeText({});
+            } else {
+                result = await new Promise(resolve => api.action.getBadgeText({}, resolve));
+            }
+            let count = parseInt(result) || 0;
+            count++;
+            api.action.setBadgeText({ text: count.toString() });
+            api.action.setBadgeBackgroundColor({ color: '#f59e0b' }); // Naranja
+        } catch (e) {
+            console.log("Error al actualizar el badge", e);
+        }
+    }
+}
+
+api.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.downloadHistory) {
+        updateBadgeText();
+    }
+});
+
+updateBadgeText();
+
+api.runtime.onInstalled.addListener(() => {
+    api.storage.sync.remove("defaultCategories");
+});

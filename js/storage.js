@@ -61,7 +61,7 @@ export async function saveToDownloadHistory(filename, folderName, downloadId, fi
     try {
         const result = await api.storage.local.get({ [STORAGE_KEYS.DOWNLOAD_HISTORY]: [] });
         const history = result[STORAGE_KEYS.DOWNLOAD_HISTORY];
-        if (history.length >= 50) { history.shift(); }
+        while (history.length >= 50) { history.shift(); }
         const newEntry = { filename, folder: folderName, date: new Date().toISOString(), id: downloadId, url: fileUrl };
         history.push(newEntry);
         await api.storage.local.set({ [STORAGE_KEYS.DOWNLOAD_HISTORY]: history });

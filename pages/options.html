@@ -287,6 +287,17 @@
                   </select>
                   <input type="text" id="ruleValue" data-i18n-placeholder="ruleValuePlaceholder">
                 </div>
+                <div style="margin-top: 10px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                  <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;">
+                    <input type="checkbox" id="ruleUseRegex"> Usar Expresión Regular
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;">
+                    Tamaño Mín. (MB): <input type="number" id="ruleMinSize" min="0" step="0.1" style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--input-bg-color); color: var(--text-color);">
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;">
+                    Tamaño Máx. (MB): <input type="number" id="ruleMaxSize" min="0" step="0.1" style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--input-bg-color); color: var(--text-color);">
+                  </label>
+                </div>
               </div>
               <div class="rule-step">
                 <label class="rule-step-label" for="ruleFolder" data-i18n="ruleFolderLabel"></label>
@@ -365,6 +376,21 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #f59e0b"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
               <span data-i18n="historyTitle"></span>
             </h2>
+            
+            <div id="history-dashboard" class="history-dashboard" style="display: none; margin-bottom: 20px; padding: 15px; border-radius: 8px; background: var(--secondary-bg-color); border: 1px solid var(--border-color);">
+              <h3 style="margin-top:0; margin-bottom: 10px; font-size: 1rem; color: var(--text-color);">Resumen de Descargas</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                  <h4 style="margin: 0 0 5px 0; font-size: 0.85rem; color: var(--muted-text-color);">Carpetas más usadas</h4>
+                  <ul id="stats-folders" style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;"></ul>
+                </div>
+                <div>
+                  <h4 style="margin: 0 0 5px 0; font-size: 0.85rem; color: var(--muted-text-color);">Tipos de archivo</h4>
+                  <ul id="stats-extensions" style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;"></ul>
+                </div>
+              </div>
+            </div>
+
             <input type="search" id="searchHistory" data-i18n-placeholder="searchHistoryPlaceholder" />
             <button id="clearHistory" class="btn-danger" style="display: flex; align-items: center; gap: 8px;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
