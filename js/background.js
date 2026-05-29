@@ -1,4 +1,10 @@
 // background.js
+import { STORAGE_KEYS, DEFAULT_SETTINGS } from './constants.js';
+import { sanitize } from './utils.js';
+import { getFolderNameByExtension, applyRenamePattern } from './rules-engine.js';
+import { showNotification, showErrorNotification } from './notifications.js';
+import { saveToDownloadHistory } from './storage.js';
+
 
 let lastClickedTabUrl = '';
 
@@ -37,133 +43,7 @@ async function getOriginUrl(downloadItem) {
     return lastClickedTabUrl || '';
 }
 
-/**
- * Obtiene el nombre de la carpeta según la extensión,
- * respetando si el usuario ha desactivado esa categoría.
- */
-function getFolderNameByExtension(ext, enabledCats = {}) {
-    // Valores por defecto: todo activado si no se pasa configuración
-    const cats = {
-        pdf: true, images: true, video: true, audio: true,
-        compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true,
-        ...enabledCats
-    };
-
-    const lowerExt = ext.toLowerCase();
-
-    switch (lowerExt) {
-        case 'pdf':
-            return cats.pdf ? chrome.i18n.getMessage("folder_pdfs") : null;
-
-        case 'jpg': case 'jpeg': case 'png': case 'gif': case 'webp':
-            return cats.images ? chrome.i18n.getMessage("folder_images") : null;
-
-        case 'mp4': case 'mkv': case 'avi': case 'webm':
-            return cats.video ? chrome.i18n.getMessage("folder_videos") : null;
-
-        case 'mp3': case 'wav': case 'ogg':
-            return cats.audio ? chrome.i18n.getMessage("folder_audio") : null;
-
-        case 'zip': case 'rar': case '7z':
-            return cats.compressed ? chrome.i18n.getMessage("folder_compressed") : null;
-
-        // Agrupamos documentos de texto y office bajo la categoría 'documents'
-        case 'docx': case 'doc': case 'odt':
-            return cats.documents ? chrome.i18n.getMessage("folder_documents") : null;
-        case 'txt': case 'md':
-            return cats.documents ? chrome.i18n.getMessage("folder_text") : null;
-
-        case 'csv': case 'xlsx': case 'xls':
-            return cats.spreadsheets ? chrome.i18n.getMessage("folder_spreadsheets") : null;
-
-        case 'ppt': case 'pptx': case 'odp':
-            return cats.presentations ? chrome.i18n.getMessage("folder_presentations") : null;
-
-        case 'exe': case 'msi':
-            return cats.programs ? chrome.i18n.getMessage("folder_programs") : null;
-
-        case 'js': case 'html': case 'css': case 'py': case 'json':
-            // Asumiendo que consideras estos como documentos u otra categoría,
-            // pero si no hay toggle, puedes devolver null para no organizarlos si están fuera de las cajas.
-            // O mantenerlos como 'programs' o crear una categoría 'code'. Por ahora los dejaremos devolver null si quieres desactivarlos.
-            // Para mantener consistencia con "si no está activado, no hacer nada", requerimos un toggle o retornamos null.
-            return null; // Si quieres que los archivos código se organicen por defecto en una carpeta, diles si 'programs' está activo, etc. Ej: cats.programs ? chrome.i18n.getMessage("folder_code") : null;
-
-        default:
-            return null;
-    }
-}
-
-function sanitize(name) {
-    return name.replace(/[<>:"/\\|?*]+/g, '_');
-}
-
-function applyRenamePattern(pattern, downloadItem, originUrl) {
-    const now = new Date();
-    const dateParts = {
-        YYYY: now.getFullYear(),
-        YY: String(now.getFullYear()).slice(-2),
-        MM: String(now.getMonth() + 1).padStart(2, '0'),
-        DD: String(now.getDate()).padStart(2, '0'),
-        hh: String(now.getHours()).padStart(2, '0'),
-        mm: String(now.getMinutes()).padStart(2, '0'),
-        ss: String(now.getSeconds()).padStart(2, '0'),
-    };
-    const filenameParts = downloadItem.filename.split('.');
-    const extension = (filenameParts.pop() || "").toLowerCase();
-    const originalFilename = filenameParts.join('.');
-    let site = chrome.i18n.getMessage("unknownSite");
-    if (originUrl) {
-        try {
-            site = new URL(originUrl).hostname.replace(/^www\./, '').split('.')[0];
-        } catch (e) { console.log("URL de origen no válida para extraer sitio:", e); }
-    }
-    let newName = pattern;
-    newName = newName.replace(/\[sitio\]/g, site);
-    newName = newName.replace(/\[nombre_original\]/g, originalFilename);
-    newName = newName.replace(/\[fecha:([^\]]+)\]/g, (match, format) => {
-        return format.replace(/YYYY|YY|MM|DD|hh|mm|ss/g, part => dateParts[part]);
-    });
-    return `${newName}.${extension}`;
-}
-
-function saveToDownloadHistory(filename, folderName, downloadId, fileUrl) {
-    chrome.storage.local.get({ downloadHistory: [] }, (result) => {
-        const history = result.downloadHistory;
-        if (history.length >= 50) { history.shift(); }
-        const newEntry = { filename, folder: folderName, date: new Date().toISOString(), id: downloadId, url: fileUrl };
-        history.push(newEntry);
-        chrome.storage.local.set({ downloadHistory: history });
-    });
-}
-
-function showNotification(sanitizedFilename, folderName) {
-    chrome.storage.sync.get({ notifications: 'always' }, (data) => {
-        if (data.notifications !== 'always') return;
-
-        chrome.notifications.create({
-            type: "basic",
-            iconUrl: chrome.runtime.getURL("assets/icon.svg"),
-            title: chrome.i18n.getMessage("notificationSuccessTitle"),
-            message: chrome.i18n.getMessage("notificationSuccessMessage", [sanitizedFilename, folderName]),
-            priority: 1
-        });
-    });
-}
-
-function showErrorNotification(title, message) {
-    chrome.storage.sync.get({ notifications: 'always' }, (data) => {
-        if (data.notifications === 'never') return;
-
-        chrome.notifications.create({
-            type: "basic",
-            iconUrl: chrome.runtime.getURL("assets/icon.svg"),
-            title: title,
-            message: message,
-            priority: 2
-        });
-    });
-}
+// Funciones de renombrado, notificaciones y organización han sido movidas a sus respectivos módulos.
 
 // =====================
 // Lógica del Menú Contextual

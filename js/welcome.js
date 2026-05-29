@@ -1,16 +1,8 @@
-// welcome.js
+import { applyI18n } from './utils.js';
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Aplicar i18n si existe la función o manual
-    document.querySelectorAll('[data-i18n]').forEach(element => {
-        const message = chrome.i18n.getMessage(element.dataset.i18n);
-        if (message) {
-            if (message.includes('<') && message.includes('>')) {
-                element.innerHTML = message;
-            } else {
-                element.textContent = message;
-            }
-        }
-    });
+    // Aplicar i18n desde utils
+    applyI18n();
 
     // Detectar tema (reutilizando variable del sistema de Opciones si es posible)
     chrome.storage.sync.get({ theme: 'auto' }, (data) => {

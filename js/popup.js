@@ -1,33 +1,6 @@
 // popup.js
 
-/**
- * Aplica las traducciones a la página actual buscando elementos con atributos `data-i18n`.
- */
-function applyI18n() {
-  // Traduce el título de la página
-  const title = document.querySelector('title');
-  if (title && title.dataset.i18n) {
-    document.title = chrome.i18n.getMessage(title.dataset.i18n);
-  }
-
-  // Traduce el contenido de texto de los elementos
-  document.querySelectorAll('[data-i18n]').forEach(element => {
-    const message = chrome.i18n.getMessage(element.dataset.i18n);
-    if (message.includes('<') && message.includes('>')) {
-      element.innerHTML = message;
-    } else {
-      element.textContent = message;
-    }
-  });
-
-  // Traduce atributos comunes como 'placeholder' y 'title'
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-    element.placeholder = chrome.i18n.getMessage(element.dataset.i18nPlaceholder);
-  });
-  document.querySelectorAll('[data-i18n-title]').forEach(element => {
-    element.title = chrome.i18n.getMessage(element.dataset.i18nTitle);
-  });
-}
+import { applyI18n } from './utils.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   applyI18n(); // <-- Llama a la función de traducción
