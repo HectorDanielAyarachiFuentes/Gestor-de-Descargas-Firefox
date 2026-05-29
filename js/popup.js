@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Cargar el script del gestor de temas
   const themeScript = document.createElement('script');
-  themeScript.src = 'theme-manager.js';
+  themeScript.src = '../js/theme-manager.js';
   document.head.appendChild(themeScript);
 
   themeScript.onload = () => {

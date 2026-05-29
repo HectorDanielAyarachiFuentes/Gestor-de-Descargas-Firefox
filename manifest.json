@@ -6,9 +6,9 @@
   "default_locale": "es",
 
   "icons": {
-    "16": "icon.svg",
-    "48": "icon.svg",
-    "128": "icon.svg"
+    "16": "assets/icon.svg",
+    "48": "assets/icon.svg",
+    "128": "assets/icon.svg"
   },
 
   "browser_specific_settings": {
@@ -20,21 +20,21 @@
 
   "action": {
     "default_icon": {
-      "16": "icon.svg",
-      "48": "icon.svg",
-      "128": "icon.svg"
+      "16": "assets/icon.svg",
+      "48": "assets/icon.svg",
+      "128": "assets/icon.svg"
     },
-    "default_popup": "popup.html",
+    "default_popup": "pages/popup.html",
     "default_title": "__MSG_appName__"
   },
 
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["js/background.js"],
     "type": "module"
   },
 
   "options_ui": {
-    "page": "options.html",
+    "page": "pages/options.html",
     "open_in_tab": true
   },
 
@@ -51,7 +51,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "icon.svg"
+        "assets/icon.svg"
       ],
       "matches": ["<all_urls>"]
     }

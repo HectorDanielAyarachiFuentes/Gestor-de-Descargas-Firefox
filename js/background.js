@@ -143,7 +143,7 @@ function showNotification(sanitizedFilename, folderName) {
 
         chrome.notifications.create({
             type: "basic",
-            iconUrl: chrome.runtime.getURL("icon.svg"),
+            iconUrl: chrome.runtime.getURL("assets/icon.svg"),
             title: chrome.i18n.getMessage("notificationSuccessTitle"),
             message: chrome.i18n.getMessage("notificationSuccessMessage", [sanitizedFilename, folderName]),
             priority: 1
@@ -157,7 +157,7 @@ function showErrorNotification(title, message) {
 
         chrome.notifications.create({
             type: "basic",
-            iconUrl: chrome.runtime.getURL("icon.svg"),
+            iconUrl: chrome.runtime.getURL("assets/icon.svg"),
             title: title,
             message: message,
             priority: 2
@@ -202,7 +202,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     // Solo ejecuta esta lógica cuando la extensión se instala por primera vez.
     if (details.reason === 'install') {
         // Abrir la página de bienvenida (Onboarding)
-        chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
+        chrome.tabs.create({ url: chrome.runtime.getURL("pages/welcome.html") });
 
         try {
             // Comprueba si la API de Brave está disponible y si el navegador es Brave.
@@ -211,7 +211,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 // Si es Brave, muestra una notificación especial con las instrucciones.
                 chrome.notifications.create('brave-setup-notification', {
                     type: 'basic',
-                    iconUrl: chrome.runtime.getURL("icon.svg"),
+                    iconUrl: chrome.runtime.getURL("assets/icon.svg"),
                     title: chrome.i18n.getMessage("notification_braveSetupTitle"),
                     message: chrome.i18n.getMessage("notification_braveSetupMessage"),
                     priority: 2,
@@ -434,7 +434,7 @@ chrome.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
                     if (suggestionTracker[key] === 3) {
                         chrome.notifications.create(`suggest-rule|${key}`, {
                             type: 'basic',
-                            iconUrl: chrome.runtime.getURL("icon.svg"),
+                            iconUrl: chrome.runtime.getURL("assets/icon.svg"),
                             title: chrome.i18n.getMessage("notificationSuggestionTitle"),
                             message: chrome.i18n.getMessage("notificationSuggestionMessage", [ext, domain, folderName]),
                             buttons: [
@@ -476,7 +476,7 @@ chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIn
 
         chrome.notifications.create({
             type: 'basic',
-            iconUrl: chrome.runtime.getURL("icon.svg"),
+            iconUrl: chrome.runtime.getURL("assets/icon.svg"),
             title: chrome.i18n.getMessage("notification_ruleCreatedTitle"),
             message: chrome.i18n.getMessage("notification_ruleCreatedMessage", domain),
             priority: 1
@@ -503,7 +503,7 @@ chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIn
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "showFeedback") {
-        chrome.tabs.query({ url: chrome.runtime.getURL("options.html") }, (tabs) => {
+        chrome.tabs.query({ url: chrome.runtime.getURL("pages/options.html") }, (tabs) => {
             if (tabs.length > 0) {
                 chrome.tabs.sendMessage(tabs[0].id, message);
             }
