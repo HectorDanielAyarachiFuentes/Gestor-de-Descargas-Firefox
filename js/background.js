@@ -5,6 +5,7 @@ import { showNotification, showErrorNotification } from './notifications.js';
 import { saveToDownloadHistory } from './storage.js';
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
+const IS_FIREFOX = typeof browser !== 'undefined';
 
 let lastClickedTabUrl = '';
 
@@ -144,7 +145,180 @@ if (api.contextMenus) {
 // ======================================================================
 // onCreated: Para capturar reglas de URL y referrer ANTES de la descarga
 // ======================================================================
+// ======================================================================
+// Lógica compartida para calcular el destino
+// ======================================================================
+async function determineDestination(downloadItem, originUrl) {
+    const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
+    
+    let tempFilename = downloadItem.filename;
+    if (!tempFilename) {
+        try {
+            const urlObj = new URL(downloadItem.url);
+            tempFilename = urlObj.pathname.split('/').pop() || "descarga";
+        } catch(e) {
+            tempFilename = "descarga";
+        }
+    }
+    const baseFilename = tempFilename.split(/[/\\]/).pop() || "descarga";
+
+    if (forceNextDownload && forceNextDownload.folder) {
+        return {
+            folderName: forceNextDownload.folder,
+            finalFilename: sanitize(baseFilename),
+            isForce: true,
+            isManual: false
+        };
+    }
+
+    const { autoOrganize, customRules = [], customCategories = [], defaultCategories = {} } = await api.storage.sync.get({
+        autoOrganize: true,
+        customRules: [],
+        customCategories: [],
+        defaultCategories: {
+            pdf: true, images: true, video: true, audio: true,
+            compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true
+        }
+    });
+
+    if (!autoOrganize) return null;
+
+    let determinedDestinations = {};
+    try {
+        if (api.storage.session) {
+            const result = await api.storage.session.get("determinedDestinations");
+            determinedDestinations = result.determinedDestinations || {};
+        }
+    } catch (e) {}
+
+    let destinationInfo = determinedDestinations[downloadItem.id];
+    let folderName = null;
+    let finalFilename = sanitize(baseFilename);
+
+    if (!destinationInfo) {
+        for (const rule of customRules) {
+            const ruleValue = (rule.value ?? '').toLowerCase();
+            if (!ruleValue) continue;
+            let match = false;
+            if (rule.type === 'keyword' && finalFilename.toLowerCase().includes(ruleValue)) {
+                match = true;
+            } else if (rule.type === 'url') {
+                const downloadUrl = downloadItem.url.toLowerCase();
+                const referrerUrl = (downloadItem.referrer || "").toLowerCase();
+                const originUrlLower = originUrl.toLowerCase();
+                if (downloadUrl.includes(ruleValue) || referrerUrl.includes(ruleValue) || originUrlLower.includes(ruleValue)) {
+                    match = true;
+                }
+            }
+            if (match) {
+                destinationInfo = { folder: rule.folder, isManual: false, rule: rule };
+                break;
+            }
+        }
+
+        if (!destinationInfo && customCategories.length > 0) {
+            const ext = (baseFilename.split('.').pop() || "").toLowerCase();
+            for (const cat of customCategories) {
+                if (cat.extensions.includes(ext)) {
+                    destinationInfo = { folder: cat.folder, isManual: false, rule: null };
+                    break;
+                }
+            }
+        }
+    }
+
+    if (destinationInfo) {
+        folderName = destinationInfo.folder;
+        if (destinationInfo.rule && destinationInfo.rule.renamePattern) {
+            // Le pasamos el baseFilename temporalmente emulando lo que esperaba 
+            const tempItem = { ...downloadItem, filename: baseFilename };
+            const newName = applyRenamePattern(destinationInfo.rule.renamePattern, tempItem, originUrl);
+            finalFilename = sanitize(newName);
+        }
+    } else {
+        const ext = (baseFilename.split('.').pop() || "").toLowerCase();
+        folderName = getFolderNameByExtension(ext, defaultCategories);
+        if (!folderName) return null;
+    }
+
+    return {
+        folderName: folderName,
+        finalFilename: finalFilename,
+        isForce: false,
+        isManual: destinationInfo ? destinationInfo.isManual : false,
+        rule: destinationInfo ? destinationInfo.rule : null,
+        originalDestinationInfo: destinationInfo
+    };
+}
+
+async function processDownloadSuccess(downloadItem, result, originUrl) {
+    if (result.isForce) {
+        await api.storage.local.remove("forceNextDownload");
+        api.action.setBadgeText({ text: '' });
+    } else if (result.originalDestinationInfo) {
+        try {
+            if (api.storage.session) {
+                const sessionData = await api.storage.session.get("determinedDestinations");
+                const dests = sessionData.determinedDestinations || {};
+                if (dests[downloadItem.id]) {
+                    delete dests[downloadItem.id];
+                    await api.storage.session.set({ determinedDestinations: dests });
+                }
+            }
+        } catch(e) {}
+    }
+
+    saveToDownloadHistory(result.finalFilename, result.folderName, downloadItem.id, downloadItem.finalUrl || downloadItem.url);
+
+    if (!result.isManual) {
+        showNotification(result.finalFilename, result.folderName);
+        api.action.setBadgeText({ text: '✓' });
+        api.action.setBadgeBackgroundColor({ color: '#4688F1' });
+        setTimeout(() => api.action.setBadgeText({ text: '' }), 3000);
+    }
+
+    if (!result.isManual && !result.rule) {
+        try {
+            if (originUrl) {
+                const domain = new URL(originUrl).hostname.replace(/^www\./, '');
+                const ext = (result.finalFilename.split('.').pop() || "").toLowerCase();
+                if (domain && ext) {
+                    const { suggestionTracker = {}, ignoredSuggestions = [] } = await api.storage.sync.get(["suggestionTracker", "ignoredSuggestions"]);
+                    const trackKey = `${domain}|${ext}|${result.folderName || 'root'}`;
+                    if (!ignoredSuggestions.includes(trackKey)) {
+                        suggestionTracker[trackKey] = (suggestionTracker[trackKey] || 0) + 1;
+                        if (suggestionTracker[trackKey] >= 3) {
+                            const notifOptions = {
+                                type: 'basic',
+                                iconUrl: api.runtime.getURL("assets/icon.svg"),
+                                title: api.i18n.getMessage("notificationSuggestionTitle") || "Nueva Sugerencia",
+                                message: (api.i18n.getMessage("notificationSuggestionMessage") || "").replace('$1', ext).replace('$2', domain).replace('$3', result.folderName || 'Descargas'),
+                                priority: 1
+                            };
+                            if (!IS_FIREFOX) {
+                                notifOptions.buttons = [
+                                    { title: api.i18n.getMessage("notificationButtonYes") || "Sí" },
+                                    { title: api.i18n.getMessage("notificationButtonNo") || "No" }
+                                ];
+                            }
+                            api.notifications.create(`sug|${trackKey}`, notifOptions);
+                            delete suggestionTracker[trackKey];
+                        }
+                        await api.storage.sync.set({ suggestionTracker });
+                    }
+                }
+            }
+        } catch (e) { console.error("Tracker error", e); }
+    }
+}
+
+const firefoxRestartedDownloads = new Set();
+
 api.downloads.onCreated.addListener(async (downloadItem) => {
+    if (IS_FIREFOX && firefoxRestartedDownloads.has(downloadItem.url)) {
+        return;
+    }
+
     let determinedDestinations = {};
     try {
         if (api.storage.session) {
@@ -160,6 +334,50 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
 
     const originUrl = await getOriginUrl(downloadItem);
 
+    if (IS_FIREFOX) {
+        // --- LÓGICA DE FIREFOX (Cancel & Restart) ---
+        // Evitar interceptar blob/data URLs porque no se pueden re-descargar desde el background
+        if (downloadItem.url.startsWith("blob:") || downloadItem.url.startsWith("data:")) {
+            return;
+        }
+
+        try {
+            const dest = await determineDestination(downloadItem, originUrl);
+            if (dest) {
+                const safeFolder = dest.folderName.replace(/[<>:"|?*\\]+/g, '_');
+                const safeName = sanitize(dest.finalFilename);
+                const finalPath = `${safeFolder}/${safeName}`;
+
+                firefoxRestartedDownloads.add(downloadItem.url);
+
+                try {
+                    await api.downloads.cancel(downloadItem.id);
+                    await api.downloads.erase({ id: downloadItem.id });
+                } catch(e) {
+                    console.log("No se pudo cancelar/borrar descarga original", e);
+                }
+
+                const newId = await api.downloads.download({
+                    url: downloadItem.url,
+                    filename: finalPath,
+                    conflictAction: 'uniquify',
+                    saveAs: false
+                });
+
+                setTimeout(() => {
+                    firefoxRestartedDownloads.delete(downloadItem.url);
+                }, 10000);
+
+                const updatedItem = { ...downloadItem, id: newId, filename: finalPath };
+                processDownloadSuccess(updatedItem, dest, originUrl);
+            }
+        } catch (error) {
+            console.error("Error en Firefox Cancel&Restart", error);
+        }
+        return;
+    }
+
+    // --- LÓGICA DE CHROME ---
     for (const rule of customRules) {
         if (rule.type === 'url') {
             const ruleValue = (rule.value ?? '').toLowerCase();
@@ -185,180 +403,41 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
 });
 
 // ======================================================================
-// onDeterminingFilename: LÓGICA PRINCIPAL DE ORGANIZACIÓN (Cross-browser Async)
+// onDeterminingFilename: LÓGICA PRINCIPAL DE ORGANIZACIÓN (Chrome/Edge)
 // ======================================================================
-api.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
-    const processDownload = async () => {
-        try {
-            const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
-            if (forceNextDownload && forceNextDownload.folder) {
-                const finalFilename = sanitize(downloadItem.filename);
-                // Carpeta puede tener subcarpetas (Proyectos/Web) — solo sanitizar chars peligrosos, no la /
-                const safeFolder = forceNextDownload.folder.replace(/[<>:"|?*\\]+/g, '_');
-                
-                await api.storage.local.remove("forceNextDownload");
-                api.action.setBadgeText({ text: '' });
-                saveToDownloadHistory(finalFilename, forceNextDownload.folder, downloadItem.id, downloadItem.finalUrl || downloadItem.url);
-                showNotification(finalFilename, forceNextDownload.folder);
-                
-                return { filename: `${safeFolder}/${finalFilename}`, conflictAction: 'uniquify' };
-            }
-
-            const { autoOrganize, customRules = [], customCategories = [], defaultCategories = {} } = await api.storage.sync.get({
-                autoOrganize: true,
-                customRules: [],
-                customCategories: [],
-                defaultCategories: {
-                    pdf: true, images: true, video: true, audio: true,
-                    compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true
-                }
-            });
-
-            if (!autoOrganize) return null;
-
-            let determinedDestinations = {};
+if (!IS_FIREFOX && api.downloads.onDeterminingFilename) {
+    api.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
+        const processDownload = async () => {
             try {
-                if (api.storage.session) {
-                    const result = await api.storage.session.get("determinedDestinations");
-                    determinedDestinations = result.determinedDestinations || {};
-                }
-            } catch(e) { console.log("Session storage error onDeterminingFilename", e); }
+                const originUrl = await getOriginUrl(downloadItem);
+                const dest = await determineDestination(downloadItem, originUrl);
 
-            let destinationInfo = determinedDestinations[downloadItem.id]; 
-            let folderName = null;
-            let finalFilename = sanitize(downloadItem.filename);
-            let originUrl = '';
+                if (!dest) return null;
 
-            if (!destinationInfo) {
-                originUrl = await getOriginUrl(downloadItem);
-                for (const rule of customRules) {
-                    const ruleValue = (rule.value ?? '').toLowerCase();
-                    if (!ruleValue) continue;
-                    let match = false;
-                    if (rule.type === 'keyword' && finalFilename.toLowerCase().includes(ruleValue)) {
-                        match = true;
-                    } else if (rule.type === 'url') {
-                        const downloadUrl = downloadItem.url.toLowerCase();
-                        const referrerUrl = (downloadItem.referrer || "").toLowerCase();
-                        const originUrlLower = originUrl.toLowerCase();
-                        if (downloadUrl.includes(ruleValue) || referrerUrl.includes(ruleValue) || originUrlLower.includes(ruleValue)) {
-                            match = true;
-                        }
-                    }
-                    if (match) {
-                        destinationInfo = { folder: rule.folder, isManual: false, rule: rule };
-                        break;
-                    }
-                }
+                const safeFolder = dest.folderName.replace(/[<>:"|?*\\]+/g, '_');
+                const safeName = sanitize(dest.finalFilename);
+                const finalPath = `${safeFolder}/${safeName}`;
 
-                if (!destinationInfo && customCategories.length > 0) {
-                    const ext = (downloadItem.filename.split('.').pop() || "").toLowerCase();
-                    for (const cat of customCategories) {
-                        if (cat.extensions.includes(ext)) {
-                            destinationInfo = { folder: cat.folder, isManual: false, rule: null };
-                            break;
-                        }
-                    }
-                }
+                await processDownloadSuccess(downloadItem, dest, originUrl);
+
+                return { filename: finalPath, conflictAction: 'uniquify' };
+            } catch (error) {
+                console.error("Error fatal en onDeterminingFilename:", error);
+                showErrorNotification("Error Organizador", error.message);
+                return null;
             }
+        };
 
-            if (destinationInfo) {
-                folderName = destinationInfo.folder;
-                if (destinationInfo.rule && destinationInfo.rule.renamePattern) {
-                    if (!originUrl) originUrl = await getOriginUrl(downloadItem);
-                    const newName = applyRenamePattern(destinationInfo.rule.renamePattern, downloadItem, originUrl);
-                    finalFilename = sanitize(newName);
-                }
-            } else {
-                const ext = (downloadItem.filename.split('.').pop() || "").toLowerCase();
-                folderName = getFolderNameByExtension(ext, defaultCategories);
-
-                if (!folderName) return null;
-            }
-
-            // Solo sanitizar nombre de archivo; la carpeta puede tener subcarpetas (/) válidas
-            const safeFolder = folderName.replace(/[<>:"|?*\\]+/g, '_');
-            const safeName = sanitize(finalFilename);
-            let finalPath = `${safeFolder}/${safeName}`;
-
-            if (destinationInfo) {
-                delete determinedDestinations[downloadItem.id];
-                try {
-                    if (api.storage.session) {
-                        await api.storage.session.set({ determinedDestinations });
-                    }
-                } catch(e) {}
-            }
-
-            saveToDownloadHistory(finalFilename, folderName, downloadItem.id, downloadItem.finalUrl || downloadItem.url);
-
-            if (!destinationInfo || !destinationInfo.isManual) {
-                showNotification(finalFilename, folderName);
-                api.action.setBadgeText({ text: '✓' });
-                api.action.setBadgeBackgroundColor({ color: '#4688F1' });
-                setTimeout(() => api.action.setBadgeText({ text: '' }), 3000);
-            }
-
-            // Fire-and-forget del rastreador
-            if (!destinationInfo || (!destinationInfo.isManual && !destinationInfo.rule)) {
-                (async () => {
-                    try {
-                        let trackerOriginUrl = originUrl || await getOriginUrl(downloadItem);
-                        if (trackerOriginUrl) {
-                            const domain = new URL(trackerOriginUrl).hostname.replace(/^www\./, '');
-                            const ext = (downloadItem.filename.split('.').pop() || "").toLowerCase();
-                            if (domain && ext) {
-                                const { suggestionTracker = {}, ignoredSuggestions = [] } = await api.storage.sync.get(["suggestionTracker", "ignoredSuggestions"]);
-                                const trackKey = `${domain}|${ext}|${folderName || 'root'}`;
-                                if (!ignoredSuggestions.includes(trackKey)) {
-                                    suggestionTracker[trackKey] = (suggestionTracker[trackKey] || 0) + 1;
-                                    if (suggestionTracker[trackKey] >= 3) {
-                                        // Firefox no soporta 'buttons' en notificaciones
-                                        const notifOptions = {
-                                            type: 'basic',
-                                            iconUrl: api.runtime.getURL("assets/icon.svg"),
-                                            title: api.i18n.getMessage("notificationSuggestionTitle") || "Nueva Sugerencia",
-                                            message: (api.i18n.getMessage("notificationSuggestionMessage") || "").replace('$1', ext).replace('$2', domain).replace('$3', folderName || 'Descargas'),
-                                            priority: 1
-                                        };
-                                        // Solo Chrome soporta buttons en notificaciones
-                                        if (typeof browser === 'undefined') {
-                                            notifOptions.buttons = [
-                                                { title: api.i18n.getMessage("notificationButtonYes") || "Sí" },
-                                                { title: api.i18n.getMessage("notificationButtonNo") || "No" }
-                                            ];
-                                        }
-                                        api.notifications.create(`sug|${trackKey}`, notifOptions);
-                                        delete suggestionTracker[trackKey];
-                                    }
-                                    await api.storage.sync.set({ suggestionTracker });
-                                }
-                            }
-                        }
-                    } catch (e) { console.error("Tracker error", e); }
-                })();
-            }
-
-            return { filename: finalPath, conflictAction: 'uniquify' };
-
-        } catch (error) {
-            console.error("Error fatal en onDeterminingFilename:", error);
-            showErrorNotification("Error Organizador", error.message);
-            return null;
-        }
-    };
-
-    if (typeof browser !== 'undefined') {
-        // En Firefox, debemos retornar el Promise directamente para que lo resuelva.
-        return processDownload();
-    } else {
-        // En Chrome/Edge, usamos suggest() asíncronamente y retornamos true
         processDownload().then(result => {
-            if (result) suggest(result);
-            else suggest();
+            if (result) {
+                suggest(result);
+            } else {
+                suggest();
+            }
         }).catch(e => {
+            console.error("Error en processDownload:", e);
             suggest();
         });
         return true;
-    }
-});
+    });
+}
