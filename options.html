@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="optionsPageTitle"></title>
+  <link rel="stylesheet" href="css/options.css" />
+  <script src="libs/Sortable.min.js"></script>
+  <script src="options.js" defer></script>
+</head>
+
+<body>
+  <div id="date-format-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h3 class="modal-title" data-i18n="dateFormatModalTitle"></h3>
+      <p class="modal-subtitle" data-i18n="dateFormatModalSubtitle"></p>
+      <div class="format-builder">
+        <div class="format-section">
+          <h4 data-i18n="presetsLabel"></h4>
+          <div class="variable-pills-container">
+            <button type="button" class="variable-pill preset-pill" data-format="YYYY-MM-DD">2025-06-19</button>
+            <button type="button" class="variable-pill preset-pill" data-format="DD-MM-YYYY">19-06-2025</button>
+            <button type="button" class="variable-pill preset-pill" data-format="MM-DD-YYYY">06-19-2025</button>
+          </div>
+        </div>
+        <div class="format-section">
+          <h4 data-i18n="customLabel"></h4>
+          <input type="text" id="custom-format-input" data-i18n-placeholder="customFormatPlaceholder">
+          <div class="variable-pills-container">
+            <small data-i18n="codesLabel"></small>
+            <button type="button" class="variable-pill format-code-pill" data-code="YYYY"
+              data-i18n="year4Digit"></button>
+            <button type="button" class="variable-pill format-code-pill" data-code="YY" data-i18n="year2Digit"></button>
+            <button type="button" class="variable-pill format-code-pill" data-code="MM" data-i18n="monthLabel"></button>
+            <button type="button" class="variable-pill format-code-pill" data-code="DD" data-i18n="dayLabel"></button>
+            <button type="button" class="variable-pill format-code-pill" data-code="hh" data-i18n="hourLabel"></button>
+            <button type="button" class="variable-pill format-code-pill" data-code="mm"
+              data-i18n="minuteLabel"></button>
+            <button type="button" class="variable-pill format-code-pill" data-code="ss"
+              data-i18n="secondLabel"></button>
+          </div>
+        </div>
+        <div class="format-preview">
+          <strong data-i18n="previewLabel"></strong> <span id="format-preview-text"></span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="insert-format-btn" class="btn-primary" data-i18n="insertButton"></button>
+        <button type="button" id="cancel-format-btn" class="btn-secondary" data-i18n="cancelButton"></button>
+      </div>
+    </div>
+  </div>
+
+  <header class="options-header">
+    <h1 class="options-title" data-i18n="optionsHeaderTitle"></h1>
+    <p class="options-subtitle" data-i18n="optionsHeaderSubtitle"></p>
+  </header>
+
+  <main>
+    <div class="options-layout">
+      <!-- Sidebar de Navegación -->
+      <aside class="options-sidebar">
+        <nav class="sidebar-nav" id="sidebarNav">
+          <button type="button" class="tab-link active" data-target="tab-general" data-i18n="tabGeneralTitle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+              </path>
+            </svg>
+            <span data-i18n="tabGeneralTitle"></span>
+          </button>
+          <button type="button" class="tab-link" data-target="tab-extensions">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span data-i18n="tabExtensionsTitle"></span>
+          </button>
+          <button type="button" class="tab-link" data-target="tab-advanced">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+              </path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span data-i18n="tabAdvancedTitle"></span>
+          </button>
+          <button type="button" class="tab-link" data-target="tab-tools">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg>
+            <span data-i18n="tabToolsTitle"></span>
+          </button>
+          <button type="button" class="tab-link" data-target="tab-about">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Sobre Mí</span>
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Contenido Principal -->
+      <div class="options-main-content">
+        <p id="status" class="status"></p>
+
+        <!-- PESTAÑA 1: GENERAL -->
+        <div id="tab-general" class="tab-content active">
+
+          <section class="settings-section">
+            <h2 class="section-title" data-i18n="generalSettingsTitle"></h2>
+            <div class="setting-row">
+              <div class="toggle-container">
+                <label for="autoOrganize" data-i18n="enableAutoOrganizeLabel"></label>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="autoOrganize" />
+                  <span class="slider round"></span>
+                </div>
+              </div>
+              <p class="setting-description" data-i18n="enableAutoOrganizeDesc"></p>
+            </div>
+            <div class="setting-row">
+              <div class="select-container">
+                <label for="themeSelector" data-i18n="themeLabel"></label>
+                <div class="theme-selector">
+                  <button type="button" id="theme-light" class="theme-btn" data-theme="light"
+                    data-i18n-title="themeLightTooltip">☀️</button>
+                  <button type="button" id="theme-auto" class="theme-btn active" data-theme="auto"
+                    data-i18n-title="themeAutoTooltip">🌓</button>
+                  <button type="button" id="theme-dark" class="theme-btn" data-theme="dark"
+                    data-i18n-title="themeDarkTooltip">🌙</button>
+                </div>
+              </div>
+              <p class="setting-description" data-i18n="themeDesc"></p>
+            </div>
+            <div class="setting-row">
+              <div class="toggle-container">
+                <label for="contextMenu" data-i18n="enableContextMenuLabel"></label>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="contextMenu" />
+                  <span class="slider round"></span>
+                </div>
+              </div>
+              <p class="setting-description" data-i18n="enableContextMenuDesc"></p>
+            </div>
+            <div class="setting-row">
+              <div class="select-container">
+                <label for="notifications" data-i18n="notificationsLabel"></label>
+                <select id="notifications">
+                  <option value="always" data-i18n="notifyAlways"></option>
+                  <option value="onError" data-i18n="notifyOnError"></option>
+                  <option value="never" data-i18n="notifyNever"></option>
+                </select>
+              </div>
+              <p class="setting-description" data-i18n="notificationsDesc"></p>
+            </div>
+
+            <div class="setting-row"
+              style="display: block; margin-top: 1.5rem; border-top: 1px dashed var(--border-color); padding-top: 1.5rem;">
+              <h3 class="section-subtitle" style="font-size: 1rem; margin-bottom: 10px; margin-top: 0;"
+                data-i18n="defaultCategoriesTitle" data-i18n-title="defaultCategoriesTooltip"></h3>
+
+              <div class="categories-grid">
+                <label class="checkbox-pill" data-i18n-title="cat_pdf">
+                  <input type="checkbox" id="cat_pdf"> <span data-i18n="cat_pdf"></span>
+                </label>
+                <label class="checkbox-pill" data-i18n-title="cat_images">
+                  <input type="checkbox" id="cat_images"> <span data-i18n="cat_images"></span>
+                </label>
+                <label class="checkbox-pill" data-i18n-title="cat_video">
+                  <input type="checkbox" id="cat_video"> <span data-i18n="cat_video"></span>
+                </label>
+                <label class="checkbox-pill" data-i18n-title="cat_audio">
+                  <input type="checkbox" id="cat_audio"> <span data-i18n="cat_audio"></span>
+                </label>
+                <label class="checkbox-pill" data-i18n-title="cat_compressed">
+                  <input type="checkbox" id="cat_compressed"> <span data-i18n="cat_compressed"></span>
+                </label>
+                <label class="checkbox-pill" data-i18n-title="cat_documents">
+                  <input type="checkbox" id="cat_documents"> <span data-i18n="cat_documents"></span>
+                </label>
+                <label class="checkbox-pill" data-i18n-title="cat_spreadsheets">
+                  <input type="checkbox" id="cat_spreadsheets"> <span data-i18n="cat_spreadsheets"></span>
+                </label>
+                <label class="checkbox-pill" data-i18n-title="cat_presentations">
+                  <input type="checkbox" id="cat_presentations"> <span data-i18n="cat_presentations"></span>
+                </label>
+                <label class="checkbox-pill" data-i18n-title="cat_programs">
+                  <input type="checkbox" id="cat_programs"> <span data-i18n="cat_programs"></span>
+                </label>
+              </div>
+              <p class="setting-description" style="margin-top: 10px; padding-left: 0;"
+                data-i18n="defaultCategoriesDesc">
+              </p>
+            </div> <!-- End Default Categories -->
+          </section>
+        </div> <!-- END TAB GENERAL -->
+
+        <!-- PESTAÑA 2: REGLAS POR EXTENSIONES -->
+        <div id="tab-extensions" class="tab-content">
+
+          <section class="settings-section" id="custom-ext-categories-section">
+            <h2 class="section-title" data-i18n="customExtTitle"></h2>
+            <p class="setting-description" data-i18n="customExtDesc"></p>
+
+            <div class="rule-builder" style="margin-top: 15px;">
+              <div class="rule-step">
+                <label class="rule-step-label" data-i18n="customExtFolderLabel"></label>
+                <input type="text" id="customExtFolder" data-i18n-placeholder="customExtFolderPlaceholder"
+                  style="width: 100%; box-sizing: border-box; margin-bottom: 10px;">
+              </div>
+              <div class="rule-step">
+                <label class="rule-step-label" data-i18n="customExtExtsLabel"></label>
+                <input type="text" id="customExtExts" data-i18n-placeholder="customExtExtsPlaceholder"
+                  style="width: 100%; box-sizing: border-box;">
+              </div>
+              <div class="rule-actions" style="margin-top: 15px;">
+                <button id="addCustomExtBtn" class="btn-primary" data-i18n="addCustomExtButton"></button>
+                <button id="updateCustomExtBtn" class="btn-primary" style="display: none;"
+                  data-i18n="updateCustomExtButton"></button>
+                <button id="cancelCustomExtEditBtn" class="btn-secondary" style="display: none;"
+                  data-i18n="cancelEditButton"></button>
+              </div>
+            </div>
+
+            <h3 class="section-subtitle" style="margin-top: 25px;" data-i18n="customExtListTitle"></h3>
+            <ul id="customExtList" class="history-list"></ul>
+          </section>
+        </div> <!-- END TAB EXTENSIONS -->
+
+        <!-- PESTAÑA 3: REGLAS AVANZADAS -->
+        <div id="tab-advanced" class="tab-content">
+          <section class="settings-section" id="rule-form-section">
+            <h2 class="section-title" id="rule-form-title" data-i18n="newCustomRuleTitle"></h2>
+            <div class="rule-builder">
+              <div class="rule-step">
+                <label class="rule-step-label" data-i18n="ruleConditionLabel"></label>
+                <div class="rule-input-group">
+                  <select id="ruleType">
+                    <option value="keyword" selected data-i18n="ruleTypeFilename"></option>
+                    <option value="url" data-i18n="ruleTypeUrl"></option>
+                  </select>
+                  <input type="text" id="ruleValue" data-i18n-placeholder="ruleValuePlaceholder">
+                </div>
+              </div>
+              <div class="rule-step">
+                <label class="rule-step-label" for="ruleFolder" data-i18n="ruleFolderLabel"></label>
+                <input type="text" id="ruleFolder" data-i18n-placeholder="ruleFolderPlaceholder">
+              </div>
+              <div class="rule-step">
+                <label class="rule-step-label" data-i18n="ruleRenameLabel"></label>
+                <p class="setting-description" style="padding-left: 0; margin-top: -0.75rem;"
+                  data-i18n="ruleRenameDesc">
+                </p>
+                <div id="rename-pattern-preview" class="rename-pattern-preview"></div>
+                <div id="rename-pills-container" class="variable-pills-container">
+                  <small data-i18n="addComponentLabel"></small>
+                  <button type="button" class="variable-pill" data-type="text"><span
+                      data-i18n="addTextComponent"></span></button>
+                  <button type="button" class="variable-pill" data-type="sitio"><span
+                      data-i18n="addSiteComponent"></span></button>
+                  <button type="button" class="variable-pill" data-type="nombre_original"><span
+                      data-i18n="addOriginalNameComponent"></span></button>
+                  <button type="button" class="variable-pill" id="add-date-format-btn"><span
+                      data-i18n="addDateTimeComponent"></span></button>
+                </div>
+                <div class="setting-row"
+                  style="margin-top: 1.5rem; border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-bottom: 0; border-bottom: none;">
+                  <label class="rule-step-label" style="font-size: 0.9rem;" data-i18n="liveSimulatorLabel"></label>
+                  <div id="live-rename-simulator" class="format-preview"
+                    style="margin-top: 0.5rem; min-height: 40px; display: flex; align-items: center;">
+                    <span style="color: var(--muted-text-color); font-style: italic;"
+                      data-i18n="liveSimulatorEmpty"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+              <button id="addRuleBtn" class="btn-primary" data-i18n="saveNewRuleButton"></button>
+              <button id="updateRuleBtn" class="btn-primary" style="display: none;"
+                data-i18n="updateRuleButton"></button>
+              <button id="cancelEditBtn" class="btn-secondary" style="display: none;"
+                data-i18n="cancelEditButton"></button>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h2 class="section-title" data-i18n="existingRulesTitle"></h2>
+            <p data-i18n="existingRulesDesc"></p>
+            <ul id="rulesList" class="history-list"></ul>
+            <div
+              style="margin-top: 1.5rem; border-top: 1px solid var(--light-border-color); padding-top: 1.5rem; display: flex; gap: 0.75rem;">
+              <button id="exportRulesBtn" class="btn-primary" data-i18n="exportRulesButton"></button>
+              <button id="importRulesBtn" class="btn-primary" data-i18n="importRulesButton"></button>
+              <input type="file" id="importFileInput" accept=".json" style="display: none;" />
+            </div>
+          </section>
+        </div> <!-- END TAB ADVANCED -->
+
+        <!-- PESTAÑA 3: HERRAMIENTAS E HISTORIAL -->
+        <div id="tab-tools" class="tab-content">
+          <section class="settings-section">
+            <h2 class="section-title" data-i18n="historyTitle"></h2>
+            <input type="search" id="searchHistory" data-i18n-placeholder="searchHistoryPlaceholder" />
+            <button id="clearHistory" class="btn-danger" data-i18n="clearHistoryButton"></button>
+            <ul id="downloadHistory" class="history-list"></ul>
+          </section>
+
+          <section class="settings-section" id="on-demand-organizer-section">
+            <h2 class="section-title" data-i18n="onDemandOrganizerTitle"></h2>
+            <p data-i18n="onDemandOrganizerDesc"></p>
+            <div class="organizer-filters">
+              <div class="filter-group">
+                <label for="filterStartDate" data-i18n="filterSearchFrom"></label>
+                <input type="date" id="filterStartDate">
+              </div>
+              <div class="filter-group">
+                <label for="filterEndDate" data-i18n="filterSearchTo"></label>
+                <input type="date" id="filterEndDate">
+              </div>
+              <div class="filter-group-checkbox">
+                <input type="checkbox" id="forceInclude" data-i18n-title="deepScanTooltip">
+                <label for="forceInclude" data-i18n="deepScanLabel"></label>
+              </div>
+            </div>
+            <div id="scanner-controls">
+              <button id="scanHistoryBtn" class="btn-primary" data-i18n="scanHistoryButton"></button>
+              <div id="scanner-loading" class="scanner-loading" style="display: none;"></div>
+            </div>
+            <div id="scanResultsContainer" style="display: none;">
+              <h3 id="scanResultsTitle" class="section-subtitle"></h3>
+              <div class="results-header-actions">
+                <input type="checkbox" id="selectAllCheckbox" checked>
+                <label for="selectAllCheckbox" data-i18n="selectAllLabel"></label>
+              </div>
+              <ul id="scanResultsList" class="history-list"></ul>
+              <div class="scan-actions">
+                <button id="organizeSelectedBtn" class="btn-primary" data-i18n="organizeSelectedButton"></button>
+                <button id="researchBtn" class="btn-primary" style="display: none;"
+                  data-i18n="searchAgainButton"></button>
+                <button id="cancelScanBtn" class="btn-secondary" data-i18n="cancelButton"></button>
+              </div>
+            </div>
+          </section>
+        </div> <!-- END TAB TOOLS -->
+
+        <!-- PESTAÑA: SOBRE MÍ -->
+        <div id="tab-about" class="tab-content">
+
+          <!-- Bloque superior: avatar + identidad -->
+          <div class="about-hero">
+            <div class="about-avatar-wrap">
+              <img src="Sobre Mi/Dulce-Sad.png" alt="Foto de Hector" class="about-avatar" />
+            </div>
+            <div class="about-hero-text">
+              <h2 class="about-name">Hector Daniel Ayarachi Fuentes</h2>
+              <span class="about-role">Desarrollador · Descargas en Orden</span>
+              <p class="about-bio">Apasionado por crear herramientas que mejoran la productividad y organización del
+                escritorio.</p>
+            </div>
+          </div>
+
+          <!-- Separador -->
+          <div class="about-divider"></div>
+
+          <!-- Canción del momento -->
+          <div class="about-music-card">
+            <div class="about-music-icon">🎵</div>
+            <div class="about-music-content">
+              <p class="about-music-label">Mi canción favorita del momento</p>
+              <audio controls class="about-audio">
+                <source src="Sobre Mi/Dulce-Sad-Song.mpeg" type="audio/mpeg" />
+                Tu navegador no soporta el reproductor de audio.
+              </audio>
+            </div>
+          </div>
+
+          <!-- Separador -->
+          <div class="about-divider"></div>
+
+          <!-- Links: todos en una fila homogénea -->
+          <div class="about-links">
+            <a href="https://github.com/HectorDanielAyarachiFuentes/descargas-en-orden" target="_blank"
+              class="about-link about-link--repo">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+              </svg>
+              <div class="about-link-text">
+                <strong>Repositorio</strong>
+                <small>descargas-en-orden</small>
+              </div>
+            </a>
+
+            <a href="https://github.com/HectorDanielAyarachiFuentes" target="_blank"
+              class="about-link about-link--github">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+              </svg>
+              <div class="about-link-text">
+                <strong>GitHub</strong>
+                <small>@HectorDanielAyarachiFuentes</small>
+              </div>
+            </a>
+
+            <a href="https://codepen.io/HectorDanielAyarachiFuentes" target="_blank"
+              class="about-link about-link--codepen">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M24 8.182l-.018-.087-.017-.05c-.01-.024-.018-.05-.03-.075l-.012-.018a.894.894 0 0 0-.208-.268l-.04-.028a.643.643 0 0 0-.08-.048l-.055-.015a.75.75 0 0 0-.085-.022L12 2.5 0 8.182v7.636L12 21.5l12-5.682V8.182zm-4.5 4.682L12 17l-7.5-4.136V11l7.5 4.136L19.5 11v1.864zM12 4.618l6.927 3.284L12 11.182 5.073 7.902 12 4.618zM4.5 11l7.5 4.136L19.5 11v1.864L12 17 4.5 12.864V11z" />
+              </svg>
+              <div class="about-link-text">
+                <strong>CodePen</strong>
+                <small>@HectorDanielAyarachiFuentes</small>
+              </div>
+            </a>
+          </div>
+
+        </div> <!-- END TAB ABOUT -->
+
+
+      </div> <!-- End options-main-content -->
+    </div> <!-- End options-layout -->
+  </main>
+
+  <div id="floating-widget" class="floating-widget">
+    <div class="widget-header" id="widget-drag-handle">
+      <span class="widget-title">📂 <span data-i18n="quickAccessTitle"></span></span>
+      <button id="widget-collapse-btn" class="widget-toggle-btn">▲</button>
+    </div>
+
+    <div class="widget-tabs">
+      <button id="tab-visible" class="tab-btn active" data-i18n="widgetTabActive"></button>
+      <button id="tab-hidden" class="tab-btn" data-i18n="widgetTabHidden"></button>
+    </div>
+
+    <div class="widget-content">
+      <div id="widget-folders-grid" class="windows-grid small-grid">
+      </div>
+    </div>
+  </div>
+
+  <footer class="options-footer">
+    <small data-i18n="footerText"></small>
+  </footer>
+</body>
+
+</html>
