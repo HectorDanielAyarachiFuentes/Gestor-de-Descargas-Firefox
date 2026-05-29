@@ -346,9 +346,23 @@ async function processDownloadSuccess(downloadItem, result, originUrl) {
 }
 
 api.downloads.onCreated.addListener(async (downloadItem) => {
-    console.log("📥 [Gestor de Descargas] EVENTO onCreated DISPARADO!", downloadItem);
+    console.log("🚀 [Gestor de Descargas] EVENTO onCreated DISPARADO!", downloadItem);
 
-    if (IS_FIREFOX && downloadItem.byExtensionId === api.runtime.id) {
+    let isManualBypass = false;
+    try {
+        const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
+        if (forceNextDownload && forceNextDownload.organizeUrls && forceNextDownload.organizeUrls.includes(downloadItem.url)) {
+            isManualBypass = true;
+            const newUrls = forceNextDownload.organizeUrls.filter(u => u !== downloadItem.url);
+            if (newUrls.length > 0) {
+                await api.storage.local.set({ forceNextDownload: { ...forceNextDownload, organizeUrls: newUrls } });
+            } else {
+                await api.storage.local.remove("forceNextDownload");
+            }
+        }
+    } catch(e) { console.log("Error checking manual bypass", e); }
+
+    if (IS_FIREFOX && downloadItem.byExtensionId === api.runtime.id && !isManualBypass) {
         return;
     }
 

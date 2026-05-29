@@ -95,7 +95,15 @@ export function renderHistoryList(historyArray) {
     if (entry.url) {
       const reDownloadBtn = document.createElement("button");
       reDownloadBtn.textContent = api.i18n.getMessage("redownloadButton");
-      reDownloadBtn.addEventListener("click", () => api.downloads.download({ url: entry.url }));
+      reDownloadBtn.addEventListener("click", () => {
+        api.storage.local.get({ forceNextDownload: {} }, (data) => {
+            let organizeUrls = data.forceNextDownload.organizeUrls || [];
+            organizeUrls.push(entry.url);
+            api.storage.local.set({ forceNextDownload: { ...data.forceNextDownload, organizeUrls } }, () => {
+                api.downloads.download({ url: entry.url });
+            });
+        });
+      });
       actionsDiv.appendChild(reDownloadBtn);
       const copyLinkBtn = document.createElement("button");
       copyLinkBtn.textContent = api.i18n.getMessage("button_copyLink");
@@ -298,15 +306,29 @@ export function setupOnDemandOrganizer() {
       showStatus(api.i18n.getMessage("feedback_selectAtLeastOneFile"), "info");
       return;
     }
+    let urls = [];
     let organizedCount = 0;
     selectedCheckboxes.forEach(checkbox => {
       const url = checkbox.dataset.url;
       if (url) {
-        api.downloads.download({ url: url, conflictAction: 'uniquify' });
+        urls.push(url);
         organizedCount++;
       }
     });
-    showStatus(api.i18n.getMessage("feedback_organizationStarted", String(organizedCount)), "success");
-    exitScanMode();
+
+    if (urls.length > 0) {
+        api.storage.local.get({ forceNextDownload: {} }, (data) => {
+            let organizeUrls = data.forceNextDownload.organizeUrls || [];
+            organizeUrls = organizeUrls.concat(urls);
+            api.storage.local.set({ forceNextDownload: { ...data.forceNextDownload, organizeUrls } }, () => {
+                urls.forEach(url => api.downloads.download({ url: url, conflictAction: 'uniquify' }));
+                showStatus(api.i18n.getMessage("feedback_organizationStarted", String(organizedCount)), "success");
+                exitScanMode();
+            });
+        });
+    } else {
+        showStatus(api.i18n.getMessage("feedback_organizationStarted", String(organizedCount)), "success");
+        exitScanMode();
+    }
   }
 }
