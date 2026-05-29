@@ -143,7 +143,7 @@ function showNotification(sanitizedFilename, folderName) {
 
         chrome.notifications.create({
             type: "basic",
-            iconUrl: chrome.runtime.getURL("icon128.png"),
+            iconUrl: chrome.runtime.getURL("icon.svg"),
             title: chrome.i18n.getMessage("notificationSuccessTitle"),
             message: chrome.i18n.getMessage("notificationSuccessMessage", [sanitizedFilename, folderName]),
             priority: 1
@@ -157,7 +157,7 @@ function showErrorNotification(title, message) {
 
         chrome.notifications.create({
             type: "basic",
-            iconUrl: chrome.runtime.getURL("icon128.png"),
+            iconUrl: chrome.runtime.getURL("icon.svg"),
             title: title,
             message: message,
             priority: 2
@@ -211,7 +211,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 // Si es Brave, muestra una notificación especial con las instrucciones.
                 chrome.notifications.create('brave-setup-notification', {
                     type: 'basic',
-                    iconUrl: chrome.runtime.getURL("icon128.png"),
+                    iconUrl: chrome.runtime.getURL("icon.svg"),
                     title: chrome.i18n.getMessage("notification_braveSetupTitle"),
                     message: chrome.i18n.getMessage("notification_braveSetupMessage"),
                     priority: 2,
@@ -434,7 +434,7 @@ chrome.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
                     if (suggestionTracker[key] === 3) {
                         chrome.notifications.create(`suggest-rule|${key}`, {
                             type: 'basic',
-                            iconUrl: chrome.runtime.getURL("icon128.png"),
+                            iconUrl: chrome.runtime.getURL("icon.svg"),
                             title: chrome.i18n.getMessage("notificationSuggestionTitle"),
                             message: chrome.i18n.getMessage("notificationSuggestionMessage", [ext, domain, folderName]),
                             buttons: [
@@ -476,7 +476,7 @@ chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIn
 
         chrome.notifications.create({
             type: 'basic',
-            iconUrl: chrome.runtime.getURL("icon128.png"),
+            iconUrl: chrome.runtime.getURL("icon.svg"),
             title: chrome.i18n.getMessage("notification_ruleCreatedTitle"),
             message: chrome.i18n.getMessage("notification_ruleCreatedMessage", domain),
             priority: 1
