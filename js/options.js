@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("contextMenu").addEventListener("change", (e) => saveSingleSetting('contextMenu', e.target.checked));
   document.getElementById("notifications").addEventListener("change", (e) => saveSingleSetting('notifications', e.target.value));
 
-  const catIds = ['cat_pdf', 'cat_images', 'cat_video', 'cat_audio', 'cat_compressed', 'cat_documents', 'cat_spreadsheets', 'cat_presentations', 'cat_programs'];
+  const catIds = ['cat_pdf', 'cat_images', 'cat_video', 'cat_audio', 'cat_compressed', 'cat_documents', 'cat_spreadsheets', 'cat_presentations', 'cat_programs', 'cat_design', 'cat_code', 'cat_books', 'cat_3d', 'cat_fonts'];
   catIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', saveDefaultCategories);
@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function loadSettings() {
   api.storage.sync.get({
     autoOrganize: true, notifications: 'always', contextMenu: true,
-    defaultCategories: { pdf: true, images: true, video: true, audio: true, compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true }
+    defaultCategories: { pdf: true, images: true, video: true, audio: true, compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true, design: true, code: true, books: true, threed: true, fonts: true }
   }, (data) => {
     document.getElementById("autoOrganize").checked = data.autoOrganize;
     document.getElementById("notifications").value = data.notifications;
@@ -99,6 +99,11 @@ function loadSettings() {
     document.getElementById("cat_spreadsheets").checked = cats.spreadsheets !== false;
     document.getElementById("cat_presentations").checked = cats.presentations !== false;
     document.getElementById("cat_programs").checked = cats.programs !== false;
+    document.getElementById("cat_design").checked = cats.design !== false;
+    document.getElementById("cat_code").checked = cats.code !== false;
+    document.getElementById("cat_books").checked = cats.books !== false;
+    document.getElementById("cat_3d").checked = cats.threed !== false;
+    document.getElementById("cat_fonts").checked = cats.fonts !== false;
   });
 }
 
@@ -110,7 +115,9 @@ function saveDefaultCategories() {
   const defaultCategories = {
     pdf: document.getElementById("cat_pdf").checked, images: document.getElementById("cat_images").checked, video: document.getElementById("cat_video").checked,
     audio: document.getElementById("cat_audio").checked, compressed: document.getElementById("cat_compressed").checked, documents: document.getElementById("cat_documents").checked,
-    spreadsheets: document.getElementById("cat_spreadsheets").checked, presentations: document.getElementById("cat_presentations").checked, programs: document.getElementById("cat_programs").checked
+    spreadsheets: document.getElementById("cat_spreadsheets").checked, presentations: document.getElementById("cat_presentations").checked, programs: document.getElementById("cat_programs").checked,
+    design: document.getElementById("cat_design").checked, code: document.getElementById("cat_code").checked, books: document.getElementById("cat_books").checked,
+    threed: document.getElementById("cat_3d").checked, fonts: document.getElementById("cat_fonts").checked
   };
   api.storage.sync.set({ defaultCategories });
 }

@@ -152,25 +152,24 @@ export function openFolderInExplorer(downloadId) {
 }
 
 function getFolderNameByI18n(ext, defaultCats = {}) {
-  const cats = {
-    pdf: true, images: true, video: true, audio: true,
-    compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true,
-    ...defaultCats
-  };
-  const keyMap = {
+  const cats = defaultCats || {};
+  const catIcons = {
     'pdf': cats.pdf ? 'folder_pdfs' : null,
-    'jpg': cats.images ? 'folder_images' : null, 'jpeg': cats.images ? 'folder_images' : null, 'png': cats.images ? 'folder_images' : null, 'gif': cats.images ? 'folder_images' : null, 'webp': cats.images ? 'folder_images' : null,
-    'mp4': cats.video ? 'folder_videos' : null, 'mkv': cats.video ? 'folder_videos' : null, 'avi': cats.video ? 'folder_videos' : null, 'webm': cats.video ? 'folder_videos' : null,
-    'mp3': cats.audio ? 'folder_audio' : null, 'wav': cats.audio ? 'folder_audio' : null, 'ogg': cats.audio ? 'folder_audio' : null,
-    'zip': cats.compressed ? 'folder_compressed' : null, 'rar': cats.compressed ? 'folder_compressed' : null, '7z': cats.compressed ? 'folder_compressed' : null,
-    'docx': cats.documents ? 'folder_documents' : null, 'doc': cats.documents ? 'folder_documents' : null, 'odt': cats.documents ? 'folder_documents' : null,
-    'txt': cats.documents ? 'folder_text' : null, 'md': cats.documents ? 'folder_text' : null,
-    'csv': cats.spreadsheets ? 'folder_spreadsheets' : null, 'xlsx': cats.spreadsheets ? 'folder_spreadsheets' : null, 'xls': cats.spreadsheets ? 'folder_spreadsheets' : null,
+    'jpg': cats.images ? 'folder_images' : null, 'jpeg': cats.images ? 'folder_images' : null, 'png': cats.images ? 'folder_images' : null, 'gif': cats.images ? 'folder_images' : null, 'webp': cats.images ? 'folder_images' : null, 'svg': cats.images ? 'folder_images' : null, 'tiff': cats.images ? 'folder_images' : null, 'heic': cats.images ? 'folder_images' : null, 'raw': cats.images ? 'folder_images' : null, 'bmp': cats.images ? 'folder_images' : null, 'ico': cats.images ? 'folder_images' : null,
+    'mp4': cats.video ? 'folder_videos' : null, 'mkv': cats.video ? 'folder_videos' : null, 'avi': cats.video ? 'folder_videos' : null, 'webm': cats.video ? 'folder_videos' : null, 'mov': cats.video ? 'folder_videos' : null, 'flv': cats.video ? 'folder_videos' : null, 'ts': cats.video ? 'folder_videos' : null, 'm3u8': cats.video ? 'folder_videos' : null,
+    'mp3': cats.audio ? 'folder_audio' : null, 'wav': cats.audio ? 'folder_audio' : null, 'ogg': cats.audio ? 'folder_audio' : null, 'flac': cats.audio ? 'folder_audio' : null, 'm4a': cats.audio ? 'folder_audio' : null, 'aac': cats.audio ? 'folder_audio' : null,
+    'zip': cats.compressed ? 'folder_compressed' : null, 'rar': cats.compressed ? 'folder_compressed' : null, '7z': cats.compressed ? 'folder_compressed' : null, 'tar': cats.compressed ? 'folder_compressed' : null, 'gz': cats.compressed ? 'folder_compressed' : null, 'bz2': cats.compressed ? 'folder_compressed' : null, 'xz': cats.compressed ? 'folder_compressed' : null,
+    'docx': cats.documents ? 'folder_documents' : null, 'doc': cats.documents ? 'folder_documents' : null, 'odt': cats.documents ? 'folder_documents' : null, 'txt': cats.documents ? 'folder_text' : null, 'md': cats.documents ? 'folder_text' : null, 'rtf': cats.documents ? 'folder_text' : null,
+    'csv': cats.spreadsheets ? 'folder_spreadsheets' : null, 'xlsx': cats.spreadsheets ? 'folder_spreadsheets' : null, 'xls': cats.spreadsheets ? 'folder_spreadsheets' : null, 'ods': cats.spreadsheets ? 'folder_spreadsheets' : null,
     'ppt': cats.presentations ? 'folder_presentations' : null, 'pptx': cats.presentations ? 'folder_presentations' : null, 'odp': cats.presentations ? 'folder_presentations' : null,
-    'exe': cats.programs ? 'folder_programs' : null, 'msi': cats.programs ? 'folder_programs' : null,
-    'js': null, 'html': null, 'css': null, 'py': null, 'json': null
+    'exe': cats.programs ? 'folder_programs' : null, 'msi': cats.programs ? 'folder_programs' : null, 'apk': cats.programs ? 'folder_programs' : null, 'appx': cats.programs ? 'folder_programs' : null, 'bat': cats.programs ? 'folder_programs' : null, 'cmd': cats.programs ? 'folder_programs' : null, 'sh': cats.programs ? 'folder_programs' : null, 'dmg': cats.programs ? 'folder_programs' : null, 'pkg': cats.programs ? 'folder_programs' : null, 'iso': cats.programs ? 'folder_programs' : null, 'img': cats.programs ? 'folder_programs' : null,
+    'psd': cats.design ? 'folder_design' : null, 'ai': cats.design ? 'folder_design' : null, 'indd': cats.design ? 'folder_design' : null, 'blend': cats.design ? 'folder_design' : null, 'fig': cats.design ? 'folder_design' : null, 'cdr': cats.design ? 'folder_design' : null,
+    'html': cats.code ? 'folder_code' : null, 'css': cats.code ? 'folder_code' : null, 'js': cats.code ? 'folder_code' : null, 'ts': cats.code ? 'folder_code' : null, 'json': cats.code ? 'folder_code' : null, 'xml': cats.code ? 'folder_code' : null, 'py': cats.code ? 'folder_code' : null, 'java': cats.code ? 'folder_code' : null, 'cpp': cats.code ? 'folder_code' : null, 'php': cats.code ? 'folder_code' : null, 'sql': cats.code ? 'folder_code' : null,
+    'epub': cats.books ? 'folder_books' : null, 'mobi': cats.books ? 'folder_books' : null, 'azw3': cats.books ? 'folder_books' : null, 'cbz': cats.books ? 'folder_books' : null, 'cbr': cats.books ? 'folder_books' : null,
+    'stl': cats.threed ? 'folder_3d' : null, 'obj': cats.threed ? 'folder_3d' : null, 'fbx': cats.threed ? 'folder_3d' : null, 'gcode': cats.threed ? 'folder_3d' : null,
+    'ttf': cats.fonts ? 'folder_fonts' : null, 'otf': cats.fonts ? 'folder_fonts' : null, 'woff': cats.fonts ? 'folder_fonts' : null, 'woff2': cats.fonts ? 'folder_fonts' : null
   };
-  const i18nKey = keyMap[ext];
+  const i18nKey = catIcons[ext];
   if (i18nKey === undefined) return null;
   return i18nKey ? api.i18n.getMessage(i18nKey) : null;
 }

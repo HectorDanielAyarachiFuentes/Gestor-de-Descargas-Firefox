@@ -93,14 +93,20 @@ async function loadFolderSuggestions() {
 function getFileTypeIcon(filename) {
   const ext = (filename.split('.').pop() || "").toLowerCase();
   const fileIcons = {
-    pdf: '📄', doc: '📄', docx: '📄', odt: '📄',
-    jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', webp: '🖼️',
-    mp4: '🎬', mkv: '🎬', avi: '🎬', webm: '🎬',
-    mp3: '🎵', wav: '🎵', ogg: '🎵',
-    zip: '📦', rar: '📦', '7z': '📦',
-    xls: '📊', xlsx: '📊', csv: '📊',
-    exe: '⚙️', msi: '⚙️',
-    default: '📁'
+    pdf: '📄', doc: '📄', docx: '📄', odt: '📄', txt: '📄', md: '📄', rtf: '📄',
+    jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', webp: '🖼️', svg: '🖼️', tiff: '🖼️', heic: '🖼️', raw: '🖼️', bmp: '🖼️', ico: '🖼️',
+    mp4: '🎬', mkv: '🎬', avi: '🎬', webm: '🎬', mov: '🎬', flv: '🎬', ts: '🎬', m3u8: '🎬',
+    mp3: '🎵', wav: '🎵', ogg: '🎵', flac: '🎵', m4a: '🎵', aac: '🎵',
+    zip: '📦', rar: '📦', '7z': '📦', tar: '📦', gz: '📦', bz2: '📦', xz: '📦',
+    xls: '📊', xlsx: '📊', csv: '📊', ods: '📊',
+    ppt: '📊', pptx: '📊', odp: '📊',
+    exe: '⚙️', msi: '⚙️', apk: '⚙️', appx: '⚙️', bat: '⚙️', cmd: '⚙️', sh: '⚙️', dmg: '⚙️', pkg: '⚙️', iso: '💿', img: '💿',
+    psd: '🎨', ai: '🎨', indd: '🎨', blend: '🎨', fig: '🎨', cdr: '🎨',
+    html: '💻', css: '💻', js: '💻', ts: '💻', json: '💻', xml: '💻', py: '💻', java: '💻', cpp: '💻', php: '💻', sql: '💻',
+    epub: '📚', mobi: '📚', azw3: '📚', cbz: '📚', cbr: '📚',
+    stl: '🧊', obj: '🧊', fbx: '🧊', gcode: '🧊',
+    ttf: '🔤', otf: '🔤', woff: '🔤', woff2: '🔤',
+    default: '📄'
   };
   return fileIcons[ext] || fileIcons.default;
 }
