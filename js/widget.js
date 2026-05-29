@@ -95,8 +95,8 @@ function renderSmartGrid() {
 
         let htmlContent = `
             <button class="action-folder-btn ${rightBtnClass}" title="${rightBtnTitle}">${rightBtnIcon}</button>
-            <div class="win-icon" style="color: #fdd835;">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <div class="win-icon" style="color: var(--primary-color);">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
             </div>
             <div class="win-label">${truncateName(folderName, 12)}</div>
         `;

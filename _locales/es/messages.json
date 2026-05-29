@@ -53,11 +53,11 @@
    },
    "cancelEditButton": {
       "description": "Button to cancel editing a rule.",
-      "message": "❌ Cancelar"
+      "message": "Cancelar"
    },
    "customExtTitle": {
       "description": "Title for the custom extension categories section.",
-      "message": "📂 Categorías Personalizadas por Extensión"
+      "message": "Categorías Personalizadas por Extensión"
    },
    "customExtDesc": {
       "description": "Description for the custom extension categories section.",
@@ -81,11 +81,11 @@
    },
    "addCustomExtButton": {
       "description": "Button to add a custom extension category.",
-      "message": "➕ Añadir"
+      "message": "Añadir"
    },
    "updateCustomExtButton": {
       "description": "Button to update a custom extension category.",
-      "message": "💾 Actualizar"
+      "message": "Actualizar"
    },
    "customExtListTitle": {
       "description": "Title for the custom extension list.",
@@ -185,7 +185,7 @@
    },
    "defaultCategoriesTitle": {
       "description": "Title for the default categories section.",
-      "message": "📂 Categorías Automáticas por Defecto"
+      "message": "Categorías Automáticas por Defecto"
    },
    "defaultCategoriesTooltip": {
       "description": "Tooltip for the default categories section.",
@@ -205,7 +205,7 @@
    },
    "enableAutoOrganizeLabel": {
       "description": "Label for the main toggle in options.",
-      "message": "📂 Activar organización automática"
+      "message": "Activar organización automática"
    },
    "enableContextMenuDesc": {
       "description": "Description for the context menu toggle.",
@@ -213,7 +213,7 @@
    },
    "enableContextMenuLabel": {
       "description": "Label for the context menu toggle.",
-      "message": "🖱️ Habilitar menú contextual (clic derecho)"
+      "message": "Habilitar menú contextual (clic derecho)"
    },
    "error_contextMenuDownload": {
       "description": "Mensaje de error para una falla en la descarga desde el menú contextual. $error$ es un marcador.",
@@ -243,7 +243,7 @@
    },
    "existingRulesTitle": {
       "description": "Title for the existing rules section.",
-      "message": "📜 Reglas Existentes"
+      "message": "Reglas Existentes"
    },
    "exportRulesButton": {
       "description": "Button to export rules.",
@@ -422,7 +422,7 @@
    },
    "historyTitle": {
       "description": "Title for the download history section.",
-      "message": "📜 Historial de Descargas Organizadas"
+      "message": "Historial de Descargas Organizadas"
    },
    "hourLabel": {
       "description": "Date format code pill.",
@@ -467,7 +467,7 @@
    },
    "newCustomRuleTitle": {
       "description": "Title for the new rule form section.",
-      "message": "🔧 Nueva Regla Personalizada"
+      "message": "Nueva Regla Personalizada"
    },
    "notificationButtonNo": {
       "description": "No button for a notification.",
@@ -548,7 +548,7 @@
    },
    "notificationsLabel": {
       "description": "Label for the notifications dropdown.",
-      "message": "🔔 Notificaciones al descargar"
+      "message": "Notificaciones al descargar"
    },
    "notifyAlways": {
       "description": "Notification option.",
@@ -568,7 +568,7 @@
    },
    "onDemandOrganizerTitle": {
       "description": "Title for the on-demand organizer section.",
-      "message": "🚀 Organizador Bajo Demanda"
+      "message": "Organizador Bajo Demanda"
    },
    "openFolderButton": {
       "description": "Button to open the containing folder of a download.",
@@ -596,7 +596,7 @@
    },
    "organizeSelectedButton": {
       "description": "Button to organize the selected files from a scan.",
-      "message": "✨ Organizar Seleccionados"
+      "message": "Organizar Seleccionados"
    },
    "placeholder_urlExample": {
       "description": "Placeholder para un campo de URL.",
@@ -714,15 +714,15 @@
    },
    "saveNewRuleButton": {
       "description": "Button to save a new rule.",
-      "message": "✨ Guardar Nueva Regla"
+      "message": "Guardar Nueva Regla"
    },
    "scanHistoryButton": {
       "description": "Button to start the on-demand scan.",
-      "message": "🔍 Buscar Archivos en Historial"
+      "message": "Buscar Archivos en Historial"
    },
    "searchAgainButton": {
       "description": "Button to perform a new scan.",
-      "message": "🔄 Buscar de Nuevo"
+      "message": "Buscar de Nuevo"
    },
    "searchHistoryPlaceholder": {
       "description": "Placeholder for the history search input.",
@@ -778,7 +778,7 @@
    },
    "themeLabel": {
       "description": "Etiqueta del selector de tema",
-      "message": "🎨 Tema de la interfaz"
+      "message": "Tema de la interfaz"
    },
    "themeLightTooltip": {
       "description": "Tooltip del botón de tema claro",
@@ -786,7 +786,7 @@
    },
    "title_editingRule": {
       "description": "Título del formulario al editar una regla.",
-      "message": "📝 Editando Regla"
+      "message": "Editando Regla"
    },
    "title_scanResults": {
       "description": "Título para los resultados del escaneo. $count$ es un marcador.",
