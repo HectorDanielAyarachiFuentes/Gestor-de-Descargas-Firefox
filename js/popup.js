@@ -1,6 +1,6 @@
 // popup.js
 
-import { applyI18n } from './utils.js';
+import { applyI18n, setHTML } from './utils.js';
 import { initTheme } from './theme-manager.js';
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
@@ -65,7 +65,7 @@ function showActiveForceView(folder) {
   document.getElementById("force-idle-view").style.display = "none";
   const activeView = document.getElementById("force-active-view");
   // Usamos getMessage con un marcador de posición
-  activeView.querySelector(".force-active-text").innerHTML = api.i18n.getMessage("popup_forceActiveText", folder);
+  setHTML(activeView.querySelector(".force-active-text"), api.i18n.getMessage("popup_forceActiveText", folder));
   activeView.style.display = "block";
 }
 
@@ -82,7 +82,7 @@ async function loadFolderSuggestions() {
   const suggestionsDatalist = document.getElementById("folder-suggestions");
   if (!suggestionsDatalist) return;
 
-  suggestionsDatalist.innerHTML = "";
+  suggestionsDatalist.textContent = "";
   uniqueFolders.forEach(folder => {
     const option = document.createElement("option");
     option.value = folder;
@@ -121,7 +121,7 @@ async function loadHistory() {
 
   // Usamos getMessage con un marcador de posición
   downloadCountTextElem.textContent = api.i18n.getMessage("popup_downloadCount", String(totalDownloads));
-  historyList.innerHTML = "";
+  historyList.textContent = "";
 
   const emptyHistoryElem = document.getElementById("emptyHistory");
 
@@ -138,14 +138,14 @@ async function loadHistory() {
   lastDownloads.forEach(entry => {
     const listItem = document.createElement("li");
 
-    listItem.innerHTML = `
+    setHTML(listItem, `
         <div class="history-item-icon">${getFileTypeIcon(entry.filename)}</div>
         <div class="history-item-details">
           <strong>${entry.filename}</strong>
           <small>${new Date(entry.date).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} → 📂 ${entry.folder}</small>
         </div>
         <div class="popup-history-actions"></div>
-      `;
+      `);
 
     const actionsContainer = listItem.querySelector(".popup-history-actions");
 

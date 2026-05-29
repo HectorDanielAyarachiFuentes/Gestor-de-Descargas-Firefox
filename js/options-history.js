@@ -1,4 +1,5 @@
 import { showStatus } from './options-ui.js';
+import { setHTML } from './utils.js';
 const api = typeof browser !== 'undefined' ? browser : chrome;
 
 let fullHistory = [];
@@ -42,19 +43,19 @@ function renderDashboard(history) {
   const sortedFolders = Object.entries(folderCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const sortedExts = Object.entries(extCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
-  foldersList.innerHTML = sortedFolders.map(([folder, count]) => `
+  setHTML(foldersList, sortedFolders.map(([folder, count]) => `
     <li style="display:flex; justify-content:space-between; margin-bottom:4px;">
       <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:10px;">📁 ${folder}</span>
       <span style="font-weight:bold; color:var(--primary-color);">${count}</span>
     </li>
-  `).join('');
+  `).join(''));
 
-  extList.innerHTML = sortedExts.map(([ext, count]) => `
+  setHTML(extList, sortedExts.map(([ext, count]) => `
     <li style="display:flex; justify-content:space-between; margin-bottom:4px;">
       <span style="text-transform:uppercase;">📄 .${ext}</span>
       <span style="font-weight:bold; color:var(--primary-color);">${count}</span>
     </li>
-  `).join('');
+  `).join(''));
 }
 
 export function filterHistory(query) {
@@ -72,9 +73,9 @@ export function filterHistory(query) {
 
 export function renderHistoryList(historyArray) {
   const historyList = document.getElementById("downloadHistory");
-  historyList.innerHTML = "";
+  historyList.textContent = "";
   if (!historyArray.length) {
-    historyList.innerHTML = `<li class="history-list-empty-message">${api.i18n.getMessage("feedback_noHistoryResults")}</li>`;
+    setHTML(historyList, `<li class="history-list-empty-message">${api.i18n.getMessage("feedback_noHistoryResults")}</li>`);
     return;
   }
   const reversed = [...historyArray].reverse();
@@ -207,7 +208,7 @@ export function setupOnDemandOrganizer() {
     loadingSpinner.style.display = "none";
     researchBtn.style.display = "none";
     scanBtn.style.display = "inline-block";
-    resultsList.innerHTML = "";
+    resultsList.textContent = "";
   }
 
   function updateSelectAllCheckboxState() {
@@ -283,16 +284,16 @@ export function setupOnDemandOrganizer() {
   }
 
   function renderScanResults(files) {
-    resultsList.innerHTML = "";
+    resultsList.textContent = "";
     if (files.length === 0) {
-      resultsList.innerHTML = `<li class="history-list-empty-message">${api.i18n.getMessage("feedback_noScanResults")}</li>`;
+      setHTML(resultsList, `<li class="history-list-empty-message">${api.i18n.getMessage("feedback_noScanResults")}</li>`);
       document.getElementById("organizeSelectedBtn").style.display = 'none';
     } else {
       document.getElementById("organizeSelectedBtn").style.display = 'inline-block';
       files.forEach(file => {
         const li = document.createElement("li");
         li.className = "scan-result-item";
-        li.innerHTML = `<input type="checkbox" data-url="${file.url}" checked> <span class="history-item-text">${file.filename} → <strong>📂 ${file.suggestedFolder}</strong></span>`;
+        setHTML(li, `<input type="checkbox" data-url="${file.url}" checked> <span class="history-item-text">${file.filename} → <strong>📂 ${file.suggestedFolder}</strong></span>`);
         resultsList.appendChild(li);
       });
     }

@@ -1,4 +1,5 @@
 import { setThemePreference } from './theme-manager.js';
+import { setHTML } from './utils.js';
 const api = typeof browser !== 'undefined' ? browser : chrome;
 
 export function setupTabs() {
@@ -44,7 +45,7 @@ export function showStatus(message, type = 'info') {
   } else {
     iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
   }
-  statusElement.innerHTML = `${iconSvg} <span>${message}</span>`;
+  setHTML(statusElement, `${iconSvg} <span>${message}</span>`);
   statusElement.className = `status ${type} visible`;
   if (statusElement.timeoutId) clearTimeout(statusElement.timeoutId);
   statusElement.timeoutId = setTimeout(() => {
@@ -80,7 +81,7 @@ export function initTearEffect() {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 30 40');
     svg.style.cssText = `position:absolute;left:${x}px;top:-50px;width:${size}px;height:${size * 1.33}px;opacity:${opacity};will-change:transform, left, top;filter:drop-shadow(0 4px 8px hsla(${hue}, 80%, 50%, 0.4));pointer-events:none;`;
-    svg.innerHTML = `
+    const svgContent = `
       <defs>
         <radialGradient id="dropGrad-${dropId}" cx="35%" cy="35%" r="65%">
           <stop offset="0%" stop-color="hsla(${hue}, 100%, 95%, 0.9)"/>
@@ -93,6 +94,11 @@ export function initTearEffect() {
       <path d="M19 34 C22 31 24 27 24 24 C24 28 22 33 19 34Z" fill="rgba(255,255,255,0.4)"/>
       <ellipse cx="10" cy="18" rx="2" ry="3" fill="rgba(255,255,255,0.9)" transform="rotate(-30 10 18)"/>
     `;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(`<svg xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>`, "image/svg+xml");
+    while (doc.documentElement.firstChild) {
+      svg.appendChild(doc.documentElement.firstChild);
+    }
     overlay.appendChild(svg);
     tears.push({ el: svg, x, y: -40, vx: (Math.random() - 0.5) * 0.4, vy: 1.2 + Math.random() * 1.8, wobble: Math.random() * Math.PI * 2, size });
   }

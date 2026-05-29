@@ -1,5 +1,5 @@
 // widget.js
-import { truncateName } from './utils.js';
+import { truncateName, setHTML } from './utils.js';
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
 
@@ -53,7 +53,7 @@ function renderSmartGrid() {
     const container = document.getElementById("widget-folders-grid");
     if (!container) return;
     
-    container.innerHTML = "";
+    container.textContent = "";
 
     const uniqueFolders = [...new Set(widgetState.historyCache.map(item => item.folder))].filter(Boolean);
 
@@ -72,13 +72,13 @@ function renderSmartGrid() {
             ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`
             : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 
-        container.innerHTML = `
+        setHTML(container, `
       <div class="empty-state" style="grid-column: 1/-1;">
         ${svgIcon}
         <h4>¡Todo limpio!</h4>
         <p>${msg}</p>
       </div>
-    `;
+    `);
         return;
     }
 
@@ -107,7 +107,7 @@ function renderSmartGrid() {
             htmlContent += `<button class="delete-forever-btn" title="${tooltip}">${trashSvg}</button>`;
         }
 
-        div.innerHTML = htmlContent;
+        setHTML(div, htmlContent);
 
         div.addEventListener("click", (e) => {
             if (e.target.tagName === 'BUTTON') return;

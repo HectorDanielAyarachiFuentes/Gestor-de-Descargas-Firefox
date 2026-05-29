@@ -3,6 +3,22 @@
 const api = typeof browser !== 'undefined' ? browser : chrome;
 
 /**
+ * Asigna HTML de forma segura a un elemento para cumplir con las políticas de AMO.
+ */
+export function setHTML(element, htmlString) {
+    if (!htmlString) {
+        element.textContent = '';
+        return;
+    }
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    element.textContent = '';
+    while (doc.body.firstChild) {
+        element.appendChild(doc.body.firstChild);
+    }
+}
+
+/**
  * Retrasa la ejecución de una función (Debounce).
  */
 export function debounce(func, wait) {
@@ -45,9 +61,9 @@ export function applyI18n() {
         const message = api.i18n.getMessage(element.dataset.i18n);
         if (element.dataset.i18n === "footerText") {
             const currentYear = new Date().getFullYear();
-            element.innerHTML = message.replace('2025', currentYear);
+            element.textContent = message.replace('2025', currentYear);
         } else if (message.includes('<') && message.includes('>')) {
-            element.innerHTML = message;
+            setHTML(element, message);
         } else {
             element.textContent = message;
         }

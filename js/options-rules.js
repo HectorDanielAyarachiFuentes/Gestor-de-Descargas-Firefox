@@ -1,4 +1,5 @@
 import { showStatus } from './options-ui.js';
+import { setHTML } from './utils.js';
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
 
@@ -134,9 +135,9 @@ export function loadCustomRules() {
 export function renderRulesList(rulesArray) {
   const rulesList = document.getElementById("rulesList");
   if(!rulesList) return;
-  rulesList.innerHTML = "";
+  rulesList.textContent = "";
   if (!rulesArray || !rulesArray.length) {
-    rulesList.innerHTML = `
+    setHTML(rulesList, `
       <div class="empty-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -144,7 +145,7 @@ export function renderRulesList(rulesArray) {
         <h4>No hay Reglas Avanzadas</h4>
         <p>Crea reglas complejas basadas en nombes de archivo o URL de origen arriba.</p>
       </div>
-    `;
+    `);
     return;
   }
 
@@ -157,7 +158,7 @@ export function renderRulesList(rulesArray) {
     if (rule.minSize) ruleText += ` (Mín: ${rule.minSize}MB)`;
     if (rule.maxSize) ruleText += ` (Máx: ${rule.maxSize}MB)`;
     if (rule.renamePattern) ruleText += ` ${api.i18n.getMessage('ruleDesc_andRenameAs')} "<b>${rule.renamePattern}</b>"`;
-    li.innerHTML = `<span class="history-item-text">${ruleText}</span>`;
+    setHTML(li, `<span class="history-item-text">${ruleText}</span>`);
 
     const actionsDiv = document.createElement("div");
     actionsDiv.className = "history-item-actions";
@@ -353,7 +354,7 @@ function addComponentToBuilder(component) {
 function renderPatternPreview() {
   const previewContainer = document.getElementById("rename-pattern-preview");
   if(!previewContainer) return;
-  previewContainer.innerHTML = "";
+  previewContainer.textContent = "";
   previewContainer.classList.remove('is-empty');
 
   if (renamePatternComponents.length === 0) {
@@ -371,7 +372,7 @@ function renderPatternPreview() {
       else if (component.type === 'sitio') displayValue = api.i18n.getMessage("addSiteComponent").replace('+', '').trim();
       else if (component.type === 'nombre_original') displayValue = api.i18n.getMessage("addOriginalNameComponent").replace('+', '').trim();
 
-      el.innerHTML = `<span>${displayValue}</span><button type="button" class="remove-component-btn" title="${api.i18n.getMessage("tooltip_removeComponent")}">✖</button>`;
+      setHTML(el, `<span>${displayValue}</span><button type="button" class="remove-component-btn" title="${api.i18n.getMessage("tooltip_removeComponent")}">✖</button>`);
       previewContainer.appendChild(el);
     });
   }
@@ -461,9 +462,9 @@ function processExtensionsString(extsStr) {
 function renderCustomExtList(categoriesArray) {
   const listElement = document.getElementById("customExtList");
   if(!listElement) return;
-  listElement.innerHTML = "";
+  listElement.textContent = "";
   if (!categoriesArray || !categoriesArray.length) {
-    listElement.innerHTML = `
+    setHTML(listElement, `
       <div class="empty-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line>
@@ -471,14 +472,14 @@ function renderCustomExtList(categoriesArray) {
         <h4>Aún no tienes reglas de extensión</h4>
         <p>Agrega extensiones arriba para empezar a organizar automáticamente.</p>
       </div>
-    `;
+    `);
     return;
   }
 
   categoriesArray.forEach((cat) => {
     const li = document.createElement("li");
     li.dataset.id = cat.id;
-    li.innerHTML = `<span class="history-item-text">Si detecta <b>${cat.extensions.join(', ')}</b>, guardar en "<b>${cat.folder}</b>"</span>`;
+    setHTML(li, `<span class="history-item-text">Si detecta <b>${cat.extensions.join(', ')}</b>, guardar en "<b>${cat.folder}</b>"</span>`);
 
     const actionsDiv = document.createElement("div");
     actionsDiv.className = "history-item-actions";
