@@ -507,33 +507,17 @@ function handleNotificationButtonClick(notifId, btnIdx) {
     }
 }
 
-async function updateBadgeText() {
-    if (api.action && api.action.getBadgeText) {
-        try {
-            let result;
-            if (typeof browser !== 'undefined') {
-                result = await api.action.getBadgeText({});
-            } else {
-                result = await new Promise(resolve => api.action.getBadgeText({}, resolve));
-            }
-            let count = parseInt(result) || 0;
-            count++;
-            api.action.setBadgeText({ text: count.toString() });
-            api.action.setBadgeBackgroundColor({ color: '#f59e0b' }); // Naranja
-        } catch (e) {
-            console.log("Error al actualizar el badge", e);
-        }
-    }
-}
+
 
 api.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.downloadHistory) {
-        updateBadgeText();
+        // Removed badge text update as per user request
     }
 });
 
-updateBadgeText();
-
 api.runtime.onInstalled.addListener(() => {
     api.storage.sync.remove("defaultCategories");
+    if (api.action && api.action.setBadgeText) {
+        api.action.setBadgeText({ text: '' });
+    }
 });
