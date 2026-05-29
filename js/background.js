@@ -192,15 +192,16 @@ api.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
         try {
             const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
             if (forceNextDownload && forceNextDownload.folder) {
-                let finalFilename = sanitize(downloadItem.filename);
-                let finalPath = `${sanitize(forceNextDownload.folder)}/${finalFilename}`;
+                const finalFilename = sanitize(downloadItem.filename);
+                // Carpeta puede tener subcarpetas (Proyectos/Web) — solo sanitizar chars peligrosos, no la /
+                const safeFolder = forceNextDownload.folder.replace(/[<>:"|?*\\]+/g, '_');
                 
                 await api.storage.local.remove("forceNextDownload");
                 api.action.setBadgeText({ text: '' });
                 saveToDownloadHistory(finalFilename, forceNextDownload.folder, downloadItem.id, downloadItem.finalUrl || downloadItem.url);
                 showNotification(finalFilename, forceNextDownload.folder);
                 
-                return { filename: finalPath, conflictAction: 'uniquify' };
+                return { filename: `${safeFolder}/${finalFilename}`, conflictAction: 'uniquify' };
             }
 
             const { autoOrganize, customRules = [], customCategories = [], defaultCategories = {} } = await api.storage.sync.get({
@@ -275,7 +276,10 @@ api.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
                 if (!folderName) return null;
             }
 
-            let finalPath = `${sanitize(folderName)}/${finalFilename}`;
+            // Solo sanitizar nombre de archivo; la carpeta puede tener subcarpetas (/) válidas
+            const safeFolder = folderName.replace(/[<>:"|?*\\]+/g, '_');
+            const safeName = sanitize(finalFilename);
+            let finalPath = `${safeFolder}/${safeName}`;
 
             if (destinationInfo) {
                 delete determinedDestinations[downloadItem.id];
@@ -309,17 +313,22 @@ api.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
                                 if (!ignoredSuggestions.includes(trackKey)) {
                                     suggestionTracker[trackKey] = (suggestionTracker[trackKey] || 0) + 1;
                                     if (suggestionTracker[trackKey] >= 3) {
-                                        api.notifications.create(`sug|${trackKey}`, {
+                                        // Firefox no soporta 'buttons' en notificaciones
+                                        const notifOptions = {
                                             type: 'basic',
                                             iconUrl: api.runtime.getURL("assets/icon.svg"),
                                             title: api.i18n.getMessage("notificationSuggestionTitle") || "Nueva Sugerencia",
                                             message: (api.i18n.getMessage("notificationSuggestionMessage") || "").replace('$1', ext).replace('$2', domain).replace('$3', folderName || 'Descargas'),
-                                            buttons: [
+                                            priority: 1
+                                        };
+                                        // Solo Chrome soporta buttons en notificaciones
+                                        if (typeof browser === 'undefined') {
+                                            notifOptions.buttons = [
                                                 { title: api.i18n.getMessage("notificationButtonYes") || "Sí" },
                                                 { title: api.i18n.getMessage("notificationButtonNo") || "No" }
-                                            ],
-                                            priority: 1
-                                        });
+                                            ];
+                                        }
+                                        api.notifications.create(`sug|${trackKey}`, notifOptions);
                                         delete suggestionTracker[trackKey];
                                     }
                                     await api.storage.sync.set({ suggestionTracker });
