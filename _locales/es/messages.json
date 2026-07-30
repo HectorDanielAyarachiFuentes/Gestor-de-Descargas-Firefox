@@ -582,6 +582,14 @@
         "description": "Tooltip for the settings button in the popup.",
         "message": "Abrir Configuración"
     },
+    "openInTabTooltip": {
+        "description": "Tooltip para abrir el gestor en una pestaña completa.",
+        "message": "Abrir en una pestaña nueva"
+    },
+    "openInSidebarTooltip": {
+        "description": "Tooltip para desplegar en pantalla dividida (panel lateral).",
+        "message": "Abrir en pantalla dividida (panel lateral)"
+    },
     "optionsHeaderSubtitle": {
         "description": "Subtitle on the options page header.",
         "message": "Todos los archivos se almacenarán en tu carpeta predeterminada de Descargas."

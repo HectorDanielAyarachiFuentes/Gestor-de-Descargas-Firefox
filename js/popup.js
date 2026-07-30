@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Elementos de la UI ---
   const openOptionsBtn = document.getElementById("openOptions");
+  const openTabBtn = document.getElementById("openTab");
+  const openSidebarBtn = document.getElementById("openSidebar");
   const autoOrganizeToggle = document.getElementById("autoOrganizeToggle");
   const forceFolderInput = document.getElementById("forceFolderInput");
   const forceNextDownloadBtn = document.getElementById("forceNextDownloadBtn");
@@ -22,9 +24,36 @@ document.addEventListener("DOMContentLoaded", () => {
   loadFolderSuggestions();
 
   // --- Listeners de eventos ---
-  openOptionsBtn.addEventListener("click", () => {
-    api.runtime.openOptionsPage();
-  });
+  if (openOptionsBtn) {
+    openOptionsBtn.addEventListener("click", () => {
+      api.runtime.openOptionsPage();
+    });
+  }
+
+  if (openTabBtn) {
+    openTabBtn.addEventListener("click", () => {
+      api.tabs.create({ url: api.runtime.getURL("pages/popup.html") });
+    });
+  }
+
+  if (openSidebarBtn) {
+    openSidebarBtn.addEventListener("click", async () => {
+      if (api.sidebarAction && typeof api.sidebarAction.open === "function") {
+        try {
+          await api.sidebarAction.open();
+        } catch (e) {
+          if (typeof api.sidebarAction.toggle === "function") {
+            await api.sidebarAction.toggle();
+          }
+        }
+      } else if (api.sidebarAction && typeof api.sidebarAction.toggle === "function") {
+        await api.sidebarAction.toggle();
+      } else {
+        // En navegadores o vistas donde no está la API de sidebarAction, abrir como pestaña
+        api.tabs.create({ url: api.runtime.getURL("pages/popup.html") });
+      }
+    });
+  }
 
   autoOrganizeToggle.addEventListener("change", (e) => {
     api.storage.sync.set({ autoOrganize: e.target.checked });

@@ -72,7 +72,8 @@
 }
 
 html {
-  overflow: hidden;
+  overflow-x: hidden;
+  height: 100%;
 }
 
 body {
@@ -81,11 +82,21 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   width: 380px;
-  max-height: 560px;
+  min-width: 280px;
+  max-width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
   line-height: 1.5;
   transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+@media (min-width: 450px) {
+  body {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+  }
 }
 
 /* Layout Principal */
@@ -116,12 +127,18 @@ body {
   text-shadow: var(--glow-primary);
 }
 
-.btn-options {
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-header-action {
   background: var(--card-bg-color);
   border: 1px solid var(--border-color);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,19 +148,23 @@ body {
   transition: var(--transition-fast);
 }
 
-:root.dark-mode .btn-options {
+:root.dark-mode .btn-header-action {
   background: radial-gradient(circle at top left, #334155, #1e293b);
   box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.3);
 }
 
-.btn-options:hover {
+.btn-header-action:hover {
   color: var(--primary-color);
-  transform: rotate(45deg);
+  transform: translateY(-1px);
 }
 
-:root.dark-mode .btn-options:hover {
+:root.dark-mode .btn-header-action:hover {
   box-shadow: inset 0 2px 4px rgba(255,255,255,0.1), 0 4px 8px rgba(0,0,0,0.4), var(--glow-primary);
   color: #fff;
+}
+
+.btn-options:hover {
+  transform: rotate(45deg);
 }
 
 .popup-section {
@@ -490,8 +511,14 @@ details[open] summary:before {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 180px;
+  max-height: 260px;
   overflow-y: auto;
+}
+
+@media (min-height: 600px) {
+  .popup-history {
+    max-height: 45vh;
+  }
 }
 
 .popup-history li {
