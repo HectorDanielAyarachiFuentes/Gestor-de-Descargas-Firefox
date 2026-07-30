@@ -306,7 +306,7 @@ input:checked + .slider:before {
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  box-sizing: border-border;
+  box-sizing: border-box;
 }
 
 .nav-tab {
@@ -1296,7 +1296,7 @@ body.mode-sidebar {
   max-width: 100% !important;
   min-height: 100vh;
   padding-bottom: 2rem;
-  box-sizing: border-border;
+  box-sizing: border-box;
 }
 
 body.mode-sidebar .popup-wrapper {
@@ -1306,10 +1306,16 @@ body.mode-sidebar .popup-wrapper {
 }
 
 body.mode-sidebar .popup-header,
-body.mode-sidebar .nav-tabs-container,
 body.mode-sidebar .popup-section {
   width: 100% !important;
   max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+body.mode-sidebar .nav-tabs-container {
+  width: calc(100% - 1.7rem) !important;
+  max-width: calc(100% - 1.7rem) !important;
+  margin: 0 0.85rem 0.85rem 0.85rem !important;
   box-sizing: border-box;
 }
 
