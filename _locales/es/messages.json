@@ -1060,22 +1060,6 @@
         "description": "Date format code pill.",
         "message": "Año (4 d.)"
     },
-    "folder_design": {
-        "description": "Default folder name for design files.",
-        "message": "Diseño"
-    },
-    "folder_books": {
-        "description": "Default folder name for book files.",
-        "message": "Libros"
-    },
-    "folder_3d": {
-        "description": "Default folder name for 3D files.",
-        "message": "Modelos_3D"
-    },
-    "folder_fonts": {
-        "description": "Default folder name for font files.",
-        "message": "Fuentes"
-    },
     "catName_design": {
         "description": "Category name for Design.",
         "message": "Diseño y Creatividad"
@@ -1139,29 +1123,5 @@
     "cat_cad": {
         "description": "Category name for CAD.",
         "message": "CAD y Planos"
-    },
-    "folder_emails": {
-        "description": "Default folder for emails.",
-        "message": "Correos_y_Contactos"
-    },
-    "folder_diagrams": {
-        "description": "Default folder for diagrams.",
-        "message": "Diagramas"
-    },
-    "folder_databases": {
-        "description": "Default folder for databases.",
-        "message": "Bases_de_Datos"
-    },
-    "folder_certificates": {
-        "description": "Default folder for certificates.",
-        "message": "Certificados"
-    },
-    "folder_templates": {
-        "description": "Default folder for templates.",
-        "message": "Plantillas"
-    },
-    "folder_cad": {
-        "description": "Default folder for cad.",
-        "message": "CAD_y_Planos"
     }
 }
