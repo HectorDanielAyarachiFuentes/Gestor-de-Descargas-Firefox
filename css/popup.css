@@ -1326,3 +1326,42 @@ details[open] summary:before {
   border-bottom: 1px solid var(--primary-color);
   background-color: var(--hover-bg-color);
 }
+
+/* Tip para Firefox Banner */
+.firefox-tip-card {
+  background: rgba(255, 149, 0, 0.08);
+  border: 1px solid rgba(255, 149, 0, 0.3);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.78rem;
+  color: var(--text-color);
+}
+
+.firefox-tip-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  color: #ff9500;
+}
+
+.firefox-tip-text {
+  margin: 0 0 0.4rem 0;
+  line-height: 1.35;
+  color: var(--muted-text-color);
+}
+
+.firefox-tip-steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.45;
+  color: var(--text-color);
+}
+
+.firefox-tip-steps code {
+  background: rgba(255, 255, 255, 0.12);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: monospace;
+}

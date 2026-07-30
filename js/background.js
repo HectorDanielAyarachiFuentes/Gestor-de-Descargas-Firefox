@@ -10,6 +10,9 @@ const api = typeof browser !== 'undefined' ? browser : chrome;
 const IS_FIREFOX = navigator.userAgent.toLowerCase().includes('firefox') || typeof browser !== 'undefined';
 
 let lastClickedTabUrl = '';
+const restartedDownloadIds = new Set();
+const restartedUrls = new Map();
+const pendingFilenameCheckIds = new Set();
 
 // ========================================================
 // Listeners para URL de pestaña activa
@@ -185,7 +188,9 @@ async function determineDestination(downloadItem, originUrl) {
         customCategories: [],
         defaultCategories: {
             pdf: true, images: true, video: true, audio: true,
-            compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true
+            compressed: true, documents: true, spreadsheets: true, presentations: true, programs: true,
+            design: true, code: true, books: true, threed: true, fonts: true,
+            emails: true, diagrams: true, databases: true, certificates: true, templates: true, cad: true
         }
     });
 
@@ -265,7 +270,24 @@ async function determineDestination(downloadItem, originUrl) {
             finalFilename = sanitize(newName);
         }
     } else {
-        const ext = (baseFilename.split('.').pop() || "").toLowerCase();
+        let ext = (baseFilename.split('.').pop() || "").toLowerCase();
+        if ((!ext || ext === baseFilename.toLowerCase() || ext === 'php' || ext === 'aspx' || ext === 'jsp' || ext === 'cgi') && downloadItem.mime) {
+            const mimeMap = {
+                'application/pdf': 'pdf',
+                'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp', 'image/svg+xml': 'svg',
+                'video/mp4': 'mp4', 'video/webm': 'webm', 'video/x-matroska': 'mkv',
+                'audio/mpeg': 'mp3', 'audio/wav': 'wav', 'audio/ogg': 'ogg',
+                'application/zip': 'zip', 'application/x-rar-compressed': 'rar', 'application/x-7z-compressed': '7z'
+            };
+            const mappedExt = mimeMap[downloadItem.mime.toLowerCase()];
+            if (mappedExt) {
+                ext = mappedExt;
+                if (!baseFilename.toLowerCase().endsWith('.' + ext)) {
+                    baseFilename += '.' + ext;
+                    finalFilename += '.' + ext;
+                }
+            }
+        }
         folderName = getFolderNameByExtension(ext, defaultCategories);
         if (!folderName) return null;
     }
@@ -345,6 +367,77 @@ async function processDownloadSuccess(downloadItem, result, originUrl) {
     }
 }
 
+async function tryOrganizeFirefoxDownload(downloadItem) {
+    if (!IS_FIREFOX) return false;
+
+    if (!downloadItem || !downloadItem.url) {
+        return false;
+    }
+
+    if (restartedDownloadIds.has(downloadItem.id) || restartedUrls.has(downloadItem.url)) {
+        restartedDownloadIds.add(downloadItem.id);
+        return false;
+    }
+    if (downloadItem.byExtensionId === api.runtime.id) {
+        return false;
+    }
+
+    try {
+        const originUrl = await getOriginUrl(downloadItem);
+        const dest = await determineDestination(downloadItem, originUrl);
+
+        if (!dest) {
+            return false;
+        }
+
+        const safeFolder = dest.folderName.replace(/[<>:"|?*\\]+/g, '_');
+        const safeName = sanitize(dest.finalFilename);
+        const finalPath = `${safeFolder}/${safeName}`;
+
+        const downloadOptions = {
+            url: downloadItem.url,
+            filename: finalPath,
+            conflictAction: 'uniquify',
+            saveAs: false
+        };
+
+        if (downloadItem.referrer && (downloadItem.referrer.startsWith('http://') || downloadItem.referrer.startsWith('https://'))) {
+            downloadOptions.headers = [{ name: 'Referer', value: downloadItem.referrer }];
+        }
+        if (downloadItem.cookieStoreId) {
+            downloadOptions.cookieStoreId = downloadItem.cookieStoreId;
+        }
+
+        restartedUrls.set(downloadItem.url, Date.now());
+        setTimeout(() => restartedUrls.delete(downloadItem.url), 15000);
+
+        let newId;
+        try {
+            newId = await api.downloads.download(downloadOptions);
+        } catch (downloadErr) {
+            console.warn("Retrying download without headers/cookieStoreId:", downloadErr);
+            delete downloadOptions.headers;
+            delete downloadOptions.cookieStoreId;
+            newId = await api.downloads.download(downloadOptions);
+        }
+
+        restartedDownloadIds.add(newId);
+        setTimeout(() => restartedDownloadIds.delete(newId), 30000);
+
+        try {
+            await api.downloads.cancel(downloadItem.id);
+            await api.downloads.erase({ id: downloadItem.id });
+        } catch (e) {}
+
+        const updatedItem = { ...downloadItem, id: newId, filename: finalPath };
+        processDownloadSuccess(updatedItem, dest, originUrl);
+        return true;
+    } catch (err) {
+        console.error("Error al re-lanzar descarga en Firefox:", err);
+        return false;
+    }
+}
+
 api.downloads.onCreated.addListener(async (downloadItem) => {
     console.log("🚀 [Gestor de Descargas] EVENTO onCreated DISPARADO!", downloadItem);
 
@@ -362,8 +455,14 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
         }
     } catch(e) { console.log("Error checking manual bypass", e); }
 
-    if (IS_FIREFOX && downloadItem.byExtensionId === api.runtime.id && !isManualBypass) {
-        return;
+    if (IS_FIREFOX && !isManualBypass) {
+        if (restartedDownloadIds.has(downloadItem.id) || (downloadItem.url && restartedUrls.has(downloadItem.url))) {
+            restartedDownloadIds.add(downloadItem.id);
+            return;
+        }
+        if (downloadItem.byExtensionId === api.runtime.id) {
+            return;
+        }
     }
 
     let determinedDestinations = {};
@@ -376,65 +475,15 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
 
     if (downloadItem.id in determinedDestinations) return;
 
-    const { autoOrganize, customRules = [] } = await api.storage.sync.get(["autoOrganize", "customRules"]);
+    const { autoOrganize = true, customRules = [] } = await api.storage.sync.get({ autoOrganize: true, customRules: [] });
     if (!autoOrganize) return;
 
-    const originUrl = await getOriginUrl(downloadItem);
-
     if (IS_FIREFOX) {
-        // --- LÓGICA DE FIREFOX (Cancel & Restart) ---
-        if (!downloadItem.url || downloadItem.url.startsWith("blob:") || downloadItem.url.startsWith("data:")) {
-            return;
-        }
-
-        try {
-            const dest = await determineDestination(downloadItem, originUrl);
-            if (dest) {
-                const safeFolder = dest.folderName.replace(/[<>:"|?*\\]+/g, '_');
-                const safeName = sanitize(dest.finalFilename);
-                const finalPath = `${safeFolder}/${safeName}`;
-
-                try {
-                    await api.downloads.cancel(downloadItem.id);
-                } catch(e) {
-                    console.log("No se pudo cancelar la descarga original, intentando eliminar el archivo", e);
-                    try {
-                        if (api.downloads.removeFile) {
-                            await api.downloads.removeFile(downloadItem.id);
-                        }
-                    } catch(e2) {
-                        console.log("No se pudo eliminar el archivo original", e2);
-                    }
-                }
-                try {
-                    await api.downloads.erase({ id: downloadItem.id });
-                } catch(e) {
-                    console.log("No se pudo borrar historial de descarga original", e);
-                }
-
-                try {
-                    const newId = await api.downloads.download({
-                        url: downloadItem.url,
-                        filename: finalPath,
-                        conflictAction: 'uniquify',
-                        saveAs: false
-                    });
-
-                    const updatedItem = { ...downloadItem, id: newId, filename: finalPath };
-                    processDownloadSuccess(updatedItem, dest, originUrl);
-                } catch (err) {
-                    console.error("Error al reiniciar descarga en Firefox:", err);
-                    showErrorNotification("Error de Firefox (Cancel)", err.message || JSON.stringify(err));
-                }
-            }
-        } catch (error) {
-            console.error("Error en Firefox Cancel&Restart", error);
-            api.notifications.create({
-                type: 'basic',
-                iconUrl: api.runtime.getURL("assets/icon.svg"),
-                title: 'Error de Firefox (Cancel)',
-                message: String(error)
-            });
+        // --- LÓGICA DE FIREFOX ---
+        const organized = await tryOrganizeFirefoxDownload(downloadItem);
+        if (!organized) {
+            pendingFilenameCheckIds.add(downloadItem.id);
+            setTimeout(() => pendingFilenameCheckIds.delete(downloadItem.id), 60000);
         }
         return;
     }
@@ -463,6 +512,25 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
         }
     }
 });
+
+// ======================================================================
+// onChanged: FIREFOX FILENAME HEADER CHECK (GitHub, Moodle, Drive)
+// ======================================================================
+if (IS_FIREFOX && api.downloads.onChanged) {
+    api.downloads.onChanged.addListener(async (delta) => {
+        if (delta.filename && delta.filename.current && pendingFilenameCheckIds.has(delta.id)) {
+            pendingFilenameCheckIds.delete(delta.id);
+            try {
+                const results = await api.downloads.search({ id: delta.id });
+                if (results && results.length > 0) {
+                    await tryOrganizeFirefoxDownload(results[0]);
+                }
+            } catch (e) {
+                console.error("[Gestor] Error en onChanged filename check:", e);
+            }
+        }
+    });
+}
 
 // ======================================================================
 // onDeterminingFilename: LÓGICA PRINCIPAL DE ORGANIZACIÓN (Chrome/Edge)
@@ -521,8 +589,6 @@ function handleNotificationButtonClick(notifId, btnIdx) {
     }
 }
 
-
-
 api.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.downloadHistory) {
         // Removed badge text update as per user request
@@ -530,8 +596,8 @@ api.storage.onChanged.addListener((changes, area) => {
 });
 
 api.runtime.onInstalled.addListener(() => {
-    api.storage.sync.remove("defaultCategories");
     if (api.action && api.action.setBadgeText) {
         api.action.setBadgeText({ text: '' });
     }
 });
+

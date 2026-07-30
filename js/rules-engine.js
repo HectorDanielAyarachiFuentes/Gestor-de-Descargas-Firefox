@@ -15,49 +15,49 @@ export function getFolderNameByExtension(ext, enabledCats = {}) {
         ...enabledCats
     };
 
-    const lowerExt = ext.toLowerCase();
+    const lowerExt = (ext || "").toLowerCase().replace(/^\./, '');
 
     switch (lowerExt) {
         case 'pdf':
-            return cats.pdf ? api.i18n.getMessage("folder_pdfs") : null;
+            return cats.pdf !== false ? (api.i18n.getMessage("folder_pdfs") || "PDFs") : null;
         case 'jpg': case 'jpeg': case 'png': case 'gif': case 'webp': case 'svg': case 'tiff': case 'heic': case 'raw': case 'bmp': case 'ico':
-            return cats.images ? api.i18n.getMessage("folder_images") : null;
+            return cats.images !== false ? (api.i18n.getMessage("folder_images") || "Imágenes") : null;
         case 'mp4': case 'mkv': case 'avi': case 'webm': case 'mov': case 'flv': case 'ts': case 'm3u8':
-            return cats.video ? api.i18n.getMessage("folder_videos") : null;
+            return cats.video !== false ? (api.i18n.getMessage("folder_videos") || "Videos") : null;
         case 'mp3': case 'wav': case 'ogg': case 'flac': case 'm4a': case 'aac':
-            return cats.audio ? api.i18n.getMessage("folder_audio") : null;
+            return cats.audio !== false ? (api.i18n.getMessage("folder_audio") || "Audio") : null;
         case 'zip': case 'rar': case '7z': case 'tar': case 'gz': case 'bz2': case 'xz':
-            return cats.compressed ? api.i18n.getMessage("folder_compressed") : null;
+            return cats.compressed !== false ? (api.i18n.getMessage("folder_compressed") || "Comprimidos") : null;
         case 'docx': case 'doc': case 'odt': case 'txt': case 'md': case 'rtf': case 'pages':
-            return cats.documents ? api.i18n.getMessage("folder_documents") : null;
+            return cats.documents !== false ? (api.i18n.getMessage("folder_documents") || "Documentos") : null;
         case 'csv': case 'xlsx': case 'xls': case 'ods': case 'tsv': case 'numbers':
-            return cats.spreadsheets ? api.i18n.getMessage("folder_spreadsheets") : null;
+            return cats.spreadsheets !== false ? (api.i18n.getMessage("folder_spreadsheets") || "Hojas de Cálculo") : null;
         case 'ppt': case 'pptx': case 'odp':
-            return cats.presentations ? api.i18n.getMessage("folder_presentations") : null;
+            return cats.presentations !== false ? (api.i18n.getMessage("folder_presentations") || "Presentaciones") : null;
         case 'exe': case 'msi': case 'apk': case 'appx': case 'bat': case 'cmd': case 'sh': case 'dmg': case 'pkg': case 'iso': case 'img':
-            return cats.programs ? api.i18n.getMessage("folder_programs") : null;
+            return cats.programs !== false ? (api.i18n.getMessage("folder_programs") || "Programas") : null;
         case 'psd': case 'ai': case 'indd': case 'blend': case 'fig': case 'cdr':
-            return cats.design ? api.i18n.getMessage("folder_design") : null;
+            return cats.design !== false ? (api.i18n.getMessage("folder_design") || "Diseño") : null;
         case 'html': case 'css': case 'js': case 'ts': case 'json': case 'xml': case 'py': case 'java': case 'cpp': case 'php': case 'sql':
-            return cats.code ? api.i18n.getMessage("folder_code") : null;
+            return cats.code !== false ? (api.i18n.getMessage("folder_code") || "Código") : null;
         case 'epub': case 'mobi': case 'azw3': case 'cbz': case 'cbr':
-            return cats.books ? api.i18n.getMessage("folder_books") : null;
+            return cats.books !== false ? (api.i18n.getMessage("folder_books") || "Libros") : null;
         case 'stl': case 'obj': case 'fbx': case 'gcode':
-            return cats.threed ? api.i18n.getMessage("folder_3d") : null;
+            return cats.threed !== false ? (api.i18n.getMessage("folder_3d") || "Modelos 3D") : null;
         case 'ttf': case 'otf': case 'woff': case 'woff2':
-            return cats.fonts ? api.i18n.getMessage("folder_fonts") : null;
+            return cats.fonts !== false ? (api.i18n.getMessage("folder_fonts") || "Fuentes") : null;
         case 'eml': case 'msg': case 'pst': case 'ost': case 'vcf':
-            return cats.emails ? api.i18n.getMessage("folder_emails") : null;
+            return cats.emails !== false ? (api.i18n.getMessage("folder_emails") || "Correos") : null;
         case 'vsd': case 'vsdx': case 'drawio': case 'xmind': case 'mm':
-            return cats.diagrams ? api.i18n.getMessage("folder_diagrams") : null;
+            return cats.diagrams !== false ? (api.i18n.getMessage("folder_diagrams") || "Diagramas") : null;
         case 'sqlite': case 'db': case 'accdb': case 'mdb': case 'bak':
-            return cats.databases ? api.i18n.getMessage("folder_databases") : null;
+            return cats.databases !== false ? (api.i18n.getMessage("folder_databases") || "Bases de Datos") : null;
         case 'crt': case 'pem': case 'pfx': case 'p12': case 'cer': case 'key': case 'ovpn':
-            return cats.certificates ? api.i18n.getMessage("folder_certificates") : null;
+            return cats.certificates !== false ? (api.i18n.getMessage("folder_certificates") || "Certificados") : null;
         case 'dotx': case 'xltx': case 'potx': case 'ott': case 'ots': case 'otp':
-            return cats.templates ? api.i18n.getMessage("folder_templates") : null;
+            return cats.templates !== false ? (api.i18n.getMessage("folder_templates") || "Plantillas") : null;
         case 'dwg': case 'dxf':
-            return cats.cad ? api.i18n.getMessage("folder_cad") : null;
+            return cats.cad !== false ? (api.i18n.getMessage("folder_cad") || "CAD") : null;
         default:
             return null;
     }
