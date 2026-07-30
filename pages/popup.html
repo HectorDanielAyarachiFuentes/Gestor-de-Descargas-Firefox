@@ -1,190 +1,297 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title data-i18n="popupTitle"></title>
+  <title data-i18n="popupTitle">Gestor de Descargas</title>
   <link rel="stylesheet" href="../css/popup.css" />
   <script type="module" src="../js/popup.js" defer></script>
 </head>
 <body>
-  <!-- Header Bar -->
-  <header class="popup-header">
-    <div class="brand-wrapper">
-      <div class="brand-logo">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-      </div>
-      <div class="brand-text">
-        <h1 class="popup-title" data-i18n="popupTitle">Gestor de Descargas</h1>
-        <div id="statusBadge" class="status-badge active">
-          <span class="status-dot"></span>
-          <span id="statusText">Organizacion Activa</span>
-        </div>
-      </div>
-    </div>
-    <div class="header-right-group">
-      <label class="toggle-switch main-toggle" title="Activar/Desactivar Organizacion Automatica">
-        <input type="checkbox" id="autoOrganizeToggle">
-        <span class="slider" data-on="ON" data-off="OFF"></span>
-      </label>
-      <div class="header-actions">
-        <button id="openSidebar" class="btn-header-action" data-i18n-title="openInSidebarTooltip">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-        </button>
-        <button id="openTab" class="btn-header-action" data-i18n-title="openInTabTooltip">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-        </button>
-        <button id="openOptions" class="btn-header-action btn-options" data-i18n-title="openSettingsTooltip">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="gear-icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Segmented Tab Navigation -->
-  <nav class="nav-tabs-container">
-    <button class="nav-tab active" data-tab="downloads">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-      <span data-i18n="tabDownloads">Descargas</span>
-    </button>
-    <button class="nav-tab" data-tab="images">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-      <span>Gestor de Imagenes</span>
-    </button>
-    <button class="nav-tab" data-tab="history">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-      <span data-i18n="tabHistory">Historial</span>
-    </button>
-    <button class="nav-tab" data-tab="settings">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      <span data-i18n="tabSettings">Ajustes</span>
-    </button>
-  </nav>
-
-  <!-- TAB 1: DESCARGAS (Forzar carpeta) -->
-  <div id="tab-downloads" class="tab-content active">
-    <section class="popup-section control-panel">
-      <div class="force-download-section">
-        <div id="force-idle-view">
-          <label for="forceFolderInput" class="force-label" data-i18n="forceDownloadLabel"></label>
-          <div class="force-input-group">
-            <div class="input-icon-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-              <input type="text" id="forceFolderInput" list="folder-suggestions" data-i18n-placeholder="forceDownloadPlaceholder">
-            </div>
-            <button id="forceNextDownloadBtn" class="btn-force">
-              <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line><polyline points="12 12 15 15 12 18"></polyline></svg>
-              <span data-i18n="activateButton"></span>
-            </button>
-          </div>
-          <datalist id="folder-suggestions"></datalist>
-        </div>
-        <div id="force-active-view" style="display: none;">
-          <div class="active-mode-card">
-            <div class="active-icon-pulse">
-              <svg viewBox="0 0 24 24" width="24" height="24" stroke="var(--primary-color)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            </div>
-            <p class="force-active-text"></p>
-            <button id="cancelForceBtn" class="btn-cancel-force" data-i18n="cancelButton"></button>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <!-- TAB 2: GESTOR DE IMAGENES -->
-  <div id="tab-images" class="tab-content" style="display: none;">
-
-    <!-- Zona de Soltado -->
-    <section class="popup-section dropzone-section">
-      <div id="dropZone" class="drop-zone">
-        <div class="drop-zone-icon">
-          <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <div class="popup-wrapper">
+    <!-- Header Bar Premium -->
+    <header class="popup-header">
+      <div class="brand-wrapper">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
         </div>
-        <div class="drop-zone-text">
-          <strong data-i18n="dropZoneTitle">Arrastra imagenes o enlaces aqui</strong>
-          <span data-i18n="dropZoneSubtitle">Suelta para anadir a la cola de descargas</span>
+        <div class="brand-text">
+          <div class="title-pro-row">
+            <h1 class="popup-title" data-i18n="popupTitle">Gestor de Descargas</h1>
+            <span class="pro-badge">PRO WORKSPACE</span>
+          </div>
+          <div id="statusBadge" class="status-badge active">
+            <span class="status-dot"></span>
+            <span id="statusText">Organización Activa</span>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- Selector de carpeta de destino -->
-    <section class="popup-section image-folder-section">
-      <div class="image-folder-card">
-        <div class="image-folder-row">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-          <label class="image-folder-label" for="dragTargetMode">Guardar en:</label>
-          <select id="dragTargetMode" class="drag-target-select">
-            <option value="auto" data-i18n="dragTargetAuto">Automatico (Reglas)</option>
-            <option value="custom" data-i18n="dragTargetCustom">Carpeta personalizada</option>
-          </select>
+      <div class="header-right-group">
+        <label class="toggle-switch main-toggle" title="Activar/Desactivar Organización Automática">
+          <input type="checkbox" id="autoOrganizeToggle" checked>
+          <span class="slider" data-on="ON" data-off="OFF"></span>
+        </label>
+        <div class="header-actions">
+          <button id="openSidebar" class="btn-header-action" data-i18n-title="openInSidebarTooltip" title="Abrir Panel Pro en Barra Lateral">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+          </button>
+          <button id="openTab" class="btn-header-action" data-i18n-title="openInTabTooltip" title="Abrir en Nueva Pestaña">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </button>
+          <button id="openOptions" class="btn-header-action btn-options" data-i18n-title="openSettingsTooltip" title="Configuración Avanzada">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="gear-icon">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
         </div>
-        <input type="text" id="dragCustomFolderInput" class="drag-custom-folder-input" placeholder="Ej: Imagenes/Fondos" style="display: none;" />
       </div>
-    </section>
+    </header>
 
-    <!-- Cola de Descargas -->
-    <section id="queueSection" class="popup-section queue-section" style="display: none;">
-      <div class="queue-header">
-        <div class="queue-title-wrapper">
-          <h2 class="queue-title" data-i18n="queueTitle">Cola de Descargas</h2>
-          <span id="queueBadge" class="queue-badge">0</span>
+    <!-- Segmented Tab Navigation -->
+    <nav class="nav-tabs-container">
+      <button class="nav-tab active" data-tab="downloads">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span data-i18n="tabDownloads">Descargas</span>
+      </button>
+      <button class="nav-tab" data-tab="images">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        <span>Imágenes</span>
+      </button>
+      <button class="nav-tab" data-tab="history">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span data-i18n="tabHistory">Historial</span>
+      </button>
+      <button class="nav-tab" data-tab="settings">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span data-i18n="tabSettings">Ajustes</span>
+      </button>
+    </nav>
+
+    <!-- TAB 1: DESCARGAS (Dashboard & Forzar Carpeta) -->
+    <div id="tab-downloads" class="tab-content active">
+
+      <!-- PRO ONLY STATS GRID -->
+      <section class="popup-section pro-stats-section">
+        <div class="pro-stats-grid card-glass">
+          <div class="stat-card">
+            <span class="stat-icon">📊</span>
+            <div class="stat-text">
+              <strong id="proTotalDownloadsCount">0</strong>
+              <small>Descargas Organizadas</small>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">⚡</span>
+            <div class="stat-text">
+              <strong id="proActiveRulesCount">Activas</strong>
+              <small>Reglas por Extensión</small>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">📂</span>
+            <div class="stat-text">
+              <strong id="proSmartFolderStatus">Automático</strong>
+              <small>Modo Inteligente</small>
+            </div>
+          </div>
         </div>
-        <div class="queue-actions">
-          <button id="downloadAllQueueBtn" class="btn-queue-action btn-download-all" data-i18n="downloadAllButton">Descargar Todas</button>
-          <button id="clearQueueBtn" class="btn-queue-action btn-clear-queue" data-i18n="clearQueueButton">Vaciar</button>
+      </section>
+
+      <!-- Section: Forzar Carpeta Próxima Descarga -->
+      <section class="popup-section">
+        <div class="force-download-section card-glass">
+          <div id="force-idle-view">
+            <div class="card-header-row">
+              <span class="card-subtitle-icon">🎯</span>
+              <label for="forceFolderInput" class="force-label" data-i18n="forceDownloadLabel">Forzar próxima descarga a la carpeta:</label>
+            </div>
+            
+            <div class="force-input-group">
+              <div class="input-icon-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <input type="text" id="forceFolderInput" list="folder-suggestions" data-i18n-placeholder="forceDownloadPlaceholder" placeholder="Ej: Proyectos/Web">
+                <button type="button" id="clearForceInputBtn" class="btn-clear-input" style="display: none;" title="Limpiar">✖</button>
+              </div>
+              <button id="forceNextDownloadBtn" class="btn-force">
+                <svg class="btn-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="9" y1="15" x2="15" y2="15"></line>
+                  <polyline points="12 12 15 15 12 18"></polyline>
+                </svg>
+                <span data-i18n="activateButton">Activar</span>
+              </button>
+            </div>
+            <datalist id="folder-suggestions"></datalist>
+
+            <!-- Accesos Rápidos de Carpetas Frecuentes -->
+            <div class="quick-presets-wrapper">
+              <span class="preset-label">Carpetas rápidas:</span>
+              <div class="preset-chips">
+                <button class="chip-preset" data-folder="Documentos">📄 Documentos</button>
+                <button class="chip-preset" data-folder="Imágenes">🖼️ Imágenes</button>
+                <button class="chip-preset" data-folder="Videos">🎬 Videos</button>
+                <button class="chip-preset" data-folder="PDFs">📕 PDFs</button>
+                <button class="chip-preset" data-folder="Proyectos">💻 Proyectos</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado Activo del Modo Forzado -->
+          <div id="force-active-view" style="display: none;">
+            <div class="active-mode-card">
+              <div class="active-icon-pulse">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--primary-color)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <p class="force-active-text">Modo forzado activo para la carpeta</p>
+              <button id="cancelForceBtn" class="btn-cancel-force" data-i18n="cancelButton">Desactivar</button>
+            </div>
+          </div>
         </div>
-      </div>
-      <ul id="queueList" class="queue-list"></ul>
-    </section>
+      </section>
 
-  </div>
-
-  <!-- TAB 3: HISTORIAL -->
-  <div id="tab-history" class="tab-content" style="display: none;">
-    <section class="popup-section history-section">
-      <div class="history-content">
-        <p id="downloadCount" class="download-count"></p>
-        <ul id="popupHistory" class="popup-history">
-          <li><i data-i18n="loadingHistory"></i></li>
-        </ul>
-      </div>
-    </section>
-  </div>
-
-  <!-- TAB 4: AJUSTES RAPIDOS -->
-  <div id="tab-settings" class="tab-content" style="display: none;">
-    <section class="popup-section settings-tab-section">
-
-      <!-- Consejos de Configuración para Firefox -->
-      <div class="firefox-tip-card">
-        <div class="firefox-tip-header">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF9500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          <strong>Optimizar PDFs en Firefox</strong>
+      <!-- Section: Vista Previa Descargas Recientes -->
+      <section class="popup-section recent-downloads-section">
+        <div class="section-title-row">
+          <div class="section-title-wrapper">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <h2>Descargas Recientes</h2>
+          </div>
+          <button class="btn-link-action view-all-history-btn" data-tab-target="history">Ver todas →</button>
         </div>
-        <p class="firefox-tip-text">
-          Al abrir PDFs dentro de la pestaña, Firefox los procesa internamente como <code>blob:</code> impidiendo moverlos. Para organizarlos automáticamente en la carpeta <strong>PDFs/</strong>:
-        </p>
-        <ol class="firefox-tip-steps">
-          <li>Ve a <strong>about:preferences</strong> en Firefox.</li>
-          <li>Busca <strong>Aplicaciones</strong> → <strong>Documento PDF</strong>.</li>
-          <li>Selecciona <strong>Guardar archivo</strong> (en lugar de Abrir en Firefox).</li>
-        </ol>
-      </div>
+        <div id="recentDownloadsPreview" class="recent-preview-container">
+          <!-- Se llena dinámicamente desde popup.js -->
+        </div>
+      </section>
+    </div>
 
-      <div class="settings-card settings-link-card">
-        <button id="openFullOptionsBtn" class="btn-full-options">
+    <!-- TAB 2: GESTOR DE IMÁGENES (Drag & Drop + Cola) -->
+    <div id="tab-images" class="tab-content" style="display: none;">
+      <!-- Zona de Soltado -->
+      <section class="popup-section dropzone-section">
+        <div id="dropZone" class="drop-zone card-glass">
+          <div class="drop-zone-icon">
+            <svg viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <div class="drop-zone-text">
+            <strong data-i18n="dropZoneTitle">Arrastra imágenes o enlaces aquí</strong>
+            <span data-i18n="dropZoneSubtitle">Suelta para añadir a la cola de descargas</span>
+          </div>
+        </div>
+      </section>
 
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          <span data-i18n="openSettingsTooltip">Abrir Configuracion Avanzada</span>
-        </button>
-      </div>
+      <!-- Selector de carpeta de destino -->
+      <section class="popup-section image-folder-section">
+        <div class="image-folder-card card-glass">
+          <div class="image-folder-row">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <label class="image-folder-label" for="dragTargetMode">Guardar imágenes en:</label>
+            <select id="dragTargetMode" class="drag-target-select">
+              <option value="auto" data-i18n="dragTargetAuto">Automático (Reglas)</option>
+              <option value="custom" data-i18n="dragTargetCustom">Carpeta personalizada</option>
+            </select>
+          </div>
+          <input type="text" id="dragCustomFolderInput" class="drag-custom-folder-input" placeholder="Ej: Imágenes/Fondos" style="display: none;" />
+        </div>
+      </section>
+
+      <!-- Cola de Descargas -->
+      <section id="queueSection" class="popup-section queue-section" style="display: none;">
+        <div class="queue-header">
+          <div class="queue-title-wrapper">
+            <h2 class="queue-title" data-i18n="queueTitle">Cola de Descargas</h2>
+            <span id="queueBadge" class="queue-badge">0</span>
+          </div>
+          <div class="queue-actions">
+            <button id="downloadAllQueueBtn" class="btn-queue-action btn-download-all" data-i18n="downloadAllButton">Descargar Todas</button>
+            <button id="clearQueueBtn" class="btn-queue-action btn-clear-queue" data-i18n="clearQueueButton">Vaciar</button>
+          </div>
+        </div>
+        <ul id="queueList" class="queue-list"></ul>
+      </section>
+    </div>
+
+    <!-- TAB 3: HISTORIAL -->
+    <div id="tab-history" class="tab-content" style="display: none;">
+      <section class="popup-section history-section">
+        <!-- History Filter Bar -->
+        <div class="history-filter-bar">
+          <div class="history-search-wrapper">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="historySearchInput" placeholder="Buscar en historial..." />
+          </div>
+          <span id="downloadCount" class="download-count"></span>
+        </div>
+
+        <div class="history-content">
+          <ul id="popupHistory" class="popup-history">
+            <li><i data-i18n="loadingHistory">Cargando historial...</i></li>
+          </ul>
+
+          <div id="emptyHistory" class="empty-history-state" style="display: none;">
+            <div class="empty-icon">📁</div>
+            <p>No hay descargas registradas en el historial</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 4: AJUSTES RÁPIDOS -->
+    <div id="tab-settings" class="tab-content" style="display: none;">
+      <section class="popup-section settings-tab-section">
+        <!-- Card: Configuración de Firefox PDF -->
+        <div class="firefox-tip-card card-glass">
+          <div class="firefox-tip-header">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF9500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <strong>Optimizar PDFs en Firefox</strong>
+          </div>
+          <p class="firefox-tip-text">
+            Firefox procesa los PDFs vistos en pestañas como <code>blob:</code> impidiendo organizarlos. Para clasificarlos en <strong>PDFs/</strong>:
+          </p>
+          <ol class="firefox-tip-steps">
+            <li>Abre <strong>about:preferences</strong> en Firefox.</li>
+            <li>Busca <strong>Aplicaciones</strong> → <strong>Documento PDF</strong>.</li>
+            <li>Selecciona <strong>Guardar archivo</strong>.</li>
+          </ol>
+        </div>
+
+        <div class="settings-card card-glass settings-link-card">
+          <button id="openFullOptionsBtn" class="btn-full-options">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span data-i18n="openSettingsTooltip">Abrir Configuración Avanzada</span>
+          </button>
+        </div>
+      </section>
     </div>
   </div>
-
 </body>
 </html>

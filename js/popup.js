@@ -7,8 +7,11 @@ import { getFolderNameByExtension } from './rules-engine.js';
 const api = typeof browser !== 'undefined' ? browser : chrome;
 let downloadQueue = [];
 
+let currentViewMode = 'popup';
+
 document.addEventListener("DOMContentLoaded", () => {
   applyI18n(); // <-- Llama a la función de traducción
+  detectViewMode();
 
   // --- Elementos de la UI ---
   const openOptionsBtn = document.getElementById("openOptions");
@@ -16,10 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const openSidebarBtn = document.getElementById("openSidebar");
   const autoOrganizeToggle = document.getElementById("autoOrganizeToggle");
   const forceFolderInput = document.getElementById("forceFolderInput");
+  const clearForceInputBtn = document.getElementById("clearForceInputBtn");
   const forceNextDownloadBtn = document.getElementById("forceNextDownloadBtn");
   const cancelForceBtn = document.getElementById("cancelForceBtn");
   const downloadAllQueueBtn = document.getElementById("downloadAllQueueBtn");
   const clearQueueBtn = document.getElementById("clearQueueBtn");
+  const historySearchInput = document.getElementById("historySearchInput");
 
   // --- Carga de estado y datos iniciales ---
   initTheme();
@@ -30,6 +35,48 @@ document.addEventListener("DOMContentLoaded", () => {
   setupDragAndDrop();
   initDragTargetControls();
   initTabNavigation();
+
+  // --- Preset Chips de carpetas rápidas ---
+  const presetChips = document.querySelectorAll(".chip-preset");
+  presetChips.forEach(chip => {
+    chip.addEventListener("click", () => {
+      if (forceFolderInput) {
+        forceFolderInput.value = chip.dataset.folder || "";
+        forceFolderInput.focus();
+        if (clearForceInputBtn) clearForceInputBtn.style.display = "block";
+      }
+    });
+  });
+
+  if (forceFolderInput && clearForceInputBtn) {
+    forceFolderInput.addEventListener("input", () => {
+      clearForceInputBtn.style.display = forceFolderInput.value.length > 0 ? "block" : "none";
+    });
+    clearForceInputBtn.addEventListener("click", () => {
+      forceFolderInput.value = "";
+      clearForceInputBtn.style.display = "none";
+      forceFolderInput.focus();
+    });
+  }
+
+  // --- Botón de salto de pestaña (Ver todas) ---
+  const tabTargetBtns = document.querySelectorAll("[data-tab-target]");
+  tabTargetBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetTab = btn.dataset.tabTarget;
+      if (targetTab && typeof switchTab === "function") {
+        switchTab(targetTab);
+        api.storage.local.set({ activeTab: targetTab });
+      }
+    });
+  });
+
+  // --- Buscador en el historial ---
+  if (historySearchInput) {
+    historySearchInput.addEventListener("input", (e) => {
+      filterHistory(e.target.value.toLowerCase().trim());
+    });
+  }
 
   // --- Listeners de eventos ---
   const openFullOptionsBtn = document.getElementById("openFullOptionsBtn");
@@ -64,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (api.sidebarAction && typeof api.sidebarAction.toggle === "function") {
         await api.sidebarAction.toggle();
       } else {
-        // En navegadores o vistas donde no está la API de sidebarAction, abrir como pestaña
         api.tabs.create({ url: api.runtime.getURL("pages/popup.html") });
       }
     });
@@ -78,8 +124,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  forceNextDownloadBtn.addEventListener("click", activateForceMode);
-  cancelForceBtn.addEventListener("click", deactivateForceMode);
+  if (forceNextDownloadBtn) forceNextDownloadBtn.addEventListener("click", activateForceMode);
+  if (cancelForceBtn) cancelForceBtn.addEventListener("click", deactivateForceMode);
 
   if (downloadAllQueueBtn) {
     downloadAllQueueBtn.addEventListener("click", processAllQueue);
@@ -201,11 +247,36 @@ function formatBytes(bytes, decimals = 1) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+function detectViewMode() {
+  const params = new URLSearchParams(window.location.search);
+  let mode = params.get("mode") || params.get("view");
+
+  if (!mode) {
+    if (window.innerWidth < 420) {
+      mode = "popup";
+    } else {
+      mode = "sidebar";
+    }
+  }
+
+  document.body.classList.remove("mode-popup", "mode-sidebar");
+  document.body.classList.add(`mode-${mode}`);
+  currentViewMode = mode;
+  return mode;
+}
+
 async function loadHistory() {
   const result = await api.storage.local.get({ downloadHistory: [] });
   const historyList = document.getElementById("popupHistory");
   const downloadCountTextElem = document.getElementById("downloadCount");
   const totalDownloads = result.downloadHistory.length;
+
+  const proCount = document.getElementById("proTotalDownloadsCount");
+  if (proCount) proCount.textContent = String(totalDownloads);
+
+  // Renderizar la vista previa de las últimas descargas (2 para popup compacto, 6 para panel sidebar Pro)
+  const recentCount = currentViewMode === 'popup' ? 2 : 6;
+  renderRecentDownloadsPreview(result.downloadHistory.slice(-recentCount).reverse());
 
   if (!historyList || !downloadCountTextElem) return;
 
@@ -221,10 +292,10 @@ async function loadHistory() {
     return;
   }
   
-  historyList.style.display = "block";
+  historyList.style.display = "flex";
   if (emptyHistoryElem) emptyHistoryElem.style.display = "none";
 
-  const lastDownloads = result.downloadHistory.slice(-5).reverse();
+  const lastDownloads = result.downloadHistory.slice(-15).reverse();
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'avif', 'ico'];
 
   lastDownloads.forEach(entry => {
@@ -291,20 +362,86 @@ async function loadHistory() {
 
     if (entry.id !== undefined) {
       const openFolderBtn = document.createElement("button");
-      openFolderBtn.textContent = api.i18n.getMessage("openFolderButton");
-      openFolderBtn.title = api.i18n.getMessage("openFolderTooltip");
+      openFolderBtn.textContent = api.i18n.getMessage("openFolderButton") || "Carpeta";
+      openFolderBtn.title = api.i18n.getMessage("openFolderTooltip") || "Abrir en explorador";
       openFolderBtn.addEventListener("click", () => openFolderInExplorer(entry.id, listItem));
       actionsContainer.appendChild(openFolderBtn);
     }
     if (entry.url) {
       const reDownloadBtn = document.createElement("button");
-      reDownloadBtn.textContent = api.i18n.getMessage("redownloadButton");
-      reDownloadBtn.title = api.i18n.getMessage("redownloadTooltip");
+      reDownloadBtn.textContent = api.i18n.getMessage("redownloadButton") || "Re-descargar";
+      reDownloadBtn.title = api.i18n.getMessage("redownloadTooltip") || "Descargar de nuevo";
       reDownloadBtn.addEventListener("click", () => api.downloads.download({ url: entry.url }));
       actionsContainer.appendChild(reDownloadBtn);
     }
 
     historyList.appendChild(listItem);
+  });
+}
+
+function renderRecentDownloadsPreview(recentList) {
+  const container = document.getElementById("recentDownloadsPreview");
+  if (!container) return;
+
+  container.textContent = "";
+
+  if (!recentList || recentList.length === 0) {
+    const emptyCard = document.createElement("div");
+    emptyCard.className = "empty-recent-card";
+    emptyCard.textContent = "No hay descargas recientes aún.";
+    container.appendChild(emptyCard);
+    return;
+  }
+
+  recentList.forEach(entry => {
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "recent-preview-item";
+
+    const icon = getFileTypeIcon(entry.filename);
+    const folder = entry.folder || 'Descargas';
+
+    setHTML(itemDiv, `
+      <span class="recent-preview-icon">${icon}</span>
+      <div class="recent-preview-info">
+        <span class="recent-preview-title" title="${entry.filename}">${entry.filename}</span>
+        <span class="recent-preview-folder">📂 ${folder}</span>
+      </div>
+      <div class="popup-history-actions"></div>
+    `);
+
+    const actionsContainer = itemDiv.querySelector(".popup-history-actions");
+
+    if (entry.id !== undefined) {
+      const openFolderBtn = document.createElement("button");
+      openFolderBtn.textContent = "📂";
+      openFolderBtn.title = api.i18n.getMessage("openFolderTooltip") || "Abrir carpeta";
+      openFolderBtn.addEventListener("click", () => openFolderInExplorer(entry.id, itemDiv));
+      actionsContainer.appendChild(openFolderBtn);
+    }
+    if (entry.url) {
+      const reDownloadBtn = document.createElement("button");
+      reDownloadBtn.textContent = "🔄";
+      reDownloadBtn.title = api.i18n.getMessage("redownloadTooltip") || "Re-descargar";
+      reDownloadBtn.addEventListener("click", () => api.downloads.download({ url: entry.url }));
+      actionsContainer.appendChild(reDownloadBtn);
+    }
+
+    container.appendChild(itemDiv);
+  });
+}
+
+function filterHistory(query) {
+  const historyList = document.getElementById("popupHistory");
+  if (!historyList) return;
+
+  const items = historyList.querySelectorAll("li.history-item");
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    if (!query || text.includes(query)) {
+      item.style.display = "flex";
+    } else {
+      item.style.display = "none";
+    }
   });
 }
 
