@@ -112,6 +112,21 @@
       </div>
     </section>
 
+    <!-- Selector de carpeta de destino -->
+    <section class="popup-section image-folder-section">
+      <div class="image-folder-card">
+        <div class="image-folder-row">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          <label class="image-folder-label" for="dragTargetMode">Guardar en:</label>
+          <select id="dragTargetMode" class="drag-target-select">
+            <option value="auto" data-i18n="dragTargetAuto">Automatico (Reglas)</option>
+            <option value="custom" data-i18n="dragTargetCustom">Carpeta personalizada</option>
+          </select>
+        </div>
+        <input type="text" id="dragCustomFolderInput" class="drag-custom-folder-input" placeholder="Ej: Imagenes/Fondos" style="display: none;" />
+      </div>
+    </section>
+
     <!-- Cola de Descargas -->
     <section id="queueSection" class="popup-section queue-section" style="display: none;">
       <div class="queue-header">
@@ -144,18 +159,6 @@
   <!-- TAB 4: AJUSTES RAPIDOS -->
   <div id="tab-settings" class="tab-content" style="display: none;">
     <section class="popup-section settings-tab-section">
-      <div class="settings-card">
-        <div class="drag-target-selector">
-          <label class="drag-target-label" data-i18n="dragTargetLabel">Guardar arrastrados en:</label>
-          <div class="drag-target-controls">
-            <select id="dragTargetMode" class="drag-target-select">
-              <option value="auto" data-i18n="dragTargetAuto">Automatico (Reglas)</option>
-              <option value="custom" data-i18n="dragTargetCustom">Carpeta Aparte</option>
-            </select>
-            <input type="text" id="dragCustomFolderInput" class="drag-custom-folder-input" data-i18n-placeholder="dragFolderPlaceholder" style="display: none;" />
-          </div>
-        </div>
-      </div>
 
       <div class="settings-card settings-link-card">
         <button id="openFullOptionsBtn" class="btn-full-options">

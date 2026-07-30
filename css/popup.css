@@ -996,6 +996,61 @@ details[open] summary:before {
   outline: none;
 }
 
+/* === Selector de carpeta en tab Gestor de Imágenes === */
+.image-folder-section {
+  padding: 0 !important;
+  margin: 0 1.25rem 0.75rem 1.25rem !important;
+}
+
+.image-folder-card {
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:root.dark-mode .image-folder-card {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--border-color);
+}
+
+.image-folder-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.image-folder-row svg {
+  flex-shrink: 0;
+  color: var(--muted-text-color);
+  stroke: var(--muted-text-color);
+}
+
+.image-folder-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted-text-color);
+  white-space: nowrap;
+}
+
+.image-folder-card .drag-target-select {
+  flex: 1;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.78rem;
+  border-radius: 8px;
+}
+
+.image-folder-card .drag-custom-folder-input {
+  width: 100%;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.78rem;
+  border-radius: 8px;
+  margin-top: 0.1rem;
+}
+
 .drop-zone {
   display: flex;
   align-items: center;
