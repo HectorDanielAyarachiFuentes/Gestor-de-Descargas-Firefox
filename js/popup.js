@@ -861,6 +861,28 @@ function renderQueueList() {
   });
 }
 
+// Guarda un item de la cola en el historial local de descargas
+async function saveQueueItemToHistory(item, downloadId) {
+  try {
+    const result = await api.storage.local.get({ downloadHistory: [] });
+    const history = result.downloadHistory;
+    while (history.length >= 50) { history.shift(); }
+    history.push({
+      filename: item.filename,
+      folder: item.folder || 'Descargas',
+      date: new Date().toISOString(),
+      id: downloadId,
+      url: item.url,
+      fileSize: item.fileSize || null,
+      width: item.width || null,
+      height: item.height || null
+    });
+    await api.storage.local.set({ downloadHistory: history });
+  } catch (e) {
+    console.error('Error guardando en historial:', e);
+  }
+}
+
 async function processSingleQueueItem(itemId) {
   const index = downloadQueue.findIndex(i => i.id === itemId);
   if (index === -1) return;
@@ -869,15 +891,18 @@ async function processSingleQueueItem(itemId) {
   const targetPath = item.folder ? `${item.folder}/${item.filename}` : item.filename;
 
   try {
-    await api.downloads.download({
+    const dlId = await api.downloads.download({
       url: item.url,
       filename: targetPath,
       conflictAction: 'uniquify'
     });
+    // Guardar en el historial
+    await saveQueueItemToHistory(item, dlId);
     downloadQueue.splice(index, 1);
     await saveDownloadQueue();
+    loadHistory();
   } catch (err) {
-    console.error("Error al descargar ítem de la cola:", err);
+    console.error("Error al descargar item de la cola:", err);
     showFeedback(api.i18n.getMessage("statusErrorGeneric") + ": " + (err.message || "Error"), false);
   }
 }
@@ -898,18 +923,21 @@ async function processAllQueue() {
   for (const item of itemsToProcess) {
     const targetPath = item.folder ? `${item.folder}/${item.filename}` : item.filename;
     try {
-      await api.downloads.download({
+      const dlId = await api.downloads.download({
         url: item.url,
         filename: targetPath,
         conflictAction: 'uniquify'
       });
+      // Guardar en el historial
+      await saveQueueItemToHistory(item, dlId);
       count++;
     } catch (e) {
       console.error("Error descargando elemento de la cola:", e);
     }
   }
 
-  showFeedback(`✅ Se iniciaron ${count} descargas desde la cola.`, true);
+  loadHistory();
+  showFeedback(`Se iniciaron ${count} descargas desde la cola.`, true);
 }
 
 async function clearQueue() {
