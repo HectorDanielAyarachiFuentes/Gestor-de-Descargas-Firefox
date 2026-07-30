@@ -155,6 +155,15 @@ function getFileTypeIcon(filename) {
   return fileIcons[ext] || fileIcons.default;
 }
 
+function formatBytes(bytes, decimals = 1) {
+  if (!bytes || isNaN(bytes) || bytes <= 0) return '';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
 async function loadHistory() {
   const result = await api.storage.local.get({ downloadHistory: [] });
   const historyList = document.getElementById("popupHistory");
@@ -205,10 +214,41 @@ async function loadHistory() {
         <div class="history-item-meta">
           <span class="history-date">${formattedDate}</span>
           <span class="history-folder">📂 ${entry.folder}</span>
+          <span class="history-size"></span>
+          <span class="history-dims"></span>
         </div>
       </div>
       <div class="popup-history-actions"></div>
     `);
+
+    const img = listItem.querySelector(".history-thumb");
+    if (img) {
+      img.onload = function() {
+        if (this.naturalWidth && this.naturalHeight) {
+          const dimsElem = listItem.querySelector(".history-dims");
+          if (dimsElem) {
+            dimsElem.textContent = `📏 ${this.naturalWidth}×${this.naturalHeight} px`;
+          }
+        }
+      };
+    }
+
+    if (entry.id !== undefined) {
+      const numId = Number(entry.id);
+      if (!isNaN(numId)) {
+        api.downloads.search({ id: numId }).then(results => {
+          if (results && results[0]) {
+            const size = results[0].fileSize || results[0].bytesReceived;
+            if (size) {
+              const sizeElem = listItem.querySelector(".history-size");
+              if (sizeElem) {
+                sizeElem.textContent = `💾 ${formatBytes(size)}`;
+              }
+            }
+          }
+        }).catch(() => {});
+      }
+    }
 
     const actionsContainer = listItem.querySelector(".popup-history-actions");
 
@@ -684,12 +724,18 @@ async function addToQueue(rawUrl, htmlData = null) {
   const folder = await resolveTargetFolder(realUrl, filename);
   const isImage = VALID_IMAGE_EXTENSIONS.includes(extension) || realUrl.startsWith('data:image/');
 
+  let size = 0;
+  if (realUrl.startsWith('data:')) {
+    size = Math.round((realUrl.length - (realUrl.indexOf(',') + 1)) * 0.75);
+  }
+
   const item = {
     id: Date.now() + "_" + Math.random().toString(36).substr(2, 5),
     url: realUrl,
     filename,
     folder,
     isImage,
+    size,
     addedAt: Date.now()
   };
 
@@ -728,10 +774,26 @@ function renderQueueList() {
       <div class="queue-thumb-wrapper">${previewHtml}</div>
       <div class="queue-item-details">
         <strong title="${item.filename}">${item.filename}</strong>
-        <small class="target-badge-wrapper">📂 <input type="text" class="queue-folder-input" value="${item.folder}" title="Haz clic para cambiar la carpeta de destino de este archivo" /></small>
+        <div class="queue-meta-row">
+          <small class="target-badge-wrapper">📂 <input type="text" class="queue-folder-input" value="${item.folder}" title="Haz clic para cambiar la carpeta de destino de este archivo" /></small>
+          <span class="queue-dims"></span>
+          <span class="queue-size">${item.size ? '💾 ' + formatBytes(item.size) : ''}</span>
+        </div>
       </div>
       <div class="queue-item-actions"></div>
     `);
+
+    const img = li.querySelector(".queue-thumb");
+    if (img) {
+      img.onload = function() {
+        if (this.naturalWidth && this.naturalHeight) {
+          const dimsElem = li.querySelector(".queue-dims");
+          if (dimsElem) {
+            dimsElem.textContent = `📏 ${this.naturalWidth}×${this.naturalHeight} px`;
+          }
+        }
+      };
+    }
 
     const folderInput = li.querySelector(".queue-folder-input");
     if (folderInput) {

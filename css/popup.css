@@ -988,6 +988,23 @@ details[open] summary:before {
   background-color: rgba(220, 53, 69, 0.1);
 }
 
+.queue-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin-top: 0.15rem;
+}
+
+.queue-dims,
+.queue-size,
+.history-size,
+.history-dims {
+  font-size: 0.72rem;
+  color: var(--muted-text-color);
+  white-space: nowrap;
+}
+
 .target-badge-wrapper {
   display: inline-flex;
   align-items: center;
