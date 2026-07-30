@@ -360,6 +360,18 @@
         "description": "Default folder name for audio files.",
         "message": "Audio"
     },
+    "folder_books": {
+        "description": "Default folder name for ebook files.",
+        "message": "Libros"
+    },
+    "folder_cad": {
+        "description": "Default folder name for CAD files.",
+        "message": "CAD"
+    },
+    "folder_certificates": {
+        "description": "Default folder name for certificate files.",
+        "message": "Certificados"
+    },
     "folder_code": {
         "description": "Default folder name for code files.",
         "message": "Código"
@@ -368,9 +380,29 @@
         "description": "Default folder name for compressed files.",
         "message": "Comprimidos"
     },
+    "folder_databases": {
+        "description": "Default folder name for database files.",
+        "message": "Bases de Datos"
+    },
+    "folder_design": {
+        "description": "Default folder name for design files.",
+        "message": "Diseño"
+    },
+    "folder_diagrams": {
+        "description": "Default folder name for diagram files.",
+        "message": "Diagramas"
+    },
     "folder_documents": {
         "description": "Default folder name for document files.",
         "message": "Documentos"
+    },
+    "folder_emails": {
+        "description": "Default folder name for email files.",
+        "message": "Correos"
+    },
+    "folder_fonts": {
+        "description": "Default folder name for font files.",
+        "message": "Fuentes"
     },
     "folder_images": {
         "description": "Default folder name for image files.",
@@ -396,9 +428,17 @@
         "description": "Default folder name for spreadsheet files.",
         "message": "Hojas_de_Cálculo"
     },
+    "folder_templates": {
+        "description": "Default folder name for template files.",
+        "message": "Plantillas"
+    },
     "folder_text": {
         "description": "Default folder name for text files.",
         "message": "Textos"
+    },
+    "folder_3d": {
+        "description": "Default folder name for 3D model files.",
+        "message": "Modelos 3D"
     },
     "folder_videos": {
         "description": "Default folder name for video files.",
