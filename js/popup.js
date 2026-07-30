@@ -29,8 +29,16 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDownloadQueue();
   setupDragAndDrop();
   initDragTargetControls();
+  initTabNavigation();
 
   // --- Listeners de eventos ---
+  const openFullOptionsBtn = document.getElementById("openFullOptionsBtn");
+  if (openFullOptionsBtn) {
+    openFullOptionsBtn.addEventListener("click", () => {
+      api.runtime.openOptionsPage();
+    });
+  }
+
   if (openOptionsBtn) {
     openOptionsBtn.addEventListener("click", () => {
       api.runtime.openOptionsPage();
@@ -62,9 +70,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  autoOrganizeToggle.addEventListener("change", (e) => {
-    api.storage.sync.set({ autoOrganize: e.target.checked });
-  });
+  if (autoOrganizeToggle) {
+    autoOrganizeToggle.addEventListener("change", (e) => {
+      const isChecked = e.target.checked;
+      api.storage.sync.set({ autoOrganize: isChecked });
+      updateAutoOrganizeUI(isChecked);
+    });
+  }
 
   forceNextDownloadBtn.addEventListener("click", activateForceMode);
   cancelForceBtn.addEventListener("click", deactivateForceMode);
@@ -78,9 +90,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+function updateAutoOrganizeUI(isEnabled) {
+  const toggle = document.getElementById("autoOrganizeToggle");
+  const badge = document.getElementById("statusBadge");
+  const statusText = document.getElementById("statusText");
+
+  // Propagar el estado al body para que CSS también pueda reaccionar
+  document.body.dataset.autoOrganize = isEnabled ? "on" : "off";
+
+  if (toggle) toggle.checked = isEnabled;
+
+  if (badge) {
+    badge.className = isEnabled ? "status-badge active" : "status-badge inactive";
+  }
+
+  if (statusText) {
+    if (isEnabled) {
+      const msg = api.i18n.getMessage("autoOrganizeActive");
+      statusText.textContent = (msg && msg.length > 0) ? msg : "Organización Activa";
+    } else {
+      const msg = api.i18n.getMessage("autoOrganizeDisabled");
+      statusText.textContent = (msg && msg.length > 0) ? msg : "Organización Desactivada";
+    }
+  }
+}
+
 async function loadAppSettings() {
   const { autoOrganize = true } = await api.storage.sync.get("autoOrganize");
-  document.getElementById("autoOrganizeToggle").checked = autoOrganize;
+  updateAutoOrganizeUI(autoOrganize);
 
   const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
   if (forceNextDownload && forceNextDownload.folder) {
@@ -878,4 +915,45 @@ async function processAllQueue() {
 async function clearQueue() {
   downloadQueue = [];
   await saveDownloadQueue();
+}
+
+/* ============================================
+   NAVEGACIÓN POR PESTAÑAS
+   ============================================ */
+
+async function initTabNavigation() {
+  const tabs = document.querySelectorAll(".nav-tab");
+  const { activeTab = 'downloads' } = await api.storage.local.get("activeTab");
+  switchTab(activeTab);
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      const targetTab = tab.dataset.tab;
+      switchTab(targetTab);
+      api.storage.local.set({ activeTab: targetTab });
+    });
+  });
+}
+
+function switchTab(tabId) {
+  const tabs = document.querySelectorAll(".nav-tab");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  tabs.forEach(t => {
+    if (t.dataset.tab === tabId) {
+      t.classList.add("active");
+    } else {
+      t.classList.remove("active");
+    }
+  });
+
+  tabContents.forEach(content => {
+    if (content.id === `tab-${tabId}`) {
+      content.style.display = "block";
+      content.classList.add("active");
+    } else {
+      content.style.display = "none";
+      content.classList.remove("active");
+    }
+  });
 }

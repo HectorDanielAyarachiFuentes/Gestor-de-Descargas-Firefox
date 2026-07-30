@@ -638,6 +638,30 @@
         "description": "Marcador de posición para la carpeta aparte de arrastrados.",
         "message": "Ej: Fotos Arrastradas"
     },
+    "tabDownloads": {
+        "description": "Título de la pestaña Descargas.",
+        "message": "Descargas"
+    },
+    "tabHistory": {
+        "description": "Título de la pestaña Historial.",
+        "message": "Historial"
+    },
+    "tabSettings": {
+        "description": "Título de la pestaña Ajustes.",
+        "message": "Ajustes"
+    },
+    "statusActive": {
+        "description": "Etiqueta de estado activo.",
+        "message": "Activo"
+    },
+    "autoOrganizeActive": {
+        "description": "Texto cuando la organización automática está activa.",
+        "message": "Organización Activa"
+    },
+    "autoOrganizeDisabled": {
+        "description": "Texto cuando la organización automática está desactivada.",
+        "message": "Organización Desactivada"
+    },
     "optionsHeaderSubtitle": {
         "description": "Subtitle on the options page header.",
         "message": "Todos los archivos se almacenarán en tu carpeta predeterminada de Descargas."
