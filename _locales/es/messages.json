@@ -622,6 +622,22 @@
         "description": "Botón para eliminar un elemento de la cola.",
         "message": "Quitar"
     },
+    "dragTargetLabel": {
+        "description": "Etiqueta para la carpeta de destino al arrastrar.",
+        "message": "Guardar arrastrados en:"
+    },
+    "dragTargetAuto": {
+        "description": "Opción para guardar automáticamente por reglas.",
+        "message": "Automático (Reglas)"
+    },
+    "dragTargetCustom": {
+        "description": "Opción para guardar en carpeta personalizada aparte.",
+        "message": "Carpeta Aparte"
+    },
+    "dragFolderPlaceholder": {
+        "description": "Marcador de posición para la carpeta aparte de arrastrados.",
+        "message": "Ej: Fotos Arrastradas"
+    },
     "optionsHeaderSubtitle": {
         "description": "Subtitle on the options page header.",
         "message": "Todos los archivos se almacenarán en tu carpeta predeterminada de Descargas."

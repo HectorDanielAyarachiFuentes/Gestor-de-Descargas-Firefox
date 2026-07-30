@@ -63,6 +63,17 @@
 
   <!-- Zona de Soltado / Drop Zone -->
   <section class="popup-section dropzone-section">
+    <div class="drag-target-selector">
+      <label class="drag-target-label" data-i18n="dragTargetLabel">Guardar arrastrados en:</label>
+      <div class="drag-target-controls">
+        <select id="dragTargetMode" class="drag-target-select">
+          <option value="auto" data-i18n="dragTargetAuto">Automático (Reglas)</option>
+          <option value="custom" data-i18n="dragTargetCustom">Carpeta Aparte</option>
+        </select>
+        <input type="text" id="dragCustomFolderInput" class="drag-custom-folder-input" data-i18n-placeholder="dragFolderPlaceholder" style="display: none;" />
+      </div>
+    </div>
+
     <div id="dropZone" class="drop-zone">
       <div class="drop-zone-icon">
         <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">

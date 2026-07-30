@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadFolderSuggestions();
   loadDownloadQueue();
   setupDragAndDrop();
+  initDragTargetControls();
 
   // --- Listeners de eventos ---
   if (openOptionsBtn) {
@@ -528,12 +529,51 @@ async function extractFilenameAndExtension(rawUrl) {
   };
 }
 
+async function initDragTargetControls() {
+  const dragTargetModeSelect = document.getElementById("dragTargetMode");
+  const dragCustomFolderInput = document.getElementById("dragCustomFolderInput");
+  if (!dragTargetModeSelect || !dragCustomFolderInput) return;
+
+  const { dragTargetMode = 'auto', dragCustomFolder = '' } = await api.storage.local.get(["dragTargetMode", "dragCustomFolder"]);
+  dragTargetModeSelect.value = dragTargetMode;
+  dragCustomFolderInput.value = dragCustomFolder;
+
+  if (dragTargetMode === 'custom') {
+    dragCustomFolderInput.style.display = "inline-block";
+  } else {
+    dragCustomFolderInput.style.display = "none";
+  }
+
+  dragTargetModeSelect.addEventListener("change", async (e) => {
+    const val = e.target.value;
+    if (val === 'custom') {
+      dragCustomFolderInput.style.display = "inline-block";
+      dragCustomFolderInput.focus();
+    } else {
+      dragCustomFolderInput.style.display = "none";
+    }
+    await api.storage.local.set({ dragTargetMode: val });
+  });
+
+  dragCustomFolderInput.addEventListener("input", async (e) => {
+    await api.storage.local.set({ dragCustomFolder: e.target.value.trim() });
+  });
+}
+
 async function resolveTargetFolder(url, filename) {
+  // 1. Comprobar preferencia de carpeta aparte para arrastrados
+  const { dragTargetMode = 'auto', dragCustomFolder = '' } = await api.storage.local.get(["dragTargetMode", "dragCustomFolder"]);
+  if (dragTargetMode === 'custom' && dragCustomFolder.trim()) {
+    return cleanFolderName(dragCustomFolder.trim());
+  }
+
+  // 2. Comprobar modo forzado activo
   const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
   if (forceNextDownload && forceNextDownload.folder) {
     return cleanFolderName(forceNextDownload.folder);
   }
 
+  // 3. Comprobar reglas personalizadas de sync
   const { customRules = [], enabledCategories = {} } = await api.storage.sync.get(["customRules", "enabledCategories"]);
   for (const rule of customRules) {
     if (rule.type === 'url' && url.toLowerCase().includes(rule.value.toLowerCase())) {
@@ -669,10 +709,19 @@ function renderQueueList() {
       <div class="queue-thumb-wrapper">${previewHtml}</div>
       <div class="queue-item-details">
         <strong title="${item.filename}">${item.filename}</strong>
-        <small><span class="target-badge">📂 ${item.folder}</span></small>
+        <small class="target-badge-wrapper">📂 <input type="text" class="queue-folder-input" value="${item.folder}" title="Haz clic para cambiar la carpeta de destino de este archivo" /></small>
       </div>
       <div class="queue-item-actions"></div>
     `);
+
+    const folderInput = li.querySelector(".queue-folder-input");
+    if (folderInput) {
+      folderInput.addEventListener("change", async (e) => {
+        const newFolder = cleanFolderName(e.target.value);
+        item.folder = newFolder;
+        await saveDownloadQueue();
+      });
+    }
 
     const actionsContainer = li.querySelector(".queue-item-actions");
 
