@@ -179,17 +179,36 @@ async function loadHistory() {
   if (emptyHistoryElem) emptyHistoryElem.style.display = "none";
 
   const lastDownloads = result.downloadHistory.slice(-5).reverse();
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'avif', 'ico'];
+
   lastDownloads.forEach(entry => {
     const listItem = document.createElement("li");
+    listItem.className = "history-item";
+
+    const ext = (entry.filename.split('.').pop() || '').toLowerCase();
+    const isImage = imageExts.includes(ext) || (entry.url && entry.url.startsWith('data:image/'));
+
+    const thumbHtml = (isImage && entry.url)
+      ? `<img src="${entry.url}" class="history-thumb" alt="" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><div class="history-item-icon" style="display:none;">${getFileTypeIcon(entry.filename)}</div>`
+      : `<div class="history-item-icon">${getFileTypeIcon(entry.filename)}</div>`;
+
+    const formattedDate = new Date(entry.date).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const displayExt = ext ? ext.toUpperCase() : 'FILE';
 
     setHTML(listItem, `
-        <div class="history-item-icon">${getFileTypeIcon(entry.filename)}</div>
-        <div class="history-item-details">
-          <strong>${entry.filename}</strong>
-          <small>${new Date(entry.date).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} → 📂 ${entry.folder}</small>
+      <div class="history-item-icon-wrapper">${thumbHtml}</div>
+      <div class="history-item-details">
+        <div class="history-item-title-row">
+          <strong title="${entry.filename}">${entry.filename}</strong>
+          <span class="history-ext-badge">${displayExt}</span>
         </div>
-        <div class="popup-history-actions"></div>
-      `);
+        <div class="history-item-meta">
+          <span class="history-date">${formattedDate}</span>
+          <span class="history-folder">📂 ${entry.folder}</span>
+        </div>
+      </div>
+      <div class="popup-history-actions"></div>
+    `);
 
     const actionsContainer = listItem.querySelector(".popup-history-actions");
 
