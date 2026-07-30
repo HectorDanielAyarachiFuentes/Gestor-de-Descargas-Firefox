@@ -61,6 +61,38 @@
     </div>
   </section>
 
+  <!-- Zona de Soltado / Drop Zone -->
+  <section class="popup-section dropzone-section">
+    <div id="dropZone" class="drop-zone">
+      <div class="drop-zone-icon">
+        <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+      </div>
+      <div class="drop-zone-text">
+        <strong data-i18n="dropZoneTitle">Arrastra imágenes o enlaces aquí</strong>
+        <span data-i18n="dropZoneSubtitle">Suelta para añadir a la cola de descargas</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección Cola de Descargas -->
+  <section id="queueSection" class="popup-section queue-section" style="display: none;">
+    <div class="queue-header">
+      <div class="queue-title-wrapper">
+        <h2 class="queue-title" data-i18n="queueTitle">Cola de Descargas</h2>
+        <span id="queueBadge" class="queue-badge">0</span>
+      </div>
+      <div class="queue-actions">
+        <button id="downloadAllQueueBtn" class="btn-queue-action btn-download-all" data-i18n="downloadAllButton">Descargar Todas</button>
+        <button id="clearQueueBtn" class="btn-queue-action btn-clear-queue" data-i18n="clearQueueButton">Vaciar</button>
+      </div>
+    </div>
+    <ul id="queueList" class="queue-list"></ul>
+  </section>
+
   <section class="popup-section history-section">
     <details>
       <summary><span class="summary-text" data-i18n="viewRecentHistory"></span></summary>

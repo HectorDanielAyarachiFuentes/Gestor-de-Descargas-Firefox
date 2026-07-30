@@ -590,6 +590,38 @@
         "description": "Tooltip para desplegar en pantalla dividida (panel lateral).",
         "message": "Abrir en pantalla dividida (panel lateral)"
     },
+    "dropZoneTitle": {
+        "description": "Título de la zona de soltado.",
+        "message": "Arrastra imágenes o enlaces aquí"
+    },
+    "dropZoneSubtitle": {
+        "description": "Subtítulo de la zona de soltado.",
+        "message": "Suelta para añadir a la cola de descargas"
+    },
+    "queueTitle": {
+        "description": "Título de la sección de cola de descargas.",
+        "message": "Cola de Descargas"
+    },
+    "downloadAllButton": {
+        "description": "Botón para descargar todos los elementos de la cola.",
+        "message": "Descargar Todas"
+    },
+    "clearQueueButton": {
+        "description": "Botón para vaciar la cola de descargas.",
+        "message": "Vaciar Cola"
+    },
+    "savingToLabel": {
+        "description": "Etiqueta que indica el destino del archivo en cola.",
+        "message": "Destino:"
+    },
+    "downloadItemButton": {
+        "description": "Botón para descargar un elemento individual.",
+        "message": "Descargar"
+    },
+    "removeItemButton": {
+        "description": "Botón para eliminar un elemento de la cola.",
+        "message": "Quitar"
+    },
     "optionsHeaderSubtitle": {
         "description": "Subtitle on the options page header.",
         "message": "Todos los archivos se almacenarán en tu carpeta predeterminada de Descargas."

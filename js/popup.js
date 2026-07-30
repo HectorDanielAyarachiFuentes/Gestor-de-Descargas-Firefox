@@ -2,8 +2,10 @@
 
 import { applyI18n, setHTML } from './utils.js';
 import { initTheme } from './theme-manager.js';
+import { getFolderNameByExtension } from './rules-engine.js';
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
+let downloadQueue = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   applyI18n(); // <-- Llama a la función de traducción
@@ -16,12 +18,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const forceFolderInput = document.getElementById("forceFolderInput");
   const forceNextDownloadBtn = document.getElementById("forceNextDownloadBtn");
   const cancelForceBtn = document.getElementById("cancelForceBtn");
+  const downloadAllQueueBtn = document.getElementById("downloadAllQueueBtn");
+  const clearQueueBtn = document.getElementById("clearQueueBtn");
 
   // --- Carga de estado y datos iniciales ---
   initTheme();
   loadAppSettings();
   loadHistory();
   loadFolderSuggestions();
+  loadDownloadQueue();
+  setupDragAndDrop();
 
   // --- Listeners de eventos ---
   if (openOptionsBtn) {
@@ -61,6 +67,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   forceNextDownloadBtn.addEventListener("click", activateForceMode);
   cancelForceBtn.addEventListener("click", deactivateForceMode);
+
+  if (downloadAllQueueBtn) {
+    downloadAllQueueBtn.addEventListener("click", processAllQueue);
+  }
+
+  if (clearQueueBtn) {
+    clearQueueBtn.addEventListener("click", clearQueue);
+  }
 });
 
 async function loadAppSettings() {
@@ -263,4 +277,475 @@ function showFeedback(message, success = true) {
   setTimeout(() => {
     feedbackContainer.classList.remove("visible");
   }, 3000);
+}
+
+/* ============================================
+   LÓGICA DE COLA DE DESCARGAS Y DRAG & DROP
+   ============================================ */
+
+async function loadDownloadQueue() {
+  const result = await api.storage.local.get({ downloadQueue: [] });
+  downloadQueue = result.downloadQueue;
+  renderQueueList();
+}
+
+async function saveDownloadQueue() {
+  await api.storage.local.set({ downloadQueue });
+  renderQueueList();
+}
+
+function setupDragAndDrop() {
+  const dropZone = document.getElementById("dropZone");
+  if (!dropZone) return;
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    window.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.add("drag-active");
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    window.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.target === dropZone || !document.body.contains(e.relatedTarget)) {
+        dropZone.classList.remove("drag-active");
+      }
+    }, false);
+  });
+
+  window.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.classList.remove("drag-active");
+
+    const htmlData = e.dataTransfer ? e.dataTransfer.getData('text/html') : null;
+    const urls = extractUrlsFromDrop(e);
+    if (!urls || urls.length === 0) return;
+
+    for (const url of urls) {
+      await addToQueue(url, htmlData);
+    }
+  });
+}
+
+function extractUrlsFromDrop(e) {
+  const urls = [];
+  const dt = e.dataTransfer;
+  if (!dt) return urls;
+
+  // 1. URL directo
+  const uriList = dt.getData('text/uri-list') || dt.getData('URL');
+  if (uriList) {
+    uriList.split('\n').forEach(u => {
+      const trimmed = u.trim();
+      if (trimmed && !trimmed.startsWith('#') && (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:image/'))) {
+        urls.push(trimmed);
+      }
+    });
+  }
+
+  // 2. HTML data (extraer src de img o href de a)
+  const htmlData = dt.getData('text/html');
+  if (htmlData && urls.length === 0) {
+    const doc = new DOMParser().parseFromString(htmlData, 'text/html');
+    const imgs = doc.querySelectorAll('img[src]');
+    imgs.forEach(img => {
+      const src = img.getAttribute('src');
+      if (src && (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:image/'))) {
+        urls.push(src);
+      }
+    });
+
+    if (urls.length === 0) {
+      const links = doc.querySelectorAll('a[href]');
+      links.forEach(a => {
+        const href = a.getAttribute('href');
+        if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+          urls.push(href);
+        }
+      });
+    }
+  }
+
+  // 3. Plain text fallback
+  const textData = dt.getData('text/plain');
+  if (textData && urls.length === 0) {
+    const trimmed = textData.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:image/')) {
+      urls.push(trimmed);
+    }
+  }
+
+  return [...new Set(urls)];
+}
+
+const VALID_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'bmp', 'ico'];
+
+function extractRealImageUrl(rawUrl) {
+  if (!rawUrl) return rawUrl;
+
+  // 1. Google Images imgres
+  if (rawUrl.includes('google.') && rawUrl.includes('/imgres')) {
+    try {
+      const u = new URL(rawUrl);
+      const imgurl = u.searchParams.get('imgurl');
+      if (imgurl) return decodeURIComponent(imgurl);
+    } catch (e) {}
+  }
+
+  // 2. Parámetros de imagen directa en URL
+  try {
+    const u = new URL(rawUrl);
+    for (const param of ['imgurl', 'img_url', 'image_url', 'media', 'src']) {
+      const val = u.searchParams.get(param);
+      if (val && (val.startsWith('http://') || val.startsWith('https://'))) {
+        return decodeURIComponent(val);
+      }
+    }
+  } catch (e) {}
+
+  return rawUrl;
+}
+
+function detectImageExtension(url, contentTypeHeader = null) {
+  if (!url) return 'jpg';
+
+  if (url.startsWith('data:image/')) {
+    const mime = url.substring(5, url.indexOf(';'));
+    const ext = mime.split('/')[1] || 'png';
+    return ext === 'jpeg' ? 'jpg' : ext;
+  }
+
+  if (contentTypeHeader) {
+    const mime = contentTypeHeader.toLowerCase().split(';')[0].trim();
+    const mimeMap = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/gif': 'gif',
+      'image/svg+xml': 'svg',
+      'image/avif': 'avif',
+      'image/bmp': 'bmp',
+      'image/x-icon': 'ico',
+      'image/vnd.microsoft.icon': 'ico'
+    };
+    if (mimeMap[mime]) return mimeMap[mime];
+  }
+
+  try {
+    const u = new URL(url);
+    const formatParam = u.searchParams.get('format') || u.searchParams.get('fm') || u.searchParams.get('ext');
+    if (formatParam && VALID_IMAGE_EXTENSIONS.includes(formatParam.toLowerCase())) {
+      return formatParam.toLowerCase() === 'jpeg' ? 'jpg' : formatParam.toLowerCase();
+    }
+
+    const pathname = u.pathname;
+    const parts = pathname.split('/');
+    const lastPart = parts.pop() || '';
+    if (lastPart.includes('.')) {
+      const ext = lastPart.split('.').pop().toLowerCase();
+      if (VALID_IMAGE_EXTENSIONS.includes(ext)) {
+        return ext === 'jpeg' ? 'jpg' : ext;
+      }
+    }
+  } catch (e) {}
+
+  return 'jpg';
+}
+
+async function fetchImageContentType(url) {
+  if (!url || url.startsWith('data:') || !url.startsWith('http')) return null;
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const resp = await fetch(url, { method: 'HEAD', signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (resp.ok) {
+      return resp.headers.get('content-type');
+    }
+  } catch (e) {}
+  return null;
+}
+
+function cleanFolderName(folder) {
+  if (!folder) return api.i18n.getMessage("folder_images") || "Imágenes";
+  return folder.replace(/[\\:*?"<>|]/g, '_').trim();
+}
+
+async function extractFilenameAndExtension(rawUrl) {
+  const realUrl = extractRealImageUrl(rawUrl);
+  let extension = detectImageExtension(realUrl);
+  let rawName = 'imagen';
+
+  try {
+    if (realUrl.startsWith('data:image/')) {
+      rawName = `imagen_${Date.now().toString().slice(-4)}`;
+    } else {
+      const u = new URL(realUrl);
+      let pathLast = u.pathname.split('/').filter(Boolean).pop() || '';
+
+      if (pathLast.includes('.')) {
+        const parts = pathLast.split('.');
+        const possibleExt = parts.pop().toLowerCase();
+        if (VALID_IMAGE_EXTENSIONS.includes(possibleExt)) {
+          extension = possibleExt === 'jpeg' ? 'jpg' : possibleExt;
+          rawName = parts.join('.');
+        } else {
+          rawName = pathLast;
+        }
+      } else if (pathLast) {
+        rawName = pathLast;
+      }
+
+      if (!VALID_IMAGE_EXTENSIONS.includes(extension) || extension === 'jpg') {
+        const mime = await fetchImageContentType(realUrl);
+        if (mime) {
+          extension = detectImageExtension(realUrl, mime);
+        }
+      }
+    }
+  } catch (e) {
+    rawName = `imagen_${Date.now().toString().slice(-4)}`;
+  }
+
+  rawName = decodeURIComponent(rawName)
+    .replace(/[/\\?%*:|"<>]/g, '_')
+    .replace(/\s+/g, '_')
+    .replace(/^\.+|\.+$|com$|cat$|org$|net$/gi, '')
+    .trim();
+
+  if (!rawName || rawName.toLowerCase() === 'imgres' || rawName.toLowerCase() === 'images') {
+    rawName = `imagen_${Date.now().toString().slice(-4)}`;
+  }
+
+  return {
+    realUrl,
+    filename: `${rawName}.${extension}`,
+    extension
+  };
+}
+
+async function resolveTargetFolder(url, filename) {
+  const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
+  if (forceNextDownload && forceNextDownload.folder) {
+    return cleanFolderName(forceNextDownload.folder);
+  }
+
+  const { customRules = [], enabledCategories = {} } = await api.storage.sync.get(["customRules", "enabledCategories"]);
+  for (const rule of customRules) {
+    if (rule.type === 'url' && url.toLowerCase().includes(rule.value.toLowerCase())) {
+      return cleanFolderName(rule.folder);
+    }
+    if (rule.type === 'filename' && filename.toLowerCase().includes(rule.value.toLowerCase())) {
+      return cleanFolderName(rule.folder);
+    }
+  }
+
+  const ext = filename.split('.').pop() || "";
+  const catFolder = getFolderNameByExtension(ext, enabledCategories);
+  if (catFolder) return cleanFolderName(catFolder);
+
+  return cleanFolderName(api.i18n.getMessage("folder_images") || "Imágenes");
+}
+
+async function resolveDirectImageUrl(rawUrl, htmlData = null) {
+  if (!rawUrl) return rawUrl;
+
+  let realUrl = extractRealImageUrl(rawUrl);
+  const cleanPath = realUrl.split('?')[0].split('#')[0].toLowerCase();
+  const isDirectImage = VALID_IMAGE_EXTENSIONS.some(ext => cleanPath.endsWith('.' + ext)) || realUrl.startsWith('data:image/');
+  if (isDirectImage) return realUrl;
+
+  if (htmlData) {
+    try {
+      const doc = new DOMParser().parseFromString(htmlData, 'text/html');
+      const img = doc.querySelector('img[src]');
+      if (img && img.src && (img.src.startsWith('http://') || img.src.startsWith('https://') || img.src.startsWith('data:image/'))) {
+        return img.src;
+      }
+      const meta = doc.querySelector('meta[property="og:image"], meta[name="twitter:image"]');
+      if (meta && meta.content) {
+        return meta.content;
+      }
+    } catch (e) {}
+  }
+
+  if (realUrl.startsWith('http://') || realUrl.startsWith('https://')) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const resp = await fetch(realUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      const contentType = resp.headers.get('content-type') || '';
+      if (contentType.includes('text/html')) {
+        const text = await resp.text();
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        
+        const ogImg = doc.querySelector('meta[property="og:image"], meta[name="twitter:image"]');
+        if (ogImg && ogImg.content) {
+          let ogUrl = ogImg.content;
+          if (ogUrl.startsWith('//')) ogUrl = 'https:' + ogUrl;
+          else if (ogUrl.startsWith('/')) ogUrl = new URL(ogUrl, realUrl).href;
+          return ogUrl;
+        }
+
+        const imgs = Array.from(doc.querySelectorAll('img[src]'));
+        for (const img of imgs) {
+          let src = img.getAttribute('src');
+          if (src && !src.includes('avatar') && !src.includes('logo') && !src.includes('icon')) {
+            if (src.startsWith('//')) src = 'https:' + src;
+            else if (src.startsWith('/')) src = new URL(src, realUrl).href;
+            if (src.startsWith('http://') || src.startsWith('https://')) {
+              return src;
+            }
+          }
+        }
+      } else if (contentType.includes('image/')) {
+        return realUrl;
+      }
+    } catch (e) {}
+  }
+
+  return realUrl;
+}
+
+async function addToQueue(rawUrl, htmlData = null) {
+  const resolvedUrl = await resolveDirectImageUrl(rawUrl, htmlData);
+  const { realUrl, filename, extension } = await extractFilenameAndExtension(resolvedUrl);
+
+  if (['html', 'htm', 'php', 'aspx'].includes(extension.toLowerCase())) {
+    showFeedback("No se encontró una imagen válida en el enlace arrastrado", false);
+    return;
+  }
+
+  const folder = await resolveTargetFolder(realUrl, filename);
+  const isImage = VALID_IMAGE_EXTENSIONS.includes(extension) || realUrl.startsWith('data:image/');
+
+  const item = {
+    id: Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+    url: realUrl,
+    filename,
+    folder,
+    isImage,
+    addedAt: Date.now()
+  };
+
+  downloadQueue.push(item);
+  await saveDownloadQueue();
+  showFeedback(`Añadido a la cola (📂 ${folder})`, true);
+}
+
+function renderQueueList() {
+  const queueSection = document.getElementById("queueSection");
+  const queueList = document.getElementById("queueList");
+  const queueBadge = document.getElementById("queueBadge");
+
+  if (!queueSection || !queueList || !queueBadge) return;
+
+  queueBadge.textContent = String(downloadQueue.length);
+
+  if (downloadQueue.length === 0) {
+    queueSection.style.display = "none";
+    queueList.textContent = "";
+    return;
+  }
+
+  queueSection.style.display = "block";
+  queueList.textContent = "";
+
+  downloadQueue.forEach(item => {
+    const li = document.createElement("li");
+    li.className = "queue-item";
+
+    const previewHtml = item.isImage 
+      ? `<img src="${item.url}" class="queue-thumb" alt="" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><div class="queue-thumb-fallback-icon" style="display:none;">🖼️</div>`
+      : `<div class="queue-thumb-icon">${getFileTypeIcon(item.filename)}</div>`;
+
+    setHTML(li, `
+      <div class="queue-thumb-wrapper">${previewHtml}</div>
+      <div class="queue-item-details">
+        <strong title="${item.filename}">${item.filename}</strong>
+        <small><span class="target-badge">📂 ${item.folder}</span></small>
+      </div>
+      <div class="queue-item-actions"></div>
+    `);
+
+    const actionsContainer = li.querySelector(".queue-item-actions");
+
+    const dlBtn = document.createElement("button");
+    dlBtn.className = "btn-queue-dl";
+    dlBtn.textContent = api.i18n.getMessage("downloadItemButton") || "Descargar";
+    dlBtn.addEventListener("click", () => processSingleQueueItem(item.id));
+
+    const rmBtn = document.createElement("button");
+    rmBtn.className = "btn-queue-rm";
+    rmBtn.textContent = "✖";
+    rmBtn.title = api.i18n.getMessage("removeItemButton") || "Quitar";
+    rmBtn.addEventListener("click", () => removeFromQueue(item.id));
+
+    actionsContainer.appendChild(dlBtn);
+    actionsContainer.appendChild(rmBtn);
+
+    queueList.appendChild(li);
+  });
+}
+
+async function processSingleQueueItem(itemId) {
+  const index = downloadQueue.findIndex(i => i.id === itemId);
+  if (index === -1) return;
+
+  const item = downloadQueue[index];
+  const targetPath = item.folder ? `${item.folder}/${item.filename}` : item.filename;
+
+  try {
+    await api.downloads.download({
+      url: item.url,
+      filename: targetPath,
+      conflictAction: 'uniquify'
+    });
+    downloadQueue.splice(index, 1);
+    await saveDownloadQueue();
+  } catch (err) {
+    console.error("Error al descargar ítem de la cola:", err);
+    showFeedback(api.i18n.getMessage("statusErrorGeneric") + ": " + (err.message || "Error"), false);
+  }
+}
+
+async function removeFromQueue(itemId) {
+  downloadQueue = downloadQueue.filter(i => i.id !== itemId);
+  await saveDownloadQueue();
+}
+
+async function processAllQueue() {
+  if (downloadQueue.length === 0) return;
+
+  const itemsToProcess = [...downloadQueue];
+  downloadQueue = [];
+  await saveDownloadQueue();
+
+  let count = 0;
+  for (const item of itemsToProcess) {
+    const targetPath = item.folder ? `${item.folder}/${item.filename}` : item.filename;
+    try {
+      await api.downloads.download({
+        url: item.url,
+        filename: targetPath,
+        conflictAction: 'uniquify'
+      });
+      count++;
+    } catch (e) {
+      console.error("Error descargando elemento de la cola:", e);
+    }
+  }
+
+  showFeedback(`✅ Se iniciaron ${count} descargas desde la cola.`, true);
+}
+
+async function clearQueue() {
+  downloadQueue = [];
+  await saveDownloadQueue();
 }
