@@ -493,6 +493,23 @@ input:checked + .slider:before {
   transform: translateY(0);
 }
 
+.force-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--hover-bg-color);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--card-border);
+}
+
+.force-options-label {
+  font-size: 0.78rem;
+  color: var(--muted-text-color);
+  font-weight: 500;
+}
+
 /* Preset Chips */
 .quick-presets-wrapper {
   margin-top: 0.75rem;

@@ -168,18 +168,24 @@ async function determineDestination(downloadItem, originUrl) {
     const baseFilename = tempFilename.split(/[/\\]/).pop() || "descarga";
 
     if (forceNextDownload) {
+        console.log("📋 [FORCE DEBUG] determineDestination - forceNextDownload found:", JSON.stringify(forceNextDownload));
         if (forceNextDownload.undo) {
+            console.log("📋 [FORCE DEBUG] determineDestination - undo flag detected, REMOVING forceNextDownload");
             await api.storage.local.remove("forceNextDownload");
             return null;
         }
         if (forceNextDownload.folder) {
+            console.log("📋 [FORCE DEBUG] determineDestination - returning force result, isPersistent:", !!forceNextDownload.persistent);
             return {
                 folderName: forceNextDownload.folder,
                 finalFilename: sanitize(baseFilename),
                 isForce: true,
-                isManual: false
+                isManual: false,
+                isPersistent: !!forceNextDownload.persistent
             };
         }
+    } else {
+        console.log("📋 [FORCE DEBUG] determineDestination - NO forceNextDownload in storage");
     }
 
     const { autoOrganize, customRules = [], customCategories = [], defaultCategories = {} } = await api.storage.sync.get({
@@ -303,9 +309,15 @@ async function determineDestination(downloadItem, originUrl) {
 }
 
 async function processDownloadSuccess(downloadItem, result, originUrl) {
+    console.log("📋 [FORCE DEBUG] processDownloadSuccess - isForce:", result.isForce, "isPersistent:", result.isPersistent);
     if (result.isForce) {
-        await api.storage.local.remove("forceNextDownload");
-        api.action.setBadgeText({ text: '' });
+        if (!result.isPersistent) {
+            console.log("📋 [FORCE DEBUG] processDownloadSuccess - NOT persistent, REMOVING forceNextDownload");
+            await api.storage.local.remove("forceNextDownload");
+            api.action.setBadgeText({ text: '' });
+        } else {
+            console.log("📋 [FORCE DEBUG] processDownloadSuccess - IS persistent, KEEPING forceNextDownload");
+        }
     } else if (result.originalDestinationInfo) {
         try {
             if (api.storage.session) {
@@ -325,7 +337,16 @@ async function processDownloadSuccess(downloadItem, result, originUrl) {
         showNotification(result.finalFilename, result.folderName, downloadItem.id);
         api.action.setBadgeText({ text: '✓' });
         api.action.setBadgeBackgroundColor({ color: '#4688F1' });
-        setTimeout(() => api.action.setBadgeText({ text: '' }), 3000);
+        setTimeout(async () => {
+            const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
+            if (forceNextDownload && forceNextDownload.folder) {
+                const persistent = forceNextDownload.persistent || false;
+                api.action.setBadgeText({ text: persistent ? '∞' : '1' });
+                api.action.setBadgeBackgroundColor({ color: '#007bff' });
+            } else {
+                api.action.setBadgeText({ text: '' });
+            }
+        }, 3000);
     }
 
     if (api.notifications.onButtonClicked && !api.notifications.onButtonClicked.hasListener(handleNotificationButtonClick)) {
@@ -444,12 +465,19 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
     let isManualBypass = false;
     try {
         const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
+        console.log("📋 [FORCE DEBUG] onCreated - forceNextDownload at start:", JSON.stringify(forceNextDownload));
         if (forceNextDownload && forceNextDownload.organizeUrls && forceNextDownload.organizeUrls.includes(downloadItem.url)) {
             isManualBypass = true;
             const newUrls = forceNextDownload.organizeUrls.filter(u => u !== downloadItem.url);
             if (newUrls.length > 0) {
                 await api.storage.local.set({ forceNextDownload: { ...forceNextDownload, organizeUrls: newUrls } });
+            } else if (forceNextDownload.folder) {
+                // Preserve the folder rule (and persistent flag), only remove organizeUrls
+                const { organizeUrls, ...rest } = forceNextDownload;
+                console.log("📋 [FORCE DEBUG] onCreated - organizeUrls empty, preserving folder rule:", JSON.stringify(rest));
+                await api.storage.local.set({ forceNextDownload: rest });
             } else {
+                console.log("📋 [FORCE DEBUG] onCreated - organizeUrls empty AND no folder, REMOVING forceNextDownload");
                 await api.storage.local.remove("forceNextDownload");
             }
         }
@@ -476,7 +504,11 @@ api.downloads.onCreated.addListener(async (downloadItem) => {
     if (downloadItem.id in determinedDestinations) return;
 
     const { autoOrganize = true, customRules = [] } = await api.storage.sync.get({ autoOrganize: true, customRules: [] });
-    if (!autoOrganize) return;
+    // If autoOrganize is off, still allow force folder mode to work
+    if (!autoOrganize) {
+        const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
+        if (!forceNextDownload || !forceNextDownload.folder) return;
+    }
 
     if (IS_FIREFOX) {
         // --- LÓGICA DE FIREFOX ---
@@ -577,11 +609,18 @@ function handleNotificationButtonClick(notifId, btnIdx) {
     if (btnIdx === 0) { // Undo Organization
         const downloadId = Number(notifId);
         if (!isNaN(downloadId)) {
-            api.downloads.search({ id: downloadId }, (results) => {
+            api.downloads.search({ id: downloadId }, async (results) => {
                 if (results && results[0] && results[0].url) {
-                    api.storage.local.set({ forceNextDownload: { undo: true } }, () => {
-                        api.downloads.download({ url: results[0].url });
-                    });
+                    // Preserve the existing force folder rule if persistent
+                    const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
+                    if (forceNextDownload && forceNextDownload.folder && forceNextDownload.persistent) {
+                        // Add undo URL to organizeUrls so the re-download bypasses organization
+                        const organizeUrls = (forceNextDownload.organizeUrls || []).concat(results[0].url);
+                        await api.storage.local.set({ forceNextDownload: { ...forceNextDownload, organizeUrls } });
+                    } else {
+                        await api.storage.local.set({ forceNextDownload: { undo: true } });
+                    }
+                    api.downloads.download({ url: results[0].url });
                 }
             });
             api.notifications.clear(notifId);
@@ -592,6 +631,15 @@ function handleNotificationButtonClick(notifId, btnIdx) {
 api.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.downloadHistory) {
         // Removed badge text update as per user request
+    }
+    if (area === 'local' && changes.forceNextDownload) {
+        console.log("📋 [FORCE DEBUG] storage.onChanged - forceNextDownload CHANGED!");
+        console.log("📋 [FORCE DEBUG]   oldValue:", JSON.stringify(changes.forceNextDownload.oldValue));
+        console.log("📋 [FORCE DEBUG]   newValue:", JSON.stringify(changes.forceNextDownload.newValue));
+        if (!changes.forceNextDownload.newValue) {
+            console.log("📋 [FORCE DEBUG]   ⚠️ forceNextDownload was DELETED!");
+            console.trace("📋 [FORCE DEBUG] Stack trace for deletion:");
+        }
     }
 });
 

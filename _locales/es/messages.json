@@ -456,6 +456,10 @@
         "description": "Placeholder text for the force download input.",
         "message": "Ej: Proyectos/Web"
     },
+    "forcePersistentLabel": {
+        "description": "Label for the force persistent mode checkbox.",
+        "message": "Mantener activo para múltiples descargas"
+    },
     "generalSettingsTitle": {
         "description": "Title for the general settings section.",
         "message": "Ajustes Generales"
@@ -738,6 +742,15 @@
     "popup_forceActiveText": {
         "description": "Texto que muestra a dónde irá la próxima descarga forzada. $folder$ es un marcador.",
         "message": "Próxima descarga irá a:<br><strong>$folder$</strong>",
+        "placeholders": {
+            "folder": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_forceActivePersistentText": {
+        "description": "Texto que muestra a dónde irán todas las descargas forzadas. $folder$ es un marcador.",
+        "message": "Todas las descargas irán a:<br><strong>$folder$</strong>",
         "placeholders": {
             "folder": {
                 "content": "$1"

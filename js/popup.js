@@ -167,7 +167,12 @@ async function loadAppSettings() {
 
   const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
   if (forceNextDownload && forceNextDownload.folder) {
-    showActiveForceView(forceNextDownload.folder);
+    const persistent = forceNextDownload.persistent || false;
+    const checkbox = document.getElementById("forcePersistentCheckbox");
+    if (checkbox) {
+      checkbox.checked = persistent;
+    }
+    showActiveForceView(forceNextDownload.folder, persistent);
   }
 }
 
@@ -175,11 +180,14 @@ async function activateForceMode() {
   const folder = document.getElementById("forceFolderInput").value.trim();
   if (!folder) return;
 
-  const forceRule = { folder: folder };
+  const checkbox = document.getElementById("forcePersistentCheckbox");
+  const persistent = checkbox ? checkbox.checked : false;
+
+  const forceRule = { folder: folder, persistent: persistent };
   await api.storage.local.set({ forceNextDownload: forceRule });
-  api.action.setBadgeText({ text: '1' });
+  api.action.setBadgeText({ text: persistent ? '∞' : '1' });
   api.action.setBadgeBackgroundColor({ color: '#007bff' });
-  showActiveForceView(folder);
+  showActiveForceView(folder, persistent);
 }
 
 async function deactivateForceMode() {
@@ -188,11 +196,11 @@ async function deactivateForceMode() {
   showIdleForceView();
 }
 
-function showActiveForceView(folder) {
+function showActiveForceView(folder, persistent = false) {
   document.getElementById("force-idle-view").style.display = "none";
   const activeView = document.getElementById("force-active-view");
-  // Usamos getMessage con un marcador de posición
-  setHTML(activeView.querySelector(".force-active-text"), api.i18n.getMessage("popup_forceActiveText", folder));
+  const messageKey = persistent ? "popup_forceActivePersistentText" : "popup_forceActiveText";
+  setHTML(activeView.querySelector(".force-active-text"), api.i18n.getMessage(messageKey, folder));
   activeView.style.display = "block";
 }
 
@@ -200,6 +208,10 @@ function showIdleForceView() {
   document.getElementById("force-active-view").style.display = "none";
   document.getElementById("force-idle-view").style.display = "block";
   document.getElementById("forceFolderInput").value = "";
+  const checkbox = document.getElementById("forcePersistentCheckbox");
+  if (checkbox) {
+    checkbox.checked = false;
+  }
 }
 
 async function loadFolderSuggestions() {

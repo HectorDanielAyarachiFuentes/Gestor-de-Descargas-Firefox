@@ -404,6 +404,10 @@
         "description": "Placeholder text for the force download input.",
         "message": "Ex: Projects/Web"
     },
+    "forcePersistentLabel": {
+        "description": "Label for the force persistent mode checkbox.",
+        "message": "Keep active for multiple downloads"
+    },
     "generalSettingsTitle": {
         "description": "Title for the general settings section.",
         "message": "General Settings"
@@ -606,6 +610,15 @@
     "popup_forceActiveText": {
         "description": "Text showing where the next forced download will go. $folder$ is a placeholder.",
         "message": "Next download will go to:<br><strong>$folder$</strong>",
+        "placeholders": {
+            "folder": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_forceActivePersistentText": {
+        "description": "Text showing where all forced downloads will go. $folder$ is a placeholder.",
+        "message": "All downloads will go to:<br><strong>$folder$</strong>",
         "placeholders": {
             "folder": {
                 "content": "$1"
