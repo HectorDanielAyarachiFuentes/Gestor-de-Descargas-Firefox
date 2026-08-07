@@ -148,8 +148,61 @@ if (api.contextMenus) {
 }
 
 // ======================================================================
-// onCreated: Para capturar reglas de URL y referrer ANTES de la descarga
+// Interceptación Directa de Descargas desde Content Script (1 Solo Paso Rápido)
 // ======================================================================
+api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg && msg.type === 'DIRECT_DOWNLOAD_INTERCEPT') {
+        const handleDirectDownload = async () => {
+            try {
+                const originUrl = msg.originUrl || (sender.tab && sender.tab.url) || "";
+                let filenameCandidate = msg.suggestedFilename || "";
+                if (!filenameCandidate) {
+                    try {
+                        const urlObj = new URL(msg.url);
+                        filenameCandidate = urlObj.pathname.split('/').pop() || "";
+                    } catch (e) {}
+                }
+
+                const mockItem = {
+                    url: msg.url,
+                    filename: filenameCandidate
+                };
+
+                const dest = await determineDestination(mockItem, originUrl);
+                if (!dest) {
+                    return { handled: false };
+                }
+
+                const safeFolder = dest.folderName.replace(/\\/g, '/').replace(/[<>:"|?*]+/g, '_');
+                const safeName = sanitize(dest.finalFilename);
+                const finalPath = `${safeFolder}/${safeName}`;
+
+                const downloadOptions = {
+                    url: msg.url,
+                    filename: finalPath,
+                    conflictAction: 'uniquify',
+                    saveAs: false
+                };
+
+                const newId = await api.downloads.download(downloadOptions);
+                if (newId) {
+                    restartedDownloadIds.add(newId);
+                    const updatedItem = { id: newId, url: msg.url, filename: finalPath };
+                    processDownloadSuccess(updatedItem, dest, originUrl);
+                    return { handled: true, success: true };
+                }
+                return { handled: false };
+            } catch (err) {
+                console.error("[Gestor] Error en DIRECT_DOWNLOAD_INTERCEPT:", err);
+                return { handled: false };
+            }
+        };
+
+        handleDirectDownload().then(res => sendResponse(res)).catch(() => sendResponse({ handled: false }));
+        return true; // Respuesta asíncrona
+    }
+});
+
 // ======================================================================
 // Lógica compartida para calcular el destino
 // ======================================================================
@@ -388,182 +441,85 @@ async function processDownloadSuccess(downloadItem, result, originUrl) {
     }
 }
 
-async function tryOrganizeFirefoxDownload(downloadItem) {
-    if (!IS_FIREFOX) return false;
+// ======================================================================
+// Lógica de Organización Automática para Firefox (100% Nativo en el Navegador)
+// ======================================================================
+if (IS_FIREFOX) {
+    async function organizeFirefoxItem(item) {
+        if (!item || !item.url) return;
+        if (restartedDownloadIds.has(item.id) || item.byExtensionId === api.runtime.id) return;
 
-    if (!downloadItem || !downloadItem.url) {
-        return false;
-    }
+        const originUrl = await getOriginUrl(item);
+        const dest = await determineDestination(item, originUrl);
+        if (!dest) return;
 
-    if (restartedDownloadIds.has(downloadItem.id) || restartedUrls.has(downloadItem.url)) {
-        restartedDownloadIds.add(downloadItem.id);
-        return false;
-    }
-    if (downloadItem.byExtensionId === api.runtime.id) {
-        return false;
-    }
-
-    try {
-        const originUrl = await getOriginUrl(downloadItem);
-        const dest = await determineDestination(downloadItem, originUrl);
-
-        if (!dest) {
-            return false;
-        }
-
-        // Normalize Windows backslashes to forward slashes for nested folders,
-        // then remove characters that are invalid in Windows folder names: < > : " | ? *
         const safeFolder = dest.folderName.replace(/\\/g, '/').replace(/[<>:"|?*]+/g, '_');
         const safeName = sanitize(dest.finalFilename);
         const finalPath = `${safeFolder}/${safeName}`;
 
+        const normFilename = (item.filename || "").replace(/\\/g, '/');
+        // Si ya se encuentra dentro de la subcarpeta destino, no hacer nada
+        if (normFilename.includes(`/${safeFolder}/`) || normFilename.startsWith(`${safeFolder}/`)) {
+            return;
+        }
+
+        restartedDownloadIds.add(item.id);
+
         const downloadOptions = {
-            url: downloadItem.url,
+            url: item.url,
             filename: finalPath,
             conflictAction: 'uniquify',
             saveAs: false
         };
+        if (item.referrer) downloadOptions.headers = [{ name: 'Referer', value: item.referrer }];
+        if (item.cookieStoreId) downloadOptions.cookieStoreId = item.cookieStoreId;
 
-        if (downloadItem.referrer && (downloadItem.referrer.startsWith('http://') || downloadItem.referrer.startsWith('https://'))) {
-            downloadOptions.headers = [{ name: 'Referer', value: downloadItem.referrer }];
-        }
-        if (downloadItem.cookieStoreId) {
-            downloadOptions.cookieStoreId = downloadItem.cookieStoreId;
-        }
-
-        restartedUrls.set(downloadItem.url, Date.now());
-        setTimeout(() => restartedUrls.delete(downloadItem.url), 15000);
-
-        let newId;
+        let newId = null;
         try {
             newId = await api.downloads.download(downloadOptions);
-        } catch (downloadErr) {
-            console.warn("Retrying download without headers/cookieStoreId:", downloadErr);
+        } catch(e) {
             delete downloadOptions.headers;
             delete downloadOptions.cookieStoreId;
-            newId = await api.downloads.download(downloadOptions);
-        }
-
-        restartedDownloadIds.add(newId);
-        setTimeout(() => restartedDownloadIds.delete(newId), 30000);
-
-        try {
-            await api.downloads.cancel(downloadItem.id);
-            await api.downloads.erase({ id: downloadItem.id });
-        } catch (e) {}
-
-        const updatedItem = { ...downloadItem, id: newId, filename: finalPath };
-        processDownloadSuccess(updatedItem, dest, originUrl);
-        return true;
-    } catch (err) {
-        console.error("Error al re-lanzar descarga en Firefox:", err);
-        return false;
-    }
-}
-
-api.downloads.onCreated.addListener(async (downloadItem) => {
-    console.log("🚀 [Gestor de Descargas] EVENTO onCreated DISPARADO!", downloadItem);
-
-    let isManualBypass = false;
-    try {
-        const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
-        console.log("📋 [FORCE DEBUG] onCreated - forceNextDownload at start:", JSON.stringify(forceNextDownload));
-        if (forceNextDownload && forceNextDownload.organizeUrls && forceNextDownload.organizeUrls.includes(downloadItem.url)) {
-            isManualBypass = true;
-            const newUrls = forceNextDownload.organizeUrls.filter(u => u !== downloadItem.url);
-            if (newUrls.length > 0) {
-                await api.storage.local.set({ forceNextDownload: { ...forceNextDownload, organizeUrls: newUrls } });
-            } else if (forceNextDownload.folder) {
-                // Preserve the folder rule (and persistent flag), only remove organizeUrls
-                const { organizeUrls, ...rest } = forceNextDownload;
-                console.log("📋 [FORCE DEBUG] onCreated - organizeUrls empty, preserving folder rule:", JSON.stringify(rest));
-                await api.storage.local.set({ forceNextDownload: rest });
-            } else {
-                console.log("📋 [FORCE DEBUG] onCreated - organizeUrls empty AND no folder, REMOVING forceNextDownload");
-                await api.storage.local.remove("forceNextDownload");
-            }
-        }
-    } catch(e) { console.log("Error checking manual bypass", e); }
-
-    if (IS_FIREFOX && !isManualBypass) {
-        if (restartedDownloadIds.has(downloadItem.id) || (downloadItem.url && restartedUrls.has(downloadItem.url))) {
-            restartedDownloadIds.add(downloadItem.id);
-            return;
-        }
-        if (downloadItem.byExtensionId === api.runtime.id) {
-            return;
-        }
-    }
-
-    let determinedDestinations = {};
-    try {
-        if (api.storage.session) {
-            const result = await api.storage.session.get("determinedDestinations");
-            determinedDestinations = result.determinedDestinations || {};
-        }
-    } catch (e) { console.log("Session storage error onCreated", e); }
-
-    if (downloadItem.id in determinedDestinations) return;
-
-    const { autoOrganize = true, customRules = [] } = await api.storage.sync.get({ autoOrganize: true, customRules: [] });
-    // If autoOrganize is off, still allow force folder mode to work
-    if (!autoOrganize) {
-        const { forceNextDownload } = await api.storage.local.get("forceNextDownload");
-        if (!forceNextDownload || !forceNextDownload.folder) return;
-    }
-
-    if (IS_FIREFOX) {
-        // --- LÓGICA DE FIREFOX ---
-        const organized = await tryOrganizeFirefoxDownload(downloadItem);
-        if (!organized) {
-            pendingFilenameCheckIds.add(downloadItem.id);
-            setTimeout(() => pendingFilenameCheckIds.delete(downloadItem.id), 60000);
-        }
-        return;
-    }
-
-    // --- LÓGICA DE CHROME ---
-    for (const rule of customRules) {
-        if (rule.type === 'url') {
-            const ruleValue = (rule.value ?? '').toLowerCase();
-            if (!ruleValue) continue;
-
-            const downloadUrl = downloadItem.url.toLowerCase();
-            const referrerUrl = (downloadItem.referrer || "").toLowerCase();
-            const originUrlLower = originUrl.toLowerCase();
-
-            if (downloadUrl.includes(ruleValue) || referrerUrl.includes(ruleValue) || originUrlLower.includes(ruleValue)) {
-                try {
-                    if (api.storage.session) {
-                        const sessionData = await api.storage.session.get({ determinedDestinations: {} });
-                        const dests = sessionData.determinedDestinations || {};
-                        dests[downloadItem.id] = { folder: rule.folder, isManual: false, rule: rule };
-                        await api.storage.session.set({ determinedDestinations: dests });
-                    }
-                } catch (e) { console.log("Session storage error assigning url rule", e); }
-                return;
-            }
-        }
-    }
-});
-
-// ======================================================================
-// onChanged: FIREFOX FILENAME HEADER CHECK (GitHub, Moodle, Drive)
-// ======================================================================
-if (IS_FIREFOX && api.downloads.onChanged) {
-    api.downloads.onChanged.addListener(async (delta) => {
-        if (delta.filename && delta.filename.current && pendingFilenameCheckIds.has(delta.id)) {
-            pendingFilenameCheckIds.delete(delta.id);
             try {
-                const results = await api.downloads.search({ id: delta.id });
-                if (results && results.length > 0) {
-                    await tryOrganizeFirefoxDownload(results[0]);
-                }
-            } catch (e) {
-                console.error("[Gestor] Error en onChanged filename check:", e);
+                newId = await api.downloads.download(downloadOptions);
+            } catch(e2) {
+                console.warn("[Gestor] No se pudo relanzar:", e2);
             }
+        }
+
+        if (newId) {
+            restartedDownloadIds.add(newId);
+            setTimeout(() => restartedDownloadIds.delete(newId), 30000);
+
+            // Cancelar y limpiar el archivo original de la raíz de Descargas
+            try { await api.downloads.cancel(item.id); } catch(e) {}
+            try { if (api.downloads.removeFile) await api.downloads.removeFile(item.id); } catch(e) {}
+            try { await api.downloads.erase({ id: item.id }); } catch(e) {}
+
+            processDownloadSuccess({ ...item, id: newId, filename: finalPath }, dest, originUrl);
+        }
+    }
+
+    api.downloads.onCreated.addListener(async (downloadItem) => {
+        console.log("🚀 [Gestor de Descargas] onCreated:", downloadItem);
+        if (downloadItem.filename && downloadItem.filename.includes('.')) {
+            await organizeFirefoxItem(downloadItem);
         }
     });
+
+    if (api.downloads.onChanged) {
+        api.downloads.onChanged.addListener(async (delta) => {
+            if (delta.filename && delta.filename.current) {
+                if (restartedDownloadIds.has(delta.id)) return;
+                try {
+                    const results = await api.downloads.search({ id: delta.id });
+                    if (results && results.length > 0) {
+                        await organizeFirefoxItem(results[0]);
+                    }
+                } catch(e) {}
+            }
+        });
+    }
 }
 
 // ======================================================================
