@@ -411,7 +411,9 @@ async function tryOrganizeFirefoxDownload(downloadItem) {
             return false;
         }
 
-        const safeFolder = dest.folderName.replace(/[<>:"|?*\\]+/g, '_');
+        // Normalize Windows backslashes to forward slashes for nested folders,
+        // then remove characters that are invalid in Windows folder names: < > : " | ? *
+        const safeFolder = dest.folderName.replace(/\\/g, '/').replace(/[<>:"|?*]+/g, '_');
         const safeName = sanitize(dest.finalFilename);
         const finalPath = `${safeFolder}/${safeName}`;
 

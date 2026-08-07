@@ -510,8 +510,8 @@ input:checked + .slider:before {
   font-weight: 500;
 }
 
-/* Preset Chips */
-.quick-presets-wrapper {
+/* Árbol de Carpetas W11 */
+.w11-tree-container {
   margin-top: 0.75rem;
   padding-top: 0.65rem;
   border-top: 1px dashed var(--card-border);
@@ -520,35 +520,131 @@ input:checked + .slider:before {
   gap: 0.4rem;
 }
 
-.preset-label {
+.w11-tree-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.w11-tree-title {
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--muted-text-color);
 }
 
-.preset-chips {
+.w11-btn-add-root {
+  background: transparent;
+  border: none;
+  color: var(--muted-text-color);
+  cursor: pointer;
+  padding: 0.1rem;
+  border-radius: 4px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
 }
 
-.chip-preset {
-  background: var(--button-bg-color);
-  border: 1px solid var(--button-border-color);
-  border-radius: 20px;
-  padding: 0.22rem 0.6rem;
-  font-size: 0.72rem;
+.w11-btn-add-root:hover {
+  background: var(--hover-bg-color);
+  color: var(--primary-color);
+}
+
+.w11-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.w11-tree-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.w11-tree-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  user-select: none;
+  position: relative;
+}
+
+.w11-tree-row:hover {
+  background-color: var(--hover-bg-color);
+}
+
+.w11-tree-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F8D775; /* Icono amarillo carpeta */
+  margin-right: 6px;
+}
+
+.w11-tree-label {
+  font-size: 0.78rem;
   font-weight: 500;
   color: var(--text-color);
-  cursor: pointer;
-  transition: var(--transition-fast);
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.chip-preset:hover {
-  background: var(--hover-bg-color);
-  border-color: var(--primary-color);
+.w11-tree-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.w11-tree-row:hover .w11-tree-actions {
+  opacity: 1;
+}
+
+.w11-btn-action {
+  background: transparent;
+  border: none;
+  color: var(--muted-text-color);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.w11-btn-action:hover {
+  background: var(--button-bg-color);
   color: var(--primary-color);
-  transform: translateY(-1px);
+}
+
+.w11-btn-action.delete:hover {
+  color: var(--danger-color);
+}
+
+.w11-inline-input-container {
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+}
+
+.w11-inline-input {
+  flex-grow: 1;
+  background: var(--input-bg-color);
+  border: 1px solid var(--primary-color);
+  color: var(--text-color);
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  outline: none;
 }
 
 /* Active Mode Card */

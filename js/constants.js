@@ -11,7 +11,8 @@ export const STORAGE_KEYS = {
     IGNORED_SUGGESTIONS: "ignoredSuggestions",
     SUGGESTION_TRACKER: "suggestionTracker",
     FORCE_NEXT_DOWNLOAD: "forceNextDownload",
-    DETERMINED_DESTINATIONS: "determinedDestinations"
+    DETERMINED_DESTINATIONS: "determinedDestinations",
+    QUICK_FOLDERS: "quickFolders"
 };
 
 export const DEFAULT_SETTINGS = {

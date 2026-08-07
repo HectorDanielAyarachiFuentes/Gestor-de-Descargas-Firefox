@@ -147,16 +147,17 @@
               </label>
             </div>
 
-            <!-- Accesos Rápidos de Carpetas Frecuentes -->
-            <div class="quick-presets-wrapper">
-              <span class="preset-label">Carpetas rápidas:</span>
-              <div class="preset-chips">
-                <button class="chip-preset" data-folder="Documentos">📄 Documentos</button>
-                <button class="chip-preset" data-folder="Imágenes">🖼️ Imágenes</button>
-                <button class="chip-preset" data-folder="Videos">🎬 Videos</button>
-                <button class="chip-preset" data-folder="PDFs">📕 PDFs</button>
-                <button class="chip-preset" data-folder="Proyectos">💻 Proyectos</button>
+            <!-- Árbol de Carpetas (Estilo W11) -->
+            <div class="w11-tree-container">
+              <div class="w11-tree-header">
+                <span class="w11-tree-title">Destinos Rápidos</span>
+                <button type="button" id="w11AddRootFolderBtn" class="w11-btn-add-root" title="Añadir carpeta principal">
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
               </div>
+              <ul id="w11FolderTree" class="w11-tree">
+                <!-- Se llenará dinámicamente desde popup.js -->
+              </ul>
             </div>
           </div>
 

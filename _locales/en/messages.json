@@ -3,6 +3,30 @@
         "description": "Text for the button that activates the force download mode.",
         "message": "Activate"
     },
+    "updateButton": {
+        "description": "Text for the button to update the active force download mode.",
+        "message": "Update"
+    },
+    "quickFoldersLabel": {
+        "description": "Label for the quick folders section in popup.",
+        "message": "My quick folders:"
+    },
+    "quickFolderAddBtn": {
+        "description": "Button to add a new quick folder.",
+        "message": "Add"
+    },
+    "quickFolderEmojiPlaceholder": {
+        "description": "Placeholder for the emoji input.",
+        "message": "🗂️"
+    },
+    "quickFolderPathPlaceholder": {
+        "description": "Placeholder for the folder path input.",
+        "message": "Ex: Sweet PDFs"
+    },
+    "quickFolderSaveBtn": {
+        "description": "Button to save a new quick folder.",
+        "message": "Save"
+    },
     "addComponentLabel": {
         "description": "Label for the rename component pills.",
         "message": "Add component:"

@@ -36,17 +36,147 @@ document.addEventListener("DOMContentLoaded", () => {
   initDragTargetControls();
   initTabNavigation();
 
-  // --- Preset Chips de carpetas rápidas ---
-  const presetChips = document.querySelectorAll(".chip-preset");
-  presetChips.forEach(chip => {
-    chip.addEventListener("click", () => {
-      if (forceFolderInput) {
-        forceFolderInput.value = chip.dataset.folder || "";
-        forceFolderInput.focus();
-        if (clearForceInputBtn) clearForceInputBtn.style.display = "block";
+  // --- Árbol de Carpetas (W11 Style) ---
+  const w11FolderTree = document.getElementById("w11FolderTree");
+  const w11AddRootFolderBtn = document.getElementById("w11AddRootFolderBtn");
+
+  let currentQuickFolders = [];
+
+  function renderW11List() {
+    if (!w11FolderTree) return;
+    w11FolderTree.innerHTML = "";
+    
+    currentQuickFolders.forEach(folderPath => {
+      const li = document.createElement("li");
+      li.className = "w11-tree-item";
+      
+      const row = document.createElement("div");
+      row.className = "w11-tree-row";
+      
+      const icon = document.createElement("div");
+      icon.className = "w11-tree-icon";
+      icon.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
+      
+      const label = document.createElement("span");
+      label.className = "w11-tree-label";
+      label.textContent = folderPath;
+      
+      const actions = document.createElement("div");
+      actions.className = "w11-tree-actions";
+      
+      const delBtn = document.createElement("button");
+      delBtn.className = "w11-btn-action delete";
+      delBtn.title = "Eliminar";
+      delBtn.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+      
+      actions.appendChild(delBtn);
+      
+      row.appendChild(icon);
+      row.appendChild(label);
+      row.appendChild(actions);
+      li.appendChild(row);
+      
+      row.addEventListener("click", (e) => {
+        if (e.target.closest('.w11-tree-actions')) return;
+        if (forceFolderInput) {
+          forceFolderInput.value = folderPath;
+          forceFolderInput.focus();
+          if (clearForceInputBtn) clearForceInputBtn.style.display = "block";
+        }
+      });
+      
+      delBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        removeQuickFolder(folderPath);
+      });
+      
+      w11FolderTree.appendChild(li);
+    });
+  }
+
+  function showInlineInput() {
+    if (w11FolderTree.querySelector('.w11-inline-input-container')) return;
+    
+    const li = document.createElement("li");
+    const container = document.createElement("div");
+    container.className = "w11-inline-input-container";
+    container.style.paddingLeft = "6px";
+    
+    const icon = document.createElement("div");
+    icon.className = "w11-tree-icon";
+    icon.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
+    
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "w11-inline-input";
+    input.placeholder = "Ruta completa (ej. Juegos/Acción)...";
+    
+    container.appendChild(icon);
+    container.appendChild(input);
+    li.appendChild(container);
+    
+    w11FolderTree.prepend(li);
+    input.focus();
+    
+    const commit = () => {
+      const val = input.value.trim();
+      if (val) {
+        addQuickFolder(val);
+      } else {
+        li.remove();
+        renderW11List(); 
+      }
+    };
+    
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") commit();
+      if (e.key === "Escape") {
+        li.remove();
+        renderW11List();
       }
     });
-  });
+    
+    input.addEventListener("blur", () => {
+      setTimeout(commit, 100);
+    });
+  }
+
+  async function loadQuickFolders() {
+    const res = await api.storage.sync.get("quickFolders");
+    if (res.quickFolders && Array.isArray(res.quickFolders)) {
+      currentQuickFolders = res.quickFolders.map(f => typeof f === 'string' ? f : f.folder).filter(Boolean);
+    } else {
+      currentQuickFolders = [];
+      await api.storage.sync.set({ quickFolders: currentQuickFolders });
+    }
+    renderW11List();
+  }
+
+  async function addQuickFolder(folderPath) {
+    if (!folderPath.trim()) return;
+    const normalized = folderPath.replace(/\\/g, '/');
+    if (!currentQuickFolders.includes(normalized)) {
+      currentQuickFolders.push(normalized);
+      currentQuickFolders.sort((a, b) => a.localeCompare(b));
+      await api.storage.sync.set({ quickFolders: currentQuickFolders });
+    }
+    renderW11List();
+  }
+
+  async function removeQuickFolder(folderPath) {
+    currentQuickFolders = currentQuickFolders.filter(p => p !== folderPath);
+    await api.storage.sync.set({ quickFolders: currentQuickFolders });
+    renderW11List();
+  }
+
+  loadQuickFolders();
+  window.addQuickFolder = addQuickFolder;
+
+  if (w11AddRootFolderBtn) {
+    w11AddRootFolderBtn.addEventListener("click", () => {
+      showInlineInput();
+    });
+  }
 
   if (forceFolderInput && clearForceInputBtn) {
     forceFolderInput.addEventListener("input", () => {
@@ -185,6 +315,11 @@ async function activateForceMode() {
 
   const forceRule = { folder: folder, persistent: persistent };
   await api.storage.local.set({ forceNextDownload: forceRule });
+  // Agregar automáticamente a las carpetas rápidas si no existe
+  if (typeof window.addQuickFolder === "function") {
+    window.addQuickFolder(folder);
+  }
+
   api.action.setBadgeText({ text: persistent ? '∞' : '1' });
   api.action.setBadgeBackgroundColor({ color: '#007bff' });
   showActiveForceView(folder, persistent);
