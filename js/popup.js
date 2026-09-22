@@ -216,6 +216,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const openFullTabBtn = document.getElementById("openFullTabBtn");
+  if (openFullTabBtn) {
+    openFullTabBtn.addEventListener("click", () => {
+      api.tabs.create({ url: api.runtime.getURL("pages/popup.html") });
+    });
+  }
+
   if (openOptionsBtn) {
     openOptionsBtn.addEventListener("click", () => {
       api.runtime.openOptionsPage();

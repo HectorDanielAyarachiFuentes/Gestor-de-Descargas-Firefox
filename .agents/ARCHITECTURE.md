@@ -123,11 +123,15 @@ El archivo [`pages/popup.html`](file:///c:/Users/Ramoncito/.antigravity-ide/Gest
    - Ancho elástico (desde ~260px hasta pantalla completa).
    - Se activan métricas PRO (`pro-stats-grid`) y las listas aprovechan el alto completo de la ventana (`max-height: calc(100vh - 220px)`).
 
+### Cabecera Minimalista (Single-Row):
+- En anchos compactos y barra lateral, la cabecera se mantiene en **una sola fila de ~38px** (logo + `Gestor de Descargas` + `PRO` a la izquierda, y el interruptor ON/OFF a la derecha).
+- Se eliminan la división en 2 pisos y los textos redundantes para maximizar el área visible de descargas.
+
 ### Pestañas del Popup:
 - **Pestaña 1: Descargas:** Interruptor maestro ON/OFF, indicadores KPI de organización, herramienta de "Forzar próxima descarga a carpeta", y vista previa de descargas recientes.
 - **Pestaña 2: Imágenes:** Zona Drag & Drop interactiva, selector de destino (Reglas automáticas vs Carpeta personalizada), y Cola de Descargas con descarga individual o masiva ("Descargar Todas" / "Vaciar Cola").
 - **Pestaña 3: Historial:** Buscador instantáneo, contador de descargas organizadas, y botones rápidos para abrir archivo o abrir la carpeta contenedora.
-- **Pestaña 4: Ajustes:** Accesos rápidos, consejos de compatibilidad (ej. visualizador de PDFs integrado de Firefox) y enlace directo a la página de Opciones avanzada.
+- **Pestaña 4: Ajustes:** Accesos directos a "Abrir Configuración Avanzada" y "Abrir Gestor en Pestaña", y consejos de compatibilidad (ej. visualizador de PDFs integrado de Firefox).
 
 ---
 

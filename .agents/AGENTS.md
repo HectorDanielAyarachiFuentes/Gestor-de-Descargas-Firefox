@@ -59,6 +59,11 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
   }
   ```
 
+### ⚠️ Regla de Cabecera Minimalista (Single-Row Header)
+- **NUNCA** permitir que la cabecera `.popup-header` se parta en 2 pisos (`flex-wrap: wrap;` o con `border-top` en `.header-right-group`).
+- En pantallas estrechas (`< 370px` y `body.mode-sidebar`), ocultar `.status-badge` y `.header-actions` (`display: none !important;`) para mantener el logo, título y toggle switch en una **única fila horizontal limpia de ~38px**.
+- Los accesos a pantalla completa / ajustes se encuentran organizados dentro de la pestaña `Ajustes`.
+
 ### 📱 Diseño Responsivo Dual (Popup vs Barra Lateral)
 1. **Modo Popup:** `body.mode-popup` (fijado a ~375px de ancho).
 2. **Modo Barra Lateral (Sidebar):** `body.mode-sidebar` (ancho variable, desde ~260px hasta ancho completo de pantalla).

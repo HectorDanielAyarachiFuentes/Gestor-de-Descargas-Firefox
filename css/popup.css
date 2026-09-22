@@ -1522,6 +1522,20 @@ input:checked + .slider:before {
   filter: brightness(1.08);
 }
 
+.btn-tab-secondary {
+  margin-top: 0.45rem;
+  background: var(--button-bg-color) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--button-border-color) !important;
+  box-shadow: none !important;
+}
+
+.btn-tab-secondary:hover {
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+  background: var(--hover-bg-color) !important;
+}
+
 /* ============================================
    TOAST NOTIFICATION & SCROLLBARS
    ============================================ */
@@ -1624,8 +1638,16 @@ body.mode-sidebar .popup-section {
   box-sizing: border-box;
 }
 
-/* Ocultar botón de abrir en barra lateral si ya estamos dentro de ella */
-body.mode-sidebar #openSidebar {
+/* En barra lateral, cabecera siempre ultra-minimalista en 1 sola fila */
+body.mode-sidebar .popup-header {
+  flex-wrap: nowrap !important;
+}
+
+body.mode-sidebar .status-badge {
+  display: none !important;
+}
+
+body.mode-sidebar .header-actions {
   display: none !important;
 }
 
@@ -1745,40 +1767,50 @@ body.mode-sidebar .pro-stats-section {
 /* Ancho medio / compacto (< 370px) */
 @container popup (max-width: 370px) {
   .popup-header {
-    padding: 0.65rem 0.65rem 0.45rem 0.65rem;
-    gap: 0.35rem;
+    padding: 0.55rem 0.65rem 0.45rem 0.65rem;
+    gap: 0.4rem;
+    flex-wrap: nowrap !important;
+    align-items: center;
   }
 
   .brand-wrapper {
-    gap: 0.45rem;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 0;
   }
 
   .brand-logo {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 8px;
   }
 
   .brand-logo svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 
   .popup-title {
-    font-size: 0.88rem;
+    font-size: 0.84rem;
+    letter-spacing: -0.01em;
   }
 
   .pro-badge {
-    font-size: 0.52rem;
-    padding: 0.1rem 0.3rem;
+    font-size: 0.5rem;
+    padding: 0.08rem 0.28rem;
   }
 
+  /* Ocultar texto redundante 'Organización Activa' en modo compacto */
   .status-badge {
-    font-size: 0.66rem;
+    display: none !important;
   }
 
   .header-right-group {
-    gap: 0.35rem;
+    gap: 0.25rem;
+    width: auto;
+    border-top: none !important;
+    padding-top: 0 !important;
+    flex-shrink: 0;
   }
 
   .toggle-switch.main-toggle {
@@ -1797,15 +1829,9 @@ body.mode-sidebar .pro-stats-section {
     transform: translateX(17px);
   }
 
-  .btn-header-action {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-  }
-
-  .btn-header-action svg {
-    width: 14px;
-    height: 14px;
+  /* Ocultar botones secundarios de cabecera en modo compacto para mantener 1 sola fila limpia */
+  .header-actions {
+    display: none !important;
   }
 
   /* Pestañas: icono arriba y texto abajo para que 'Descargas' nunca se corte */
@@ -1945,23 +1971,63 @@ body.mode-sidebar .pro-stats-section {
   }
 }
 
-/* Ancho ultra-estrecho (< 300px) */
+/* Ancho ultra-estrecho (< 300px): diseño zen en 1 sola fila */
 @container popup (max-width: 300px) {
   .popup-header {
-    flex-wrap: wrap;
-    gap: 0.4rem;
+    flex-wrap: nowrap !important;
+    padding: 0.45rem 0.55rem;
+    gap: 0.35rem;
   }
 
   .brand-wrapper {
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .brand-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+  }
+
+  .brand-logo svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .popup-title {
+    font-size: 0.78rem;
+  }
+
+  .pro-badge {
+    font-size: 0.48rem;
+    padding: 0.06rem 0.24rem;
   }
 
   .header-right-group {
-    width: 100%;
+    width: auto;
     justify-content: flex-end;
-    padding-top: 0.35rem;
-    border-top: 1px solid var(--card-border);
+    padding-top: 0 !important;
+    border-top: none !important;
+  }
+
+  .toggle-switch.main-toggle {
+    width: 34px;
+    height: 19px;
+  }
+
+  .toggle-switch.main-toggle .slider:before {
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+  }
+
+  .toggle-switch.main-toggle input:checked + .slider:before {
+    transform: translateX(15px);
   }
 
   .nav-tab {
@@ -1991,40 +2057,50 @@ body.mode-sidebar .pro-stats-section {
 /* Media Query Fallbacks */
 @media (max-width: 370px) {
   .popup-header {
-    padding: 0.65rem 0.65rem 0.45rem 0.65rem;
-    gap: 0.35rem;
+    padding: 0.55rem 0.65rem 0.45rem 0.65rem;
+    gap: 0.4rem;
+    flex-wrap: nowrap !important;
+    align-items: center;
   }
 
   .brand-wrapper {
-    gap: 0.45rem;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 0;
   }
 
   .brand-logo {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 8px;
   }
 
   .brand-logo svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 
   .popup-title {
-    font-size: 0.88rem;
+    font-size: 0.84rem;
+    letter-spacing: -0.01em;
   }
 
   .pro-badge {
-    font-size: 0.52rem;
-    padding: 0.1rem 0.3rem;
+    font-size: 0.5rem;
+    padding: 0.08rem 0.28rem;
   }
 
+  /* Ocultar texto redundante 'Organización Activa' en modo compacto */
   .status-badge {
-    font-size: 0.66rem;
+    display: none !important;
   }
 
   .header-right-group {
-    gap: 0.35rem;
+    gap: 0.25rem;
+    width: auto;
+    border-top: none !important;
+    padding-top: 0 !important;
+    flex-shrink: 0;
   }
 
   .toggle-switch.main-toggle {
@@ -2043,15 +2119,9 @@ body.mode-sidebar .pro-stats-section {
     transform: translateX(17px);
   }
 
-  .btn-header-action {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-  }
-
-  .btn-header-action svg {
-    width: 14px;
-    height: 14px;
+  /* Ocultar botones secundarios de cabecera en modo compacto para mantener 1 sola fila limpia */
+  .header-actions {
+    display: none !important;
   }
 
   .nav-tabs-container {
@@ -2190,22 +2260,63 @@ body.mode-sidebar .pro-stats-section {
   }
 }
 
+/* Ancho ultra-estrecho (< 300px): diseño zen en 1 sola fila */
 @media (max-width: 300px) {
   .popup-header {
-    flex-wrap: wrap;
-    gap: 0.4rem;
+    flex-wrap: nowrap !important;
+    padding: 0.45rem 0.55rem;
+    gap: 0.35rem;
   }
 
   .brand-wrapper {
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .brand-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+  }
+
+  .brand-logo svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .popup-title {
+    font-size: 0.78rem;
+  }
+
+  .pro-badge {
+    font-size: 0.48rem;
+    padding: 0.06rem 0.24rem;
   }
 
   .header-right-group {
-    width: 100%;
+    width: auto;
     justify-content: flex-end;
-    padding-top: 0.35rem;
-    border-top: 1px solid var(--card-border);
+    padding-top: 0 !important;
+    border-top: none !important;
+  }
+
+  .toggle-switch.main-toggle {
+    width: 34px;
+    height: 19px;
+  }
+
+  .toggle-switch.main-toggle .slider:before {
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+  }
+
+  .toggle-switch.main-toggle input:checked + .slider:before {
+    transform: translateX(15px);
   }
 
   .nav-tab {
