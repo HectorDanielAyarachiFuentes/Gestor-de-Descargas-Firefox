@@ -106,3 +106,6 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 2. Clic en **"Cargar complemento temporal..."** (Load Temporary Add-on).
 3. Seleccionar el archivo [`manifest.json`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/manifest.json).
 4. Para ver cambios tras editar archivos, pulsar el botón **"Recargar"** en la tarjeta de la extensión.
+5. **Empaquetar para Mozilla Add-ons (AMO):**
+   - Ejecutar `python package.py` para generar un archivo `gestor-descargas-vX.X.X.zip` limpio.
+   - **NUNCA** comprimir la carpeta entera con `.git/` porque Mozilla detecta los hooks (`.sample`) como binarios sospechosos.
