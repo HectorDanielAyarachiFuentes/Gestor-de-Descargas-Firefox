@@ -549,15 +549,23 @@ function renderRecentDownloadsPreview(recentList) {
     return;
   }
 
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'avif', 'ico'];
+
   recentList.forEach(entry => {
     const itemDiv = document.createElement("div");
     itemDiv.className = "recent-preview-item";
 
-    const icon = getFileTypeIcon(entry.filename);
+    const ext = (entry.filename.split('.').pop() || '').toLowerCase();
+    const isImage = imageExts.includes(ext) || (entry.url && entry.url.startsWith('data:image/'));
     const folder = entry.folder || 'Descargas';
+    const icon = getFileTypeIcon(entry.filename);
+
+    const thumbHtml = (isImage && entry.url)
+      ? `<img src="${entry.url}" class="recent-preview-thumb" alt="" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><div class="recent-preview-fallback-icon" style="display:none;">${icon}</div>`
+      : `<div class="recent-preview-fallback-icon">${icon}</div>`;
 
     setHTML(itemDiv, `
-      <span class="recent-preview-icon">${icon}</span>
+      <div class="recent-preview-thumb-wrapper">${thumbHtml}</div>
       <div class="recent-preview-info">
         <span class="recent-preview-title" title="${entry.filename}">${entry.filename}</span>
         <span class="recent-preview-folder">📂 ${folder}</span>

@@ -87,7 +87,7 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 - **Líneas ~1-100:** Inicialización, detección de modo (`?mode=sidebar` vs `?mode=popup`), listeners de pestañas.
 - **Líneas ~101-280:** Estadísticas KPI (`updateKPIStats`), toggle de auto-organización, conmutación forzada de carpeta.
 - **Líneas ~281-550:** Lógica de Forzar Carpeta próxima (`forceNextDownload`).
-- **Líneas ~551-665:** Vista previa de descargas recientes (`recentDownloadsPreview`).
+- **Líneas ~551-665:** Vista previa de descargas recientes (`recentDownloadsPreview` con soporte de miniaturas visuales reales y fallback automático a icono `🖼️` en caso de error o archivo borrado).
 - **Líneas ~666-1070:** Lógica de Drag & Drop y Cola de Descargas (`handleDrop`, `processSingleQueueItem`, `downloadAllQueue`).
 - **Líneas ~1071-1160:** Renderizado visual de la cola (`renderQueueList`).
 - **Líneas ~1161-1284:** Historial de descargas local (`loadHistory`).

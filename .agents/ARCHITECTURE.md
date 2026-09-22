@@ -128,7 +128,7 @@ El archivo [`pages/popup.html`](file:///c:/Users/Ramoncito/.antigravity-ide/Gest
 - Se eliminan la división en 2 pisos y los textos redundantes para maximizar el área visible de descargas.
 
 ### Pestañas del Popup:
-- **Pestaña 1: Descargas:** Interruptor maestro ON/OFF, indicadores KPI de organización, herramienta de "Forzar próxima descarga a carpeta", y vista previa de descargas recientes.
+- **Pestaña 1: Descargas:** Interruptor maestro ON/OFF, indicadores KPI de organización, herramienta de "Forzar próxima descarga a carpeta", y vista previa de descargas recientes con miniaturas visuales reales y fallback automático a icono en caso de error.
 - **Pestaña 2: Imágenes:** Zona Drag & Drop interactiva, selector de destino (Reglas automáticas vs Carpeta personalizada), y Cola de Descargas con descarga individual o masiva ("Descargar Todas" / "Vaciar Cola").
 - **Pestaña 3: Historial:** Buscador instantáneo, contador de descargas organizadas, y botones rápidos para abrir archivo o abrir la carpeta contenedora.
 - **Pestaña 4: Ajustes:** Accesos directos a "Abrir Configuración Avanzada" y "Abrir Gestor en Pestaña", y consejos de compatibilidad (ej. visualizador de PDFs integrado de Firefox).
