@@ -460,17 +460,19 @@ async function loadHistory() {
     const displayExt = ext ? ext.toUpperCase() : 'FILE';
 
     setHTML(listItem, `
-      <div class="history-item-icon-wrapper">${thumbHtml}</div>
-      <div class="history-item-details">
-        <div class="history-item-title-row">
-          <strong title="${entry.filename}">${entry.filename}</strong>
-          <span class="history-ext-badge">${displayExt}</span>
-        </div>
-        <div class="history-item-meta">
-          <span class="history-date">${formattedDate}</span>
-          <span class="history-folder">📂 ${entry.folder}</span>
-          <span class="history-size"></span>
-          <span class="history-dims"></span>
+      <div class="history-item-main">
+        <div class="history-item-icon-wrapper">${thumbHtml}</div>
+        <div class="history-item-details">
+          <div class="history-item-title-row">
+            <strong title="${entry.filename}">${entry.filename}</strong>
+            <span class="history-ext-badge">${displayExt}</span>
+          </div>
+          <div class="history-item-meta">
+            <span class="history-folder" title="Carpeta destino">📂 ${entry.folder}</span>
+            <span class="history-date" title="Fecha y hora">${formattedDate}</span>
+            <span class="history-size"></span>
+            <span class="history-dims"></span>
+          </div>
         </div>
       </div>
       <div class="popup-history-actions"></div>
@@ -1091,17 +1093,34 @@ function renderQueueList() {
       ? `<img src="${item.url}" class="queue-thumb" alt="" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><div class="queue-thumb-fallback-icon" style="display:none;">🖼️</div>`
       : `<div class="queue-thumb-icon">${getFileTypeIcon(item.filename)}</div>`;
 
+    const dlText = api.i18n.getMessage("downloadItemButton") || "Descargar";
+    const rmTitle = api.i18n.getMessage("removeItemButton") || "Quitar";
+
     setHTML(li, `
-      <div class="queue-thumb-wrapper">${previewHtml}</div>
-      <div class="queue-item-details">
-        <strong title="${item.filename}">${item.filename}</strong>
-        <div class="queue-meta-row">
-          <small class="target-badge-wrapper">📂 <input type="text" class="queue-folder-input" value="${item.folder}" title="Haz clic para cambiar la carpeta de destino de este archivo" /></small>
-          <span class="queue-dims"></span>
-          <span class="queue-size">${item.size ? '💾 ' + formatBytes(item.size) : ''}</span>
+      <div class="queue-item-main">
+        <div class="queue-thumb-wrapper">${previewHtml}</div>
+        <div class="queue-item-details">
+          <div class="queue-title-row">
+            <strong class="queue-filename" title="${item.filename}">${item.filename}</strong>
+            <button type="button" class="btn-queue-rm" title="${rmTitle}">✖</button>
+          </div>
+          <div class="queue-meta-row">
+            <small class="target-badge-wrapper" title="Carpeta de destino">📂 <input type="text" class="queue-folder-input" value="${item.folder}" title="Haz clic para cambiar la carpeta de destino" /></small>
+            <span class="queue-dims"></span>
+            <span class="queue-size">${item.size ? '💾 ' + formatBytes(item.size) : ''}</span>
+          </div>
         </div>
       </div>
-      <div class="queue-item-actions"></div>
+      <div class="queue-item-footer">
+        <button type="button" class="btn-queue-dl" title="${dlText}">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>${dlText}</span>
+        </button>
+      </div>
     `);
 
     const img = li.querySelector(".queue-thumb");
@@ -1110,7 +1129,7 @@ function renderQueueList() {
         if (this.naturalWidth && this.naturalHeight) {
           const dimsElem = li.querySelector(".queue-dims");
           if (dimsElem) {
-            dimsElem.textContent = `📏 ${this.naturalWidth}×${this.naturalHeight} px`;
+            dimsElem.textContent = `📏 ${this.naturalWidth}×${this.naturalHeight}px`;
           }
         }
       };
@@ -1125,21 +1144,15 @@ function renderQueueList() {
       });
     }
 
-    const actionsContainer = li.querySelector(".queue-item-actions");
+    const rmBtn = li.querySelector(".btn-queue-rm");
+    if (rmBtn) {
+      rmBtn.addEventListener("click", () => removeFromQueue(item.id));
+    }
 
-    const dlBtn = document.createElement("button");
-    dlBtn.className = "btn-queue-dl";
-    dlBtn.textContent = api.i18n.getMessage("downloadItemButton") || "Descargar";
-    dlBtn.addEventListener("click", () => processSingleQueueItem(item.id));
-
-    const rmBtn = document.createElement("button");
-    rmBtn.className = "btn-queue-rm";
-    rmBtn.textContent = "✖";
-    rmBtn.title = api.i18n.getMessage("removeItemButton") || "Quitar";
-    rmBtn.addEventListener("click", () => removeFromQueue(item.id));
-
-    actionsContainer.appendChild(dlBtn);
-    actionsContainer.appendChild(rmBtn);
+    const dlBtn = li.querySelector(".btn-queue-dl");
+    if (dlBtn) {
+      dlBtn.addEventListener("click", () => processSingleQueueItem(item.id));
+    }
 
     queueList.appendChild(li);
   });
