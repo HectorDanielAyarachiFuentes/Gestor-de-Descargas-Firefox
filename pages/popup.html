@@ -114,77 +114,89 @@
         </div>
       </section>
 
-      <!-- Section: Forzar Carpeta Próxima Descarga -->
-      <section class="popup-section">
-        <div class="force-download-section card-glass">
+      <!-- Section: Desvío de Carpeta (Estructura Premium y Limpia) -->
+      <section class="popup-section quick-route-section">
+        <div class="route-panel card-glass">
+          <!-- Vista Inactiva -->
           <div id="force-idle-view">
-            <div class="card-header-row">
-              <svg class="card-subtitle-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <circle cx="12" cy="6" r="1"></circle>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <label for="forceFolderInput" class="force-label" data-i18n="forceDownloadLabel">Forzar próxima descarga a la carpeta:</label>
-            </div>
-            
-            <div class="force-input-group">
-              <div class="input-icon-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <!-- 1. Cabecera Limpia con Icono y Textos -->
+            <div class="route-panel-header">
+              <div class="route-badge-icon">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                 </svg>
-                <input type="text" id="forceFolderInput" list="folder-suggestions" data-i18n-placeholder="forceDownloadPlaceholder" placeholder="Ej: Proyectos/Web">
+              </div>
+              <div class="route-title-group">
+                <span class="route-title">Desviar a otra carpeta</span>
+                <span class="route-subtitle">Guarda temporalmente tus próximas descargas aquí</span>
+              </div>
+            </div>
+
+            <!-- 2. Fila de Entrada: Input Amplio + Botón Activar (ambos a 34px) -->
+            <div class="route-input-group">
+              <div class="route-input-wrapper">
+                <svg class="route-input-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <input type="text" id="forceFolderInput" list="folder-suggestions" data-i18n-placeholder="forceDownloadPlaceholder" placeholder="Carpeta destino (ej: Facturas, Tesis)...">
                 <button type="button" id="clearForceInputBtn" class="btn-clear-input" style="display: none;" title="Limpiar">
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
                 </button>
               </div>
-              <button id="forceNextDownloadBtn" class="btn-force">
-                <svg class="btn-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="9" y1="15" x2="15" y2="15"></line>
-                  <polyline points="12 12 15 15 12 18"></polyline>
+
+              <!-- Botón Activar -->
+              <button id="forceNextDownloadBtn" class="btn-route-action" title="Activar desvío para la próxima descarga">
+                <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="currentColor">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
                 <span data-i18n="activateButton">Activar</span>
               </button>
             </div>
             <datalist id="folder-suggestions"></datalist>
 
-            <div class="force-options-row">
-              <span data-i18n="forcePersistentLabel" class="force-options-label">Mantener activo para múltiples descargas</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="forcePersistentCheckbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <!-- Árbol de Carpetas (Estilo W11) -->
-            <div class="w11-tree-container">
-              <div class="w11-tree-header">
-                <span class="w11-tree-title">Destinos Rápidos</span>
-                <button type="button" id="w11AddRootFolderBtn" class="w11-btn-add-root" title="Añadir carpeta principal">
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <!-- 3. Footer Equilibrado: Atajos a la izquierda, Switch Continuo a la derecha -->
+            <div class="route-panel-footer">
+              <div class="route-shortcuts-group">
+                <span class="route-shortcuts-label">Atajos:</span>
+                <ul id="w11FolderTree" class="route-chips-list">
+                  <!-- Se llena dinámicamente -->
+                </ul>
+                <button type="button" id="w11AddRootFolderBtn" class="btn-chip-add" title="Añadir atajo rápido">
+                  <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
               </div>
-              <ul id="w11FolderTree" class="w11-tree">
-                <!-- Se llenará dinámicamente desde popup.js -->
-              </ul>
+
+              <label class="route-loop-toggle" title="Modo Continuo: mantener activo para varias descargas seguidas">
+                <input type="checkbox" id="forcePersistentCheckbox" checked>
+                <span class="loop-badge">
+                  <span class="loop-symbol">∞</span>
+                  <span class="loop-text">Continuo</span>
+                </span>
+              </label>
             </div>
           </div>
 
-          <!-- Estado Activo del Modo Forzado -->
+          <!-- Estado Activo: Nano-HUD Radar -->
           <div id="force-active-view" style="display: none;">
-            <div class="active-mode-card">
-              <div class="active-icon-pulse">
-                <svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--primary-color)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
+            <div class="active-nano-hud">
+              <div class="hud-radar-beacon">
+                <div class="radar-ping"></div>
+                <div class="radar-core"></div>
               </div>
-              <p class="force-active-text">Modo forzado activo para la carpeta</p>
-              <button id="cancelForceBtn" class="btn-cancel-force" data-i18n="cancelButton">Desactivar</button>
+              <div class="nano-hud-info">
+                <span class="nano-hud-tag" id="hudStatusTag">DESVÍO ACTIVO</span>
+                <span class="nano-hud-folder hud-folder-name"></span>
+              </div>
+              <button type="button" id="cancelForceBtn" class="nano-hud-cancel" data-i18n-title="cancelButton" title="Desactivar desvío">
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                <span>Cancelar</span>
+              </button>
             </div>
           </div>
         </div>

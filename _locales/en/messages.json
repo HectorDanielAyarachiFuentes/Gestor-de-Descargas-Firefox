@@ -422,11 +422,11 @@
     },
     "forceDownloadLabel": {
         "description": "Label for the force download input field.",
-        "message": "Force next download to folder:"
+        "message": "Route downloads to folder:"
     },
     "forceDownloadPlaceholder": {
         "description": "Placeholder text for the force download input.",
-        "message": "Ex: Projects/Web"
+        "message": "Type a folder (e.g. Invoices, Work)..."
     },
     "forcePersistentLabel": {
         "description": "Label for the force persistent mode checkbox.",

@@ -474,11 +474,11 @@
     },
     "forceDownloadLabel": {
         "description": "Label for the force download input field.",
-        "message": "Forzar próxima descarga a la carpeta:"
+        "message": "Desviar descargas a carpeta:"
     },
     "forceDownloadPlaceholder": {
         "description": "Placeholder text for the force download input.",
-        "message": "Ej: Proyectos/Web"
+        "message": "Escribe una carpeta (ej: Facturas, Tesis)..."
     },
     "forcePersistentLabel": {
         "description": "Label for the force persistent mode checkbox.",

@@ -57,40 +57,36 @@ document.addEventListener("DOMContentLoaded", () => {
     
     currentQuickFolders.forEach(folderPath => {
       const li = document.createElement("li");
-      li.className = "w11-tree-item";
+      li.className = "quick-folder-chip";
+      li.title = `Seleccionar "${folderPath}"`;
       
-      const row = document.createElement("div");
-      row.className = "w11-tree-row";
-      
-      const icon = document.createElement("div");
-      icon.className = "w11-tree-icon";
-      icon.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
+      const folderIcon = document.createElement("span");
+      folderIcon.className = "chip-folder-icon";
+      folderIcon.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="#F8D775" stroke="#DDA835" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
       
       const label = document.createElement("span");
-      label.className = "w11-tree-label";
+      label.className = "chip-label";
       label.textContent = folderPath;
       
-      const actions = document.createElement("div");
-      actions.className = "w11-tree-actions";
-      
       const delBtn = document.createElement("button");
-      delBtn.className = "w11-btn-action delete";
-      delBtn.title = "Eliminar";
-      delBtn.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+      delBtn.type = "button";
+      delBtn.className = "chip-del-btn";
+      delBtn.title = "Eliminar de sugerencias";
+      delBtn.innerHTML = `<svg viewBox="0 0 24 24" width="9" height="9" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
       
-      actions.appendChild(delBtn);
+      li.appendChild(folderIcon);
+      li.appendChild(label);
+      li.appendChild(delBtn);
       
-      row.appendChild(icon);
-      row.appendChild(label);
-      row.appendChild(actions);
-      li.appendChild(row);
-      
-      row.addEventListener("click", (e) => {
-        if (e.target.closest('.w11-tree-actions')) return;
+      li.addEventListener("click", (e) => {
+        if (e.target.closest('.chip-del-btn')) return;
         if (forceFolderInput) {
           forceFolderInput.value = folderPath;
           forceFolderInput.focus();
           if (clearForceInputBtn) clearForceInputBtn.style.display = "block";
+          
+          li.classList.add("chip-selected-pulse");
+          setTimeout(() => li.classList.remove("chip-selected-pulse"), 400);
         }
       });
       
@@ -104,30 +100,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showInlineInput() {
-    if (w11FolderTree.querySelector('.w11-inline-input-container')) return;
+    if (w11FolderTree.querySelector('.quick-chip-input-container')) return;
     
     const li = document.createElement("li");
-    const container = document.createElement("div");
-    container.className = "w11-inline-input-container";
-    container.style.paddingLeft = "6px";
-    
-    const icon = document.createElement("div");
-    icon.className = "w11-tree-icon";
-    icon.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
+    li.className = "quick-chip-input-container";
     
     const input = document.createElement("input");
     input.type = "text";
-    input.className = "w11-inline-input";
-    input.placeholder = "Ruta completa (ej. Juegos/Acción)...";
+    input.className = "quick-chip-inline-input";
+    input.placeholder = "Nueva carpeta...";
     
-    container.appendChild(icon);
-    container.appendChild(input);
-    li.appendChild(container);
-    
-    w11FolderTree.prepend(li);
+    li.appendChild(input);
+    w11FolderTree.appendChild(li);
     input.focus();
     
+    let isCommitted = false;
     const commit = () => {
+      if (isCommitted) return;
+      isCommitted = true;
       const val = input.value.trim();
       if (val) {
         addQuickFolder(val);
@@ -140,22 +130,23 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") commit();
       if (e.key === "Escape") {
+        isCommitted = true;
         li.remove();
         renderW11List();
       }
     });
     
     input.addEventListener("blur", () => {
-      setTimeout(commit, 100);
+      setTimeout(commit, 120);
     });
   }
 
   async function loadQuickFolders() {
     const res = await api.storage.sync.get("quickFolders");
-    if (res.quickFolders && Array.isArray(res.quickFolders)) {
+    if (res.quickFolders && Array.isArray(res.quickFolders) && res.quickFolders.length > 0) {
       currentQuickFolders = res.quickFolders.map(f => typeof f === 'string' ? f : f.folder).filter(Boolean);
     } else {
-      currentQuickFolders = [];
+      currentQuickFolders = ['Documentos', 'Imágenes', 'Música', 'Videos'];
       await api.storage.sync.set({ quickFolders: currentQuickFolders });
     }
     renderW11List();
@@ -401,21 +392,31 @@ async function deactivateForceMode() {
 }
 
 function showActiveForceView(folder, persistent = false) {
-  document.getElementById("force-idle-view").style.display = "none";
+  const idleView = document.getElementById("force-idle-view");
   const activeView = document.getElementById("force-active-view");
-  const messageKey = persistent ? "popup_forceActivePersistentText" : "popup_forceActiveText";
-  setHTML(activeView.querySelector(".force-active-text"), api.i18n.getMessage(messageKey, folder));
+  if (idleView) idleView.style.display = "none";
+  if (!activeView) return;
+
+  const tagElem = activeView.querySelector("#hudStatusTag");
+  if (tagElem) {
+    tagElem.textContent = persistent ? "DESVÍO CONTINUO ∞" : "DESVÍO ACTIVO";
+  }
+  const folderNameElem = activeView.querySelector(".hud-folder-name");
+  if (folderNameElem) {
+    folderNameElem.textContent = folder;
+  }
   activeView.style.display = "block";
 }
 
 function showIdleForceView() {
-  document.getElementById("force-active-view").style.display = "none";
-  document.getElementById("force-idle-view").style.display = "block";
-  document.getElementById("forceFolderInput").value = "";
-  const checkbox = document.getElementById("forcePersistentCheckbox");
-  if (checkbox) {
-    checkbox.checked = false;
-  }
+  const activeView = document.getElementById("force-active-view");
+  const idleView = document.getElementById("force-idle-view");
+  if (activeView) activeView.style.display = "none";
+  if (idleView) idleView.style.display = "block";
+  const input = document.getElementById("forceFolderInput");
+  if (input) input.value = "";
+  const clearBtn = document.getElementById("clearForceInputBtn");
+  if (clearBtn) clearBtn.style.display = "none";
 }
 
 async function loadFolderSuggestions() {
@@ -473,8 +474,8 @@ async function loadHistory() {
   const proCount = document.getElementById("proTotalDownloadsCount");
   if (proCount) proCount.textContent = String(totalDownloads);
 
-  // Renderizar la vista previa de las últimas descargas (2 para popup compacto, 6 para panel sidebar Pro)
-  const recentCount = currentViewMode === 'popup' ? 2 : 6;
+  // Renderizar la vista previa de las últimas descargas (3 para popup compacto sin scroll, 8 para panel sidebar Pro)
+  const recentCount = currentViewMode === 'popup' ? 3 : 8;
   renderRecentDownloadsPreview(result.downloadHistory.slice(-recentCount).reverse());
 
   if (!historyList || !downloadCountTextElem) return;
@@ -604,19 +605,74 @@ function renderRecentDownloadsPreview(recentList) {
     const isImage = imageExts.includes(ext) || (entry.url && entry.url.startsWith('data:image/'));
     const folder = entry.folder || 'Descargas';
     const icon = getFileTypeIcon(entry.filename);
+    const displayExt = ext ? ext.toUpperCase() : 'FILE';
+    const extClass = ['pdf', 'epub', 'zip', 'rar', 'exe', 'msi', 'mp4', 'mp3', 'md', 'html', 'js', 'py'].includes(ext) ? `ext-${ext}` : 'ext-generic';
 
     const thumbHtml = (isImage && entry.url)
       ? `<img src="${entry.url}" class="recent-preview-thumb" alt="" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><div class="recent-preview-fallback-icon" style="display:none;">${icon}</div>`
       : `<div class="recent-preview-fallback-icon">${icon}</div>`;
 
+    const dateObj = entry.date ? new Date(entry.date) : new Date();
+    const timeFormatted = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
     setHTML(itemDiv, `
       <div class="recent-preview-thumb-wrapper">${thumbHtml}</div>
       <div class="recent-preview-info">
-        <span class="recent-preview-title" title="${entry.filename}">${entry.filename}</span>
-        <span class="recent-preview-folder">${getFolderSvg(12)} <span>${folder}</span></span>
+        <div class="recent-preview-title-row">
+          <span class="recent-preview-title" title="Clic para abrir en el sistema: ${entry.filename}">${entry.filename}</span>
+          <span class="recent-ext-badge ${extClass}">${displayExt}</span>
+        </div>
+        <div class="recent-preview-meta">
+          <span class="recent-preview-folder-pill" title="Carpeta: ${folder}">
+            ${getFolderSvg(11)}
+            <span>${folder}</span>
+          </span>
+          <span class="meta-dot">·</span>
+          <span class="recent-preview-time" title="Hora de descarga">${timeFormatted}</span>
+          <span class="recent-preview-size" style="display: none;"></span>
+        </div>
       </div>
       <div class="popup-history-actions"></div>
     `);
+
+    // Clic directo en el título para abrir el archivo en el sistema operativo
+    const titleElem = itemDiv.querySelector(".recent-preview-title");
+    if (titleElem && entry.id !== undefined) {
+      titleElem.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const numId = Number(entry.id);
+        if (isNaN(numId)) return;
+        try {
+          const results = await api.downloads.search({ id: numId });
+          if (!results || !results.length || !results[0].exists) {
+            showFeedback(api.i18n.getMessage("feedback_errorFileNotExists") || "El archivo ya no existe", false);
+            return;
+          }
+          api.downloads.open(numId);
+        } catch (err) {
+          showFeedback(api.i18n.getMessage("feedback_errorFindDownload") || "No se pudo abrir el archivo", false);
+        }
+      });
+    }
+
+    // Consulta de tamaño de archivo asíncrono
+    if (entry.id !== undefined) {
+      const numId = Number(entry.id);
+      if (!isNaN(numId)) {
+        api.downloads.search({ id: numId }).then(results => {
+          if (results && results[0]) {
+            const size = results[0].fileSize || results[0].bytesReceived;
+            if (size) {
+              const sizeElem = itemDiv.querySelector(".recent-preview-size");
+              if (sizeElem) {
+                setHTML(sizeElem, `<span class="meta-dot">·</span><span>${formatBytes(size)}</span>`);
+                sizeElem.style.display = "inline-flex";
+              }
+            }
+          }
+        }).catch(() => {});
+      }
+    }
 
     const actionsContainer = itemDiv.querySelector(".popup-history-actions");
 

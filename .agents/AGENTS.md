@@ -90,13 +90,14 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 - Catálogo centralizado de iconos vectoriales SVG de alta definición (Lucide Standard 24x24): tipos de archivo coloreados (`getFileTypeSvg`), carpetas (`getFolderSvg`, `getFolderOpenSvg`), acciones de UI (`getRefreshSvg`, `getXSvg`, `getHardDriveSvg`, `getMaximizeSvg`, etc.).
 
 ### [`js/popup.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/popup.js)
-- **Líneas ~1-100:** Inicialización, detección de modo (`?mode=sidebar` vs `?mode=popup`), listeners de pestañas.
-- **Líneas ~101-280:** Estadísticas KPI (`updateKPIStats`), toggle de auto-organización, conmutación forzada de carpeta.
-- **Líneas ~281-550:** Lógica de Forzar Carpeta próxima (`forceNextDownload`).
-- **Líneas ~551-665:** Vista previa de descargas recientes (`recentDownloadsPreview` con soporte de miniaturas visuales reales y fallback automático a SVGs vectoriales por categoría).
-- **Líneas ~666-1070:** Lógica de Drag & Drop y Cola de Descargas (`handleDrop`, `processSingleQueueItem`, `downloadAllQueue`).
-- **Líneas ~1071-1160:** Renderizado visual de la cola (`renderQueueList`).
-- **Líneas ~1161-1284:** Historial de descargas local (`loadHistory`).
+- **Líneas ~1-100:** Inicialización, detección de modo (`?mode=sidebar` vs `?mode=popup`), chips de destinos rápidos (`renderW11List`, `loadQuickFolders`, `showInlineInput`).
+- **Líneas ~101-300:** Estadísticas KPI (`updateKPIStats`), toggle de auto-organización, listeners de pestañas.
+- **Líneas ~301-430:** Lógica de Desvío Forzado (`forceNextDownload`), HUD Radar de estado activo (`showActiveForceView`, `showIdleForceView`).
+- **Líneas ~431-500:** Detección de vista dual, `loadHistory` (3 descargas en popup para ajuste perfecto sin scroll, 8 en sidebar).
+- **Líneas ~501-670:** Vista previa de descargas recientes enriquecida (`renderRecentDownloadsPreview` con apertura directa de archivo en el SO por clic en título, badges por extensión, píldora de carpeta, hora, tamaño y fallback SVG).
+- **Líneas ~671-1070:** Lógica de Drag & Drop y Cola de Descargas (`handleDrop`, `processSingleQueueItem`, `downloadAllQueue`).
+- **Líneas ~1071-1180:** Renderizado visual de la cola (`renderQueueList`).
+- **Líneas ~1181-1350:** Historial de descargas local (`loadHistory`, filtrado y eliminación de archivos fantasma).
 
 ### [`js/background.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/background.js)
 - Escucha `browser.downloads.onDeterminingFilename` para sugerir rutas.
