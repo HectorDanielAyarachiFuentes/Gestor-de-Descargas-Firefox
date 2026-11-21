@@ -27,6 +27,7 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 | :--- | :--- |
 | **Intercepción de descargas y carpetas automáticas** | [`js/background.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/background.js), [`js/rules-engine.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/rules-engine.js) |
 | **Interfaz del Popup / Barra Lateral (UI)** | [`pages/popup.html`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/pages/popup.html), [`css/popup.css`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/css/popup.css), [`js/popup.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/popup.js) |
+| **Iconos vectoriales y SVG estándar** | [`js/icons.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/icons.js) |
 | **Cola de imágenes (Drag & Drop en popup)** | [`js/popup.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/popup.js) (funciones `handleDrop`, `renderQueueList`) |
 | **Drag & Drop en páginas web** | [`js/content-script.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/content-script.js) |
 | **Página de Ajustes y Reglas Completas** | [`pages/options.html`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/pages/options.html), [`css/options.css`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/css/options.css), [`js/options*.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/) |
@@ -61,11 +62,12 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 
 ### ⚠️ Regla de Cabecera Minimalista (Single-Row Header)
 - **NUNCA** permitir que la cabecera `.popup-header` se parta en 2 pisos (`flex-wrap: wrap;` o con `border-top` en `.header-right-group`).
-- En pantallas estrechas (`< 370px` y `body.mode-sidebar`), ocultar `.status-badge` y `.header-actions` (`display: none !important;`) para mantener el logo, título y toggle switch en una **única fila horizontal limpia de ~38px**.
+- En pantallas estrechas (`< 370px` y `body.mode-sidebar`), ocultar `.status-badge`, `.brand-meta-row` y `.header-actions` (`display: none !important;`) para mantener el logo, título y toggle switch en una **única fila horizontal limpia de ~38px**.
+- La versión de la app (`.version-badge`) se ubica en la segunda fila (`.brand-meta-row`) junto al badge de estado en el popup, evitando saturar horizontalmente la primera fila para que el título `Gestor de Descargas` nunca se corte con elipsis (`Gestor de ...`).
 - Los accesos a pantalla completa / ajustes se encuentran organizados dentro de la pestaña `Ajustes`.
 
 ### 📱 Diseño Responsivo Dual (Popup vs Barra Lateral)
-1. **Modo Popup:** `body.mode-popup` (fijado a ~375px de ancho).
+1. **Modo Popup:** `body.mode-popup` (fijado a ~395px de ancho para evitar truncamiento del título y colisión con controles).
 2. **Modo Barra Lateral (Sidebar):** `body.mode-sidebar` (ancho variable, desde ~260px hasta ancho completo de pantalla).
 3. **Container Queries:** Se utiliza `@container popup (max-width: 370px)` y `@container popup (max-width: 300px)` porque el contenedor principal tiene `container-type: inline-size; container-name: popup;`. Siempre mantener sincronizados los fallbacks en `@media (max-width: 370px)`.
 
@@ -83,11 +85,14 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 
 ## 4. Mapa Interno de JavaScript
 
+### [`js/icons.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/icons.js)
+- Catálogo centralizado de iconos vectoriales SVG de alta definición (Lucide Standard 24x24): tipos de archivo coloreados (`getFileTypeSvg`), carpetas (`getFolderSvg`, `getFolderOpenSvg`), acciones de UI (`getRefreshSvg`, `getXSvg`, `getHardDriveSvg`, `getMaximizeSvg`, etc.).
+
 ### [`js/popup.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/popup.js)
 - **Líneas ~1-100:** Inicialización, detección de modo (`?mode=sidebar` vs `?mode=popup`), listeners de pestañas.
 - **Líneas ~101-280:** Estadísticas KPI (`updateKPIStats`), toggle de auto-organización, conmutación forzada de carpeta.
 - **Líneas ~281-550:** Lógica de Forzar Carpeta próxima (`forceNextDownload`).
-- **Líneas ~551-665:** Vista previa de descargas recientes (`recentDownloadsPreview` con soporte de miniaturas visuales reales y fallback automático a icono `🖼️` en caso de error o archivo borrado).
+- **Líneas ~551-665:** Vista previa de descargas recientes (`recentDownloadsPreview` con soporte de miniaturas visuales reales y fallback automático a SVGs vectoriales por categoría).
 - **Líneas ~666-1070:** Lógica de Drag & Drop y Cola de Descargas (`handleDrop`, `processSingleQueueItem`, `downloadAllQueue`).
 - **Líneas ~1071-1160:** Renderizado visual de la cola (`renderQueueList`).
 - **Líneas ~1161-1284:** Historial de descargas local (`loadHistory`).

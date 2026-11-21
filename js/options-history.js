@@ -1,5 +1,6 @@
 import { showStatus } from './options-ui.js';
 import { setHTML } from './utils.js';
+import { getFolderSvg, getFolderOpenSvg, getRefreshSvg, getCopySvg, getFileTypeSvg } from './icons.js';
 const api = typeof browser !== 'undefined' ? browser : chrome;
 
 let fullHistory = [];
@@ -44,15 +45,15 @@ function renderDashboard(history) {
   const sortedExts = Object.entries(extCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   setHTML(foldersList, sortedFolders.map(([folder, count]) => `
-    <li style="display:flex; justify-content:space-between; margin-bottom:4px;">
-      <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:10px;">📁 ${folder}</span>
+    <li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+      <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:10px; display:inline-flex; align-items:center; gap:6px;">${getFolderSvg(14)} ${folder}</span>
       <span style="font-weight:bold; color:var(--primary-color);">${count}</span>
     </li>
   `).join(''));
 
   setHTML(extList, sortedExts.map(([ext, count]) => `
-    <li style="display:flex; justify-content:space-between; margin-bottom:4px;">
-      <span style="text-transform:uppercase;">📄 .${ext}</span>
+    <li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+      <span style="text-transform:uppercase; display:inline-flex; align-items:center; gap:6px;">${getFileTypeSvg('.' + ext, 15)} .${ext}</span>
       <span style="font-weight:bold; color:var(--primary-color);">${count}</span>
     </li>
   `).join(''));
@@ -89,13 +90,13 @@ export function renderHistoryList(historyArray) {
     actionsDiv.className = "history-item-actions";
     if (entry.id !== undefined && entry.id !== null) {
       const openFolderBtn = document.createElement("button");
-      openFolderBtn.textContent = api.i18n.getMessage("button_openContainingFolder");
+      setHTML(openFolderBtn, `${getFolderOpenSvg(13)} <span>${api.i18n.getMessage("button_openContainingFolder")}</span>`);
       openFolderBtn.addEventListener("click", () => openFolderInExplorer(entry.id));
       actionsDiv.appendChild(openFolderBtn);
     }
     if (entry.url) {
       const reDownloadBtn = document.createElement("button");
-      reDownloadBtn.textContent = api.i18n.getMessage("redownloadButton");
+      setHTML(reDownloadBtn, `${getRefreshSvg(13)} <span>${api.i18n.getMessage("redownloadButton")}</span>`);
       reDownloadBtn.addEventListener("click", () => {
         api.storage.local.get({ forceNextDownload: {} }, (data) => {
             let organizeUrls = data.forceNextDownload.organizeUrls || [];
@@ -107,7 +108,7 @@ export function renderHistoryList(historyArray) {
       });
       actionsDiv.appendChild(reDownloadBtn);
       const copyLinkBtn = document.createElement("button");
-      copyLinkBtn.textContent = api.i18n.getMessage("button_copyLink");
+      setHTML(copyLinkBtn, `${getCopySvg(13)} <span>${api.i18n.getMessage("button_copyLink")}</span>`);
       copyLinkBtn.addEventListener("click", () => {
         navigator.clipboard.writeText(entry.url)
           .then(() => showStatus(api.i18n.getMessage("feedback_linkCopied"), "success"))
@@ -293,7 +294,7 @@ export function setupOnDemandOrganizer() {
       files.forEach(file => {
         const li = document.createElement("li");
         li.className = "scan-result-item";
-        setHTML(li, `<input type="checkbox" data-url="${file.url}" checked> <span class="history-item-text">${file.filename} → <strong>📂 ${file.suggestedFolder}</strong></span>`);
+        setHTML(li, `<input type="checkbox" data-url="${file.url}" checked> <span class="history-item-text">${file.filename} → <strong style="display:inline-flex; align-items:center; gap:4px;">${getFolderSvg(13)} ${file.suggestedFolder}</strong></span>`);
         resultsList.appendChild(li);
       });
     }

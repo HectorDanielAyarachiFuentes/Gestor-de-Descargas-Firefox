@@ -24,9 +24,12 @@
             <h1 class="popup-title" data-i18n="popupTitle">Gestor de Descargas</h1>
             <span class="pro-badge">PRO</span>
           </div>
-          <div id="statusBadge" class="status-badge active">
-            <span class="status-dot"></span>
-            <span id="statusText">Organización Activa</span>
+          <div class="brand-meta-row">
+            <div id="statusBadge" class="status-badge active">
+              <span class="status-dot"></span>
+              <span id="statusText">Organización Activa</span>
+            </div>
+            <span class="version-badge" id="appVersion">v1.2.5</span>
           </div>
         </div>
       </div>
@@ -87,21 +90,36 @@
       <section class="popup-section pro-stats-section">
         <div class="pro-stats-grid card-glass">
           <div class="stat-card" title="Total de descargas organizadas">
-            <span class="stat-icon">📊</span>
+            <span class="stat-icon stat-icon-chart">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </span>
             <div class="stat-text">
               <strong id="proTotalDownloadsCount">0</strong>
               <small>Organizadas</small>
             </div>
           </div>
           <div class="stat-card" title="Reglas por extensión activas">
-            <span class="stat-icon">⚡</span>
+            <span class="stat-icon stat-icon-zap">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </span>
             <div class="stat-text">
               <strong id="proActiveRulesCount">Activas</strong>
               <small>Reglas</small>
             </div>
           </div>
           <div class="stat-card" title="Modo inteligente de organización automática">
-            <span class="stat-icon">📂</span>
+            <span class="stat-icon stat-icon-folder">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                <polyline points="12 11 12 17 15 14"></polyline>
+              </svg>
+            </span>
             <div class="stat-text">
               <strong id="proSmartFolderStatus">Auto</strong>
               <small>Inteligente</small>
@@ -115,7 +133,11 @@
         <div class="force-download-section card-glass">
           <div id="force-idle-view">
             <div class="card-header-row">
-              <span class="card-subtitle-icon">🎯</span>
+              <svg class="card-subtitle-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="6" r="1"></circle>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
               <label for="forceFolderInput" class="force-label" data-i18n="forceDownloadLabel">Forzar próxima descarga a la carpeta:</label>
             </div>
             
@@ -125,7 +147,12 @@
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <input type="text" id="forceFolderInput" list="folder-suggestions" data-i18n-placeholder="forceDownloadPlaceholder" placeholder="Ej: Proyectos/Web">
-                <button type="button" id="clearForceInputBtn" class="btn-clear-input" style="display: none;" title="Limpiar">✖</button>
+                <button type="button" id="clearForceInputBtn" class="btn-clear-input" style="display: none;" title="Limpiar">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
               </div>
               <button id="forceNextDownloadBtn" class="btn-force">
                 <svg class="btn-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -260,7 +287,12 @@
           </ul>
 
           <div id="emptyHistory" class="empty-history-state" style="display: none;">
-            <div class="empty-icon">📁</div>
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                <line x1="9" y1="14" x2="15" y2="14"></line>
+              </svg>
+            </div>
             <p>No hay descargas registradas en el historial</p>
           </div>
         </div>

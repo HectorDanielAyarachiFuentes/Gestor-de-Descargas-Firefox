@@ -3,6 +3,15 @@
 import { applyI18n, setHTML } from './utils.js';
 import { initTheme } from './theme-manager.js';
 import { getFolderNameByExtension } from './rules-engine.js';
+import {
+  getFileTypeSvg,
+  getFolderSvg,
+  getFolderOpenSvg,
+  getRefreshSvg,
+  getHardDriveSvg,
+  getMaximizeSvg,
+  getXSvg
+} from './icons.js';
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
 let downloadQueue = [];
@@ -299,6 +308,16 @@ function updateAutoOrganizeUI(isEnabled) {
 }
 
 async function loadAppSettings() {
+  const versionBadge = document.getElementById("appVersion");
+  if (versionBadge && api.runtime?.getManifest) {
+    try {
+      const manifest = api.runtime.getManifest();
+      if (manifest && manifest.version) {
+        versionBadge.textContent = `v${manifest.version}`;
+      }
+    } catch (e) {}
+  }
+
   const { autoOrganize = true } = await api.storage.sync.get("autoOrganize");
   updateAutoOrganizeUI(autoOrganize);
 
@@ -372,24 +391,7 @@ async function loadFolderSuggestions() {
 }
 
 function getFileTypeIcon(filename) {
-  const ext = (filename.split('.').pop() || "").toLowerCase();
-  const fileIcons = {
-    pdf: '📄', doc: '📄', docx: '📄', odt: '📄', txt: '📄', md: '📄', rtf: '📄',
-    jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', webp: '🖼️', svg: '🖼️', tiff: '🖼️', heic: '🖼️', raw: '🖼️', bmp: '🖼️', ico: '🖼️',
-    mp4: '🎬', mkv: '🎬', avi: '🎬', webm: '🎬', mov: '🎬', flv: '🎬', ts: '🎬', m3u8: '🎬',
-    mp3: '🎵', wav: '🎵', ogg: '🎵', flac: '🎵', m4a: '🎵', aac: '🎵',
-    zip: '📦', rar: '📦', '7z': '📦', tar: '📦', gz: '📦', bz2: '📦', xz: '📦',
-    xls: '📊', xlsx: '📊', csv: '📊', ods: '📊',
-    ppt: '📊', pptx: '📊', odp: '📊',
-    exe: '⚙️', msi: '⚙️', apk: '⚙️', appx: '⚙️', bat: '⚙️', cmd: '⚙️', sh: '⚙️', dmg: '⚙️', pkg: '⚙️', iso: '💿', img: '💿',
-    psd: '🎨', ai: '🎨', indd: '🎨', blend: '🎨', fig: '🎨', cdr: '🎨',
-    html: '💻', css: '💻', js: '💻', ts: '💻', json: '💻', xml: '💻', py: '💻', java: '💻', cpp: '💻', php: '💻', sql: '💻',
-    epub: '📚', mobi: '📚', azw3: '📚', cbz: '📚', cbr: '📚',
-    stl: '🧊', obj: '🧊', fbx: '🧊', gcode: '🧊',
-    ttf: '🔤', otf: '🔤', woff: '🔤', woff2: '🔤',
-    default: '📄'
-  };
-  return fileIcons[ext] || fileIcons.default;
+  return getFileTypeSvg(filename);
 }
 
 function formatBytes(bytes, decimals = 1) {
@@ -475,7 +477,7 @@ async function loadHistory() {
             <span class="history-ext-badge">${displayExt}</span>
           </div>
           <div class="history-item-meta">
-            <span class="history-folder" title="Carpeta destino">📂 ${entry.folder}</span>
+            <span class="history-folder" title="Carpeta destino">${getFolderSvg(12)} <span>${entry.folder}</span></span>
             <span class="history-date" title="Fecha y hora">${formattedDate}</span>
             <span class="history-size"></span>
             <span class="history-dims"></span>
@@ -491,7 +493,7 @@ async function loadHistory() {
         if (this.naturalWidth && this.naturalHeight) {
           const dimsElem = listItem.querySelector(".history-dims");
           if (dimsElem) {
-            dimsElem.textContent = `📏 ${this.naturalWidth}×${this.naturalHeight} px`;
+            setHTML(dimsElem, `${getMaximizeSvg(11)} <span>${this.naturalWidth}×${this.naturalHeight} px</span>`);
           }
         }
       };
@@ -506,7 +508,7 @@ async function loadHistory() {
             if (size) {
               const sizeElem = listItem.querySelector(".history-size");
               if (sizeElem) {
-                sizeElem.textContent = `💾 ${formatBytes(size)}`;
+                setHTML(sizeElem, `${getHardDriveSvg(11)} <span>${formatBytes(size)}</span>`);
               }
             }
           }
@@ -518,14 +520,14 @@ async function loadHistory() {
 
     if (entry.id !== undefined) {
       const openFolderBtn = document.createElement("button");
-      openFolderBtn.textContent = api.i18n.getMessage("openFolderButton") || "Carpeta";
+      setHTML(openFolderBtn, `${getFolderOpenSvg(13)} <span>${api.i18n.getMessage("openFolderButton") || "Carpeta"}</span>`);
       openFolderBtn.title = api.i18n.getMessage("openFolderTooltip") || "Abrir en explorador";
       openFolderBtn.addEventListener("click", () => openFolderInExplorer(entry.id, listItem));
       actionsContainer.appendChild(openFolderBtn);
     }
     if (entry.url) {
       const reDownloadBtn = document.createElement("button");
-      reDownloadBtn.textContent = api.i18n.getMessage("redownloadButton") || "Re-descargar";
+      setHTML(reDownloadBtn, `${getRefreshSvg(13)} <span>${api.i18n.getMessage("redownloadButton") || "Re-descargar"}</span>`);
       reDownloadBtn.title = api.i18n.getMessage("redownloadTooltip") || "Descargar de nuevo";
       reDownloadBtn.addEventListener("click", () => api.downloads.download({ url: entry.url }));
       actionsContainer.appendChild(reDownloadBtn);
@@ -568,7 +570,7 @@ function renderRecentDownloadsPreview(recentList) {
       <div class="recent-preview-thumb-wrapper">${thumbHtml}</div>
       <div class="recent-preview-info">
         <span class="recent-preview-title" title="${entry.filename}">${entry.filename}</span>
-        <span class="recent-preview-folder">📂 ${folder}</span>
+        <span class="recent-preview-folder">${getFolderSvg(12)} <span>${folder}</span></span>
       </div>
       <div class="popup-history-actions"></div>
     `);
@@ -577,14 +579,14 @@ function renderRecentDownloadsPreview(recentList) {
 
     if (entry.id !== undefined) {
       const openFolderBtn = document.createElement("button");
-      openFolderBtn.textContent = "📂";
+      setHTML(openFolderBtn, getFolderOpenSvg(14));
       openFolderBtn.title = api.i18n.getMessage("openFolderTooltip") || "Abrir carpeta";
       openFolderBtn.addEventListener("click", () => openFolderInExplorer(entry.id, itemDiv));
       actionsContainer.appendChild(openFolderBtn);
     }
     if (entry.url) {
       const reDownloadBtn = document.createElement("button");
-      reDownloadBtn.textContent = "🔄";
+      setHTML(reDownloadBtn, getRefreshSvg(14));
       reDownloadBtn.title = api.i18n.getMessage("redownloadTooltip") || "Re-descargar";
       reDownloadBtn.addEventListener("click", () => api.downloads.download({ url: entry.url }));
       actionsContainer.appendChild(reDownloadBtn);
@@ -1079,7 +1081,7 @@ async function addToQueue(rawUrl, htmlData = null) {
 
   downloadQueue.push(item);
   await saveDownloadQueue();
-  showFeedback(`Añadido a la cola (📂 ${folder})`, true);
+  showFeedback(`Añadido a la cola (${folder})`, true);
 }
 
 function renderQueueList() {
@@ -1105,7 +1107,7 @@ function renderQueueList() {
     li.className = "queue-item";
 
     const previewHtml = item.isImage 
-      ? `<img src="${item.url}" class="queue-thumb" alt="" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><div class="queue-thumb-fallback-icon" style="display:none;">🖼️</div>`
+      ? `<img src="${item.url}" class="queue-thumb" alt="" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><div class="queue-thumb-fallback-icon" style="display:none;">${getFileTypeSvg('img.png')}</div>`
       : `<div class="queue-thumb-icon">${getFileTypeIcon(item.filename)}</div>`;
 
     const dlText = api.i18n.getMessage("downloadItemButton") || "Descargar";
@@ -1117,12 +1119,12 @@ function renderQueueList() {
         <div class="queue-item-details">
           <div class="queue-title-row">
             <strong class="queue-filename" title="${item.filename}">${item.filename}</strong>
-            <button type="button" class="btn-queue-rm" title="${rmTitle}">✖</button>
+            <button type="button" class="btn-queue-rm" title="${rmTitle}">${getXSvg(12)}</button>
           </div>
           <div class="queue-meta-row">
-            <small class="target-badge-wrapper" title="Carpeta de destino">📂 <input type="text" class="queue-folder-input" value="${item.folder}" title="Haz clic para cambiar la carpeta de destino" /></small>
+            <small class="target-badge-wrapper" title="Carpeta de destino">${getFolderSvg(12)} <input type="text" class="queue-folder-input" value="${item.folder}" title="Haz clic para cambiar la carpeta de destino" /></small>
             <span class="queue-dims"></span>
-            <span class="queue-size">${item.size ? '💾 ' + formatBytes(item.size) : ''}</span>
+            <span class="queue-size">${item.size ? getHardDriveSvg(11) + ' <span>' + formatBytes(item.size) + '</span>' : ''}</span>
           </div>
         </div>
       </div>
@@ -1144,7 +1146,7 @@ function renderQueueList() {
         if (this.naturalWidth && this.naturalHeight) {
           const dimsElem = li.querySelector(".queue-dims");
           if (dimsElem) {
-            dimsElem.textContent = `📏 ${this.naturalWidth}×${this.naturalHeight}px`;
+            setHTML(dimsElem, `${getMaximizeSvg(11)} <span>${this.naturalWidth}×${this.naturalHeight}px</span>`);
           }
         }
       };

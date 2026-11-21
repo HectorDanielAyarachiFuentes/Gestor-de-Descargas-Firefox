@@ -93,6 +93,7 @@ Gestor-de-Descargas-Firefox/
 │   ├── background.js          # Service worker / background script de intercepción
 │   ├── constants.js           # Constantes y claves de almacenamiento
 │   ├── content-script.js      # Inyección en páginas web para capturar imágenes
+│   ├── icons.js               # Catálogo centralizado de iconos vectoriales SVG (Lucide Standard)
 │   ├── notifications.js       # Notificaciones nativas
 │   ├── options.js             # Controlador principal de la página de opciones
 │   ├── options-rules.js       # Gestor del CRUD de reglas personalizadas

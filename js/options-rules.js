@@ -372,7 +372,7 @@ function renderPatternPreview() {
       else if (component.type === 'sitio') displayValue = api.i18n.getMessage("addSiteComponent").replace('+', '').trim();
       else if (component.type === 'nombre_original') displayValue = api.i18n.getMessage("addOriginalNameComponent").replace('+', '').trim();
 
-      setHTML(el, `<span>${displayValue}</span><button type="button" class="remove-component-btn" title="${api.i18n.getMessage("tooltip_removeComponent")}">✖</button>`);
+      setHTML(el, `<span>${displayValue}</span><button type="button" class="remove-component-btn" title="${api.i18n.getMessage("tooltip_removeComponent")}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`);
       previewContainer.appendChild(el);
     });
   }
