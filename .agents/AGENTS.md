@@ -69,7 +69,7 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 ### ⚠️ Regla de Cabecera Minimalista (Single-Row Header)
 - **NUNCA** permitir que la cabecera `.popup-header` se parta en 2 pisos (`flex-wrap: wrap;` o con `border-top` en `.header-right-group`).
 - En pantallas estrechas (`< 370px` y `body.mode-sidebar`), ocultar `.status-badge`, `.brand-meta-row` y `.header-actions` (`display: none !important;`) para mantener el logo, título y toggle switch en una **única fila horizontal limpia de ~38px**.
-- La versión de la app y el estado se ubican de forma sutil en la segunda fila (`.brand-meta-row`: `● Organización Activa · v1.2.5`), evitando saturar horizontalmente la primera fila para que el título `Gestor de Descargas` nunca se corte con elipsis (`Gestor de ...`).
+- La versión de la app y el estado se ubican de forma sutil en la segunda fila (`.brand-meta-row`: `● Organización Activa · v1.2.6`), evitando saturar horizontalmente la primera fila para que el título `Gestor de Descargas` nunca se corte con elipsis (`Gestor de ...`).
 - El botón de fijar a la barra lateral (`#openSidebar`) se mantiene accesible en la cabecera junto al toggle. Los accesos a pantalla completa / ajustes se encuentran organizados dentro de la pestaña `Ajustes`.
 
 ### 📱 Diseño Responsivo Dual (Popup vs Barra Lateral)
@@ -98,7 +98,7 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 ### [`js/popup.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/popup.js)
 - **Líneas ~1-100:** Inicialización, detección de modo (`?mode=sidebar` vs `?mode=popup`), chips de destinos rápidos (`renderW11List`, `loadQuickFolders`, `showInlineInput`).
 - **Líneas ~101-300:** Estadísticas KPI (`updateKPIStats`), toggle de auto-organización, listeners de pestañas.
-- **Líneas ~301-430:** Lógica de Desvío Forzado (`forceNextDownload`), HUD Radar de estado activo (`showActiveForceView`, `showIdleForceView`).
+- **Líneas ~301-440:** Lógica de Desvío Forzado (`forceNextDownload`), sincronización reactiva en tiempo real con `storage.onChanged`, HUD Radar de estado activo (`showActiveForceView`, `showIdleForceView` con `display: flex` para preservar el `gap` vertical).
 - **Líneas ~431-500:** Detección de vista dual, `loadHistory` (3 descargas en popup para ajuste perfecto sin scroll, 8 en sidebar).
 - **Líneas ~501-670:** Vista previa de descargas recientes enriquecida (`renderRecentDownloadsPreview` con apertura directa de archivo en el SO por clic en título, badges por extensión, píldora de carpeta, hora, tamaño y fallback SVG).
 - **Líneas ~671-1070:** Lógica de Drag & Drop y Cola de Descargas (`handleDrop`, `processSingleQueueItem`, `downloadAllQueue`).

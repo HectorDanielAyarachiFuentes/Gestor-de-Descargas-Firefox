@@ -30,7 +30,7 @@
               <span id="statusText">Activo</span>
             </div>
             <span class="meta-dot">·</span>
-            <span class="version-text" id="appVersion">v1.2.5</span>
+            <span class="version-text" id="appVersion">v1.2.6</span>
           </div>
         </div>
       </div>
@@ -305,14 +305,16 @@
           <div class="firefox-tip-header">
             <div class="tip-badge-icon">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
               </svg>
             </div>
             <div class="tip-header-text">
-              <strong>Optimizar PDFs en Firefox</strong>
-              <span>Evita que se descarguen como blob temporal</span>
+              <strong>¿Tus PDFs no se guardan en /PDFs/?</strong>
+              <span>Firefox suele abrirlos en pestañas o descargarlos como blob temporal sin clasificar. Sigue estos 3 pasos para solucionarlo:</span>
             </div>
           </div>
           
@@ -320,7 +322,7 @@
             <div class="tip-step-item">
               <span class="step-num">1</span>
               <div class="step-content">
-                <span>Abre en una pestaña:</span>
+                <span>Pega en una pestaña:</span>
                 <button type="button" id="copyPrefBtn" class="copy-pref-chip" title="Clic para copiar">
                   <span class="chip-text">about:preferences</span>
                   <span class="chip-action" id="copyPrefStatus">
@@ -337,16 +339,21 @@
             <div class="tip-step-item">
               <span class="step-num">2</span>
               <div class="step-content">
-                <span>Busca <strong>Aplicaciones</strong> → <strong>Documento PDF</strong></span>
+                <span>Baja a <strong>Aplicaciones</strong> → busca <strong>Documento PDF</strong></span>
               </div>
             </div>
 
             <div class="tip-step-item">
               <span class="step-num">3</span>
               <div class="step-content">
-                <span>Cambia la acción a <strong>Guardar archivo</strong></span>
+                <span>Cambia de <em>Abrir en Firefox</em> a <strong>Guardar archivo</strong></span>
               </div>
             </div>
+          </div>
+
+          <div class="tip-footer-note">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Así Firefox descargará siempre el archivo real y se clasificará en <code>Descargas/PDFs/</code></span>
           </div>
         </div>
 

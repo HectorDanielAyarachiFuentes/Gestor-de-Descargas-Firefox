@@ -314,6 +314,18 @@ document.addEventListener("DOMContentLoaded", () => {
   if (clearQueueBtn) {
     clearQueueBtn.addEventListener("click", clearQueue);
   }
+
+  // Sincronización reactiva en tiempo real del estado de desvío
+  api.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.forceNextDownload) {
+      const newVal = changes.forceNextDownload.newValue;
+      if (newVal && newVal.folder) {
+        showActiveForceView(newVal.folder, !!newVal.persistent);
+      } else {
+        showIdleForceView();
+      }
+    }
+  });
 });
 
 function updateAutoOrganizeUI(isEnabled) {
@@ -363,6 +375,8 @@ async function loadAppSettings() {
       checkbox.checked = persistent;
     }
     showActiveForceView(forceNextDownload.folder, persistent);
+  } else {
+    showIdleForceView();
   }
 }
 
@@ -412,7 +426,7 @@ function showIdleForceView() {
   const activeView = document.getElementById("force-active-view");
   const idleView = document.getElementById("force-idle-view");
   if (activeView) activeView.style.display = "none";
-  if (idleView) idleView.style.display = "block";
+  if (idleView) idleView.style.display = "flex";
   const input = document.getElementById("forceFolderInput");
   if (input) input.value = "";
   const clearBtn = document.getElementById("clearForceInputBtn");
