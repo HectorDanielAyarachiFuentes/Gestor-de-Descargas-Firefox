@@ -23,8 +23,8 @@ export const FILE_ICONS = {
   ),
 
   pdf: (size = 18) => createSvg(
-    `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13v4"></path><path d="M9 13h2a1.5 1.5 0 0 1 0 3H9"></path><path d="M14 13v4"></path>`,
-    { size, stroke: '#ef4444', className: 'file-icon file-icon-pdf' }
+    `<path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 12V5a2 2 0 0 1 2-2h7l5 5v4"></path><path d="M5 18h1.5a1.5 1.5 0 0 0 0-3H5v6"></path><path d="M17 18h2"></path><path d="M20 15h-3v6"></path><path d="M11 15v6h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-1z"></path>`,
+    { size, stroke: '#ef4444', strokeWidth: 1.8, className: 'file-icon file-icon-pdf' }
   ),
 
   // Imágenes

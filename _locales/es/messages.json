@@ -655,8 +655,8 @@
         "message": "Abrir en una pestaña nueva"
     },
     "openInSidebarTooltip": {
-        "description": "Tooltip para desplegar en pantalla dividida (panel lateral).",
-        "message": "Abrir en pantalla dividida (panel lateral)"
+        "description": "Tooltip para fijar/desplegar en la barra lateral de Firefox.",
+        "message": "Fijar en Barra Lateral"
     },
     "dropZoneTitle": {
         "description": "Título de la zona de soltado.",

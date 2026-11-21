@@ -23,9 +23,9 @@ document.addEventListener("DOMContentLoaded", () => {
   detectViewMode();
 
   // --- Elementos de la UI ---
-  const openOptionsBtn = document.getElementById("openOptions");
-  const openTabBtn = document.getElementById("openTab");
-  const openSidebarBtn = document.getElementById("openSidebar");
+  const openOptionsBtn = document.getElementById("openFullOptionsBtn") || document.getElementById("openOptions");
+  const openTabBtn = document.getElementById("openFullTabBtn") || document.getElementById("openTab");
+  const openSidebarBtn = document.getElementById("openSidebarBtn") || document.getElementById("openSidebar");
   const autoOrganizeToggle = document.getElementById("autoOrganizeToggle");
   const forceFolderInput = document.getElementById("forceFolderInput");
   const clearForceInputBtn = document.getElementById("clearForceInputBtn");
@@ -218,49 +218,92 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Listeners de eventos ---
-  const openFullOptionsBtn = document.getElementById("openFullOptionsBtn");
-  if (openFullOptionsBtn) {
-    openFullOptionsBtn.addEventListener("click", () => {
-      api.runtime.openOptionsPage();
-    });
-  }
+  const copyPrefBtn = document.getElementById("copyPrefBtn");
+  if (copyPrefBtn) {
+    copyPrefBtn.addEventListener("click", async () => {
+      const textToCopy = "about:preferences";
+      const copyStatus = document.getElementById("copyPrefStatus");
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+      } catch (e) {
+        const ta = document.createElement("textarea");
+        ta.value = textToCopy;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
 
-  const openFullTabBtn = document.getElementById("openFullTabBtn");
-  if (openFullTabBtn) {
-    openFullTabBtn.addEventListener("click", () => {
-      api.tabs.create({ url: api.runtime.getURL("pages/popup.html") });
-    });
-  }
+      if (copyStatus) {
+        copyStatus.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="color:#10b981;font-weight:700;">¡Copiado!</span>`;
+        copyPrefBtn.classList.add("copied");
+        setTimeout(() => {
+          copyStatus.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Copiar</span>`;
+          copyPrefBtn.classList.remove("copied");
+        }, 1800);
+      }
 
-  if (openOptionsBtn) {
-    openOptionsBtn.addEventListener("click", () => {
-      api.runtime.openOptionsPage();
-    });
-  }
-
-  if (openTabBtn) {
-    openTabBtn.addEventListener("click", () => {
-      api.tabs.create({ url: api.runtime.getURL("pages/popup.html") });
-    });
-  }
-
-  if (openSidebarBtn) {
-    openSidebarBtn.addEventListener("click", async () => {
-      if (api.sidebarAction && typeof api.sidebarAction.open === "function") {
-        try {
-          await api.sidebarAction.open();
-        } catch (e) {
-          if (typeof api.sidebarAction.toggle === "function") {
-            await api.sidebarAction.toggle();
-          }
-        }
-      } else if (api.sidebarAction && typeof api.sidebarAction.toggle === "function") {
-        await api.sidebarAction.toggle();
-      } else {
-        api.tabs.create({ url: api.runtime.getURL("pages/popup.html") });
+      if (typeof showFeedback === "function") {
+        showFeedback("Copiado al portapapeles: about:preferences", true);
       }
     });
   }
+
+  function closeIfPopup() {
+    if (currentViewMode === 'popup' || document.body.classList.contains("mode-popup")) {
+      window.close();
+    }
+  }
+
+  const optionsButtons = document.querySelectorAll("#openFullOptionsBtn, #openOptions");
+  optionsButtons.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      try {
+        await api.runtime.openOptionsPage();
+      } catch (e) {
+        api.tabs.create({ url: api.runtime.getURL("pages/options.html") });
+      }
+      closeIfPopup();
+    });
+  });
+
+  const tabButtons = document.querySelectorAll("#openFullTabBtn, #openTab");
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      try {
+        await api.tabs.create({ url: api.runtime.getURL("pages/popup.html") });
+      } catch (e) {}
+      closeIfPopup();
+    });
+  });
+
+  const sidebarBtns = document.querySelectorAll("#openSidebar, #openSidebarBtn");
+  sidebarBtns.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const isPopup = currentViewMode === 'popup' || document.body.classList.contains("mode-popup");
+      if (isPopup) {
+        document.body.classList.add("popup-closing-to-sidebar");
+      }
+
+      try {
+        if (api.sidebarAction && typeof api.sidebarAction.open === "function") {
+          await api.sidebarAction.open();
+        } else if (api.sidebarAction && typeof api.sidebarAction.toggle === "function") {
+          await api.sidebarAction.toggle();
+        } else {
+          api.tabs.create({ url: api.runtime.getURL("pages/popup.html") });
+        }
+      } catch (e) {
+        console.warn("Error abriendo sidebarAction:", e);
+      }
+
+      if (isPopup) {
+        setTimeout(() => {
+          window.close();
+        }, 220);
+      }
+    });
+  });
 
   if (autoOrganizeToggle) {
     autoOrganizeToggle.addEventListener("change", (e) => {
@@ -299,10 +342,10 @@ function updateAutoOrganizeUI(isEnabled) {
   if (statusText) {
     if (isEnabled) {
       const msg = api.i18n.getMessage("autoOrganizeActive");
-      statusText.textContent = (msg && msg.length > 0) ? msg : "Organización Activa";
+      statusText.textContent = (msg && msg.length > 0) ? msg : "Activo";
     } else {
       const msg = api.i18n.getMessage("autoOrganizeDisabled");
-      statusText.textContent = (msg && msg.length > 0) ? msg : "Organización Desactivada";
+      statusText.textContent = (msg && msg.length > 0) ? msg : "Desactivado";
     }
   }
 }

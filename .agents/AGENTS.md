@@ -63,13 +63,14 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 ### ⚠️ Regla de Cabecera Minimalista (Single-Row Header)
 - **NUNCA** permitir que la cabecera `.popup-header` se parta en 2 pisos (`flex-wrap: wrap;` o con `border-top` en `.header-right-group`).
 - En pantallas estrechas (`< 370px` y `body.mode-sidebar`), ocultar `.status-badge`, `.brand-meta-row` y `.header-actions` (`display: none !important;`) para mantener el logo, título y toggle switch en una **única fila horizontal limpia de ~38px**.
-- La versión de la app (`.version-badge`) se ubica en la segunda fila (`.brand-meta-row`) junto al badge de estado en el popup, evitando saturar horizontalmente la primera fila para que el título `Gestor de Descargas` nunca se corte con elipsis (`Gestor de ...`).
-- Los accesos a pantalla completa / ajustes se encuentran organizados dentro de la pestaña `Ajustes`.
+- La versión de la app y el estado se ubican de forma sutil en la segunda fila (`.brand-meta-row`: `● Organización Activa · v1.2.5`), evitando saturar horizontalmente la primera fila para que el título `Gestor de Descargas` nunca se corte con elipsis (`Gestor de ...`).
+- El botón de fijar a la barra lateral (`#openSidebar`) se mantiene accesible en la cabecera junto al toggle. Los accesos a pantalla completa / ajustes se encuentran organizados dentro de la pestaña `Ajustes`.
 
 ### 📱 Diseño Responsivo Dual (Popup vs Barra Lateral)
 1. **Modo Popup:** `body.mode-popup` (fijado a ~395px de ancho para evitar truncamiento del título y colisión con controles).
 2. **Modo Barra Lateral (Sidebar):** `body.mode-sidebar` (ancho variable, desde ~260px hasta ancho completo de pantalla).
 3. **Container Queries:** Se utiliza `@container popup (max-width: 370px)` y `@container popup (max-width: 300px)` porque el contenedor principal tiene `container-type: inline-size; container-name: popup;`. Siempre mantener sincronizados los fallbacks en `@media (max-width: 370px)`.
+4. **Transición y Cierre de Popup:** Al pulsar `#openSidebar` o `#openSidebarBtn`, se añade `.popup-closing-to-sidebar` al body para animar la salida del popup hacia la izquierda (deslizamiento + fade) y se cierra el popup con `window.close()` a los 220ms. Al pulsar `#openFullOptionsBtn` o `#openFullTabBtn`, el popup también se cierra automáticamente (`window.close()`) para no tapar la nueva pestaña abierta.
 
 ---
 

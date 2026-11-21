@@ -968,5 +968,21 @@
     "cat_cad": {
         "description": "Category name for CAD.",
         "message": "CAD & Engineering"
+    },
+    "openInSidebarTooltip": {
+        "description": "Tooltip to dock in Firefox sidebar.",
+        "message": "Dock in Sidebar"
+    },
+    "openInTabTooltip": {
+        "description": "Tooltip to open in new tab.",
+        "message": "Open in New Tab"
+    },
+    "autoOrganizeActive": {
+        "description": "Status text when auto-organize is active.",
+        "message": "Active Organization"
+    },
+    "autoOrganizeDisabled": {
+        "description": "Status text when auto-organize is disabled.",
+        "message": "Organization Disabled"
     }
 }
