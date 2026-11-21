@@ -426,7 +426,7 @@
     },
     "forceDownloadPlaceholder": {
         "description": "Placeholder text for the force download input.",
-        "message": "Type a folder (e.g. Invoices, Work)..."
+        "message": "Folder (e.g. Invoices)..."
     },
     "forcePersistentLabel": {
         "description": "Label for the force persistent mode checkbox.",

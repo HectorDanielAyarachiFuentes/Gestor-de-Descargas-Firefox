@@ -478,7 +478,7 @@
     },
     "forceDownloadPlaceholder": {
         "description": "Placeholder text for the force download input.",
-        "message": "Escribe una carpeta (ej: Facturas, Tesis)..."
+        "message": "Carpeta (ej: Facturas)..."
     },
     "forcePersistentLabel": {
         "description": "Label for the force persistent mode checkbox.",

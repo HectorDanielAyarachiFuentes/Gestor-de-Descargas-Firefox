@@ -60,6 +60,12 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
   }
   ```
 
+### ⚠️ Regla del Panel de Desvío de Carpetas (`.route-panel`)
+- **SIEMPRE** mantener un padding equilibrado (`padding: 1rem 1.15rem 1.05rem 1.15rem;`) para asegurar que el pie de tarjeta (`.route-panel-footer` con atajos y toggle continuo) cuente con suficiente margen de respiración respecto al borde inferior de la tarjeta.
+- **ALINEACIÓN ESTRICTA (36px):** Tanto el input (`#forceFolderInput`) como el botón de activación (`.btn-route-action`) deben medir exactamente 36px de alto con radio de borde de 8px.
+- **TEXTO DEL PLACEHOLDER:** Mantener el placeholder corto y descriptivo (`Carpeta (ej: Facturas)...`) en `_locales/*/messages.json` para evitar cualquier truncamiento de texto en anchos estrechos.
+- **BOTÓN DE CANCELAR HUD (`#cancelForceBtn`):** Usar siempre `data-i18n-title="cancelButton"` (no `data-i18n`) para preservar el icono SVG interior junto al `<span>Cancelar</span>`.
+
 ### ⚠️ Regla de Cabecera Minimalista (Single-Row Header)
 - **NUNCA** permitir que la cabecera `.popup-header` se parta en 2 pisos (`flex-wrap: wrap;` o con `border-top` en `.header-right-group`).
 - En pantallas estrechas (`< 370px` y `body.mode-sidebar`), ocultar `.status-badge`, `.brand-meta-row` y `.header-actions` (`display: none !important;`) para mantener el logo, título y toggle switch en una **única fila horizontal limpia de ~38px**.

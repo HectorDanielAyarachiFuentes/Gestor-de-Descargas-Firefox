@@ -146,7 +146,7 @@ Las claves principales definidas en [`js/constants.js`](file:///c:/Users/Ramonci
 | `autoOrganize` | `boolean` | Estado global de la organización automática. |
 | `customRules` | `Array<Rule>` | Lista de reglas definidas por el usuario `{ id, name, matchType, value, folder, enabled }`. |
 | `defaultCategories` | `Object` | Mapa de categorías booleanas activas `{ pdf: true, images: true, ... }`. |
-| `forceNextDownload` | `Object` | Configuración temporal `{ enabled, folder, once }`. |
+| `forceNextDownload` | `Object` | Configuración temporal de desvío `{ folder, persistent }`. |
 | `downloadHistory` | `Array<Item>` | Registro de descargas procesadas `{ id, filename, folder, date, size, url }`. |
 | `downloadQueue` | `Array<Item>` | Elementos en cola de descarga pendientes de confirmación. |
 | `notifications` | `boolean` | Si se muestran notificaciones nativas tras una descarga. |
