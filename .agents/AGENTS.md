@@ -61,15 +61,21 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
   ```
 
 ### ⚠️ Regla del Panel de Desvío de Carpetas (`.route-panel`)
-- **SIEMPRE** mantener un padding equilibrado (`padding: 1rem 1.15rem 1.05rem 1.15rem;`) para asegurar que el pie de tarjeta (`.route-panel-footer` con atajos y toggle continuo) cuente con suficiente margen de respiración respecto al borde inferior de la tarjeta.
-- **ALINEACIÓN ESTRICTA (36px):** Tanto el input (`#forceFolderInput`) como el botón de activación (`.btn-route-action`) deben medir exactamente 36px de alto con radio de borde de 8px.
-- **TEXTO DEL PLACEHOLDER:** Mantener el placeholder corto y descriptivo (`Carpeta (ej: Facturas)...`) en `_locales/*/messages.json` para evitar cualquier truncamiento de texto en anchos estrechos.
+- **SIEMPRE** mantener una estructura limpia de 4 filas bien espaciadas dentro de `#force-idle-view`:
+  1. **Cabecera (`.route-panel-header`):** Icono azul de carpeta + Título `Desviar a otra carpeta` + Subtítulo descriptivo.
+  2. **Entrada de Carpeta (`.route-input-group`):** Input (`#forceFolderInput`) de 36px de alto y botón `Activar` (`.btn-route-action`) de 36px de alto, ambos con bordes redondeados de 8px.
+  3. **Control de Duración (`.route-duration-row`):** Segmented control (`.route-duration-segmented`) con opciones explícitas `[ 1 Solo próxima ]` y `[ ∞ Múltiples descargas ]`. **NUNCA** volver al botón críptico `∞ Continuo` apretado al final de una lista.
+  4. **Fila de Atajos a Ancho Completo (`.route-shortcuts-row`):** Ocupa el 100% del ancho de la tarjeta sin competir por espacio horizontal con botones externos.
+- **SCROLL HORIZONTAL DE ATAJOS (`.route-chips-list`):**
+  - El botón de añadir (`#w11AddRootFolderBtn`) debe estar fijado junto a la etiqueta (`.route-shortcuts-header: Atajos + [+]`) para que NUNCA sea empujado fuera de pantalla al acumularse atajos.
+  - La lista `.route-chips-list` debe contar con `scrollbar-width: thin` y scrollbar estético de 3px para indicar visualmente el desbordamiento.
+  - Cuenta con soporte en JS para desplazamiento horizontal fluido con la rueda del ratón (`wheel` event con `deltaY`).
 - **BOTÓN DE CANCELAR HUD (`#cancelForceBtn`):** Usar siempre `data-i18n-title="cancelButton"` (no `data-i18n`) para preservar el icono SVG interior junto al `<span>Cancelar</span>`.
 
 ### ⚠️ Regla de Cabecera Minimalista (Single-Row Header)
 - **NUNCA** permitir que la cabecera `.popup-header` se parta en 2 pisos (`flex-wrap: wrap;` o con `border-top` en `.header-right-group`).
 - En pantallas estrechas (`< 370px` y `body.mode-sidebar`), ocultar `.status-badge`, `.brand-meta-row` y `.header-actions` (`display: none !important;`) para mantener el logo, título y toggle switch en una **única fila horizontal limpia de ~38px**.
-- La versión de la app y el estado se ubican de forma sutil en la segunda fila (`.brand-meta-row`: `● Organización Activa · v1.2.6`), evitando saturar horizontalmente la primera fila para que el título `Gestor de Descargas` nunca se corte con elipsis (`Gestor de ...`).
+- La versión de la app y el estado se ubican de forma sutil en la segunda fila (`.brand-meta-row`: `● Organización Activa · v1.2.7`), evitando saturar horizontalmente la primera fila para que el título `Gestor de Descargas` nunca se corte con elipsis (`Gestor de ...`).
 - El botón de fijar a la barra lateral (`#openSidebar`) se mantiene accesible en la cabecera junto al toggle. Los accesos a pantalla completa / ajustes se encuentran organizados dentro de la pestaña `Ajustes`.
 
 ### 📱 Diseño Responsivo Dual (Popup vs Barra Lateral)

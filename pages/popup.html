@@ -30,7 +30,7 @@
               <span id="statusText">Activo</span>
             </div>
             <span class="meta-dot">·</span>
-            <span class="version-text" id="appVersion">v1.2.6</span>
+            <span class="version-text" id="appVersion">v1.2.7</span>
           </div>
         </div>
       </div>
@@ -157,25 +157,39 @@
             </div>
             <datalist id="folder-suggestions"></datalist>
 
-            <!-- 3. Footer Equilibrado: Atajos a la izquierda, Switch Continuo a la derecha -->
-            <div class="route-panel-footer">
-              <div class="route-shortcuts-group">
+            <!-- 3. Selector de Duración con Segmented Control Claro y Explicativo -->
+            <div class="route-duration-row">
+              <span class="route-duration-label">Duración:</span>
+              <div class="route-duration-segmented">
+                <label class="route-duration-opt" title="Solo desvía la próxima descarga y se desactiva solo tras completarla">
+                  <input type="radio" name="forceDurationRadio" id="forceModeOnce" value="once">
+                  <span class="duration-opt-pill">
+                    <span class="duration-icon">1</span>
+                    <span>Solo próxima</span>
+                  </span>
+                </label>
+                <label class="route-duration-opt" title="Permanece activo para todas las descargas hasta que lo canceles">
+                  <input type="radio" name="forceDurationRadio" id="forceModePersistent" value="persistent" checked>
+                  <span class="duration-opt-pill">
+                    <span class="duration-icon">∞</span>
+                    <span>Múltiples descargas</span>
+                  </span>
+                </label>
+              </div>
+              <input type="checkbox" id="forcePersistentCheckbox" checked style="display: none;">
+            </div>
+
+            <!-- 4. Fila de Atajos a Ancho Completo -->
+            <div class="route-shortcuts-row">
+              <div class="route-shortcuts-header">
                 <span class="route-shortcuts-label">Atajos:</span>
-                <ul id="w11FolderTree" class="route-chips-list">
-                  <!-- Se llena dinámicamente -->
-                </ul>
                 <button type="button" id="w11AddRootFolderBtn" class="btn-chip-add" title="Añadir atajo rápido">
                   <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
               </div>
-
-              <label class="route-loop-toggle" title="Modo Continuo: mantener activo para varias descargas seguidas">
-                <input type="checkbox" id="forcePersistentCheckbox" checked>
-                <span class="loop-badge">
-                  <span class="loop-symbol">∞</span>
-                  <span class="loop-text">Continuo</span>
-                </span>
-              </label>
+              <ul id="w11FolderTree" class="route-chips-list">
+                <!-- Se llena dinámicamente -->
+              </ul>
             </div>
           </div>
 

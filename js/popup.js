@@ -113,6 +113,9 @@ document.addEventListener("DOMContentLoaded", () => {
     li.appendChild(input);
     w11FolderTree.appendChild(li);
     input.focus();
+    setTimeout(() => {
+      w11FolderTree.scrollTo({ left: w11FolderTree.scrollWidth, behavior: 'smooth' });
+    }, 30);
     
     let isCommitted = false;
     const commit = () => {
@@ -176,6 +179,16 @@ document.addEventListener("DOMContentLoaded", () => {
     w11AddRootFolderBtn.addEventListener("click", () => {
       showInlineInput();
     });
+  }
+
+  // Desplazamiento horizontal fluido con la rueda del ratón en la lista de atajos
+  if (w11FolderTree) {
+    w11FolderTree.addEventListener("wheel", (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        w11FolderTree.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
   }
 
   if (forceFolderInput && clearForceInputBtn) {
@@ -307,6 +320,21 @@ document.addEventListener("DOMContentLoaded", () => {
   if (forceNextDownloadBtn) forceNextDownloadBtn.addEventListener("click", activateForceMode);
   if (cancelForceBtn) cancelForceBtn.addEventListener("click", deactivateForceMode);
 
+  // Sincronización de radio buttons de Duración con el checkbox interno
+  const radioOnce = document.getElementById("forceModeOnce");
+  const radioPersistent = document.getElementById("forceModePersistent");
+  const forceCheckbox = document.getElementById("forcePersistentCheckbox");
+  if (radioOnce && forceCheckbox) {
+    radioOnce.addEventListener("change", () => {
+      if (radioOnce.checked) forceCheckbox.checked = false;
+    });
+  }
+  if (radioPersistent && forceCheckbox) {
+    radioPersistent.addEventListener("change", () => {
+      if (radioPersistent.checked) forceCheckbox.checked = true;
+    });
+  }
+
   if (downloadAllQueueBtn) {
     downloadAllQueueBtn.addEventListener("click", processAllQueue);
   }
@@ -374,6 +402,12 @@ async function loadAppSettings() {
     if (checkbox) {
       checkbox.checked = persistent;
     }
+    const radioOnce = document.getElementById("forceModeOnce");
+    const radioPersistent = document.getElementById("forceModePersistent");
+    if (radioOnce && radioPersistent) {
+      radioOnce.checked = !persistent;
+      radioPersistent.checked = !!persistent;
+    }
     showActiveForceView(forceNextDownload.folder, persistent);
   } else {
     showIdleForceView();
@@ -384,8 +418,9 @@ async function activateForceMode() {
   const folder = document.getElementById("forceFolderInput").value.trim();
   if (!folder) return;
 
+  const radioPersistent = document.getElementById("forceModePersistent");
   const checkbox = document.getElementById("forcePersistentCheckbox");
-  const persistent = checkbox ? checkbox.checked : false;
+  const persistent = radioPersistent ? radioPersistent.checked : (checkbox ? checkbox.checked : false);
 
   const forceRule = { folder: folder, persistent: persistent };
   await api.storage.local.set({ forceNextDownload: forceRule });
@@ -413,7 +448,7 @@ function showActiveForceView(folder, persistent = false) {
 
   const tagElem = activeView.querySelector("#hudStatusTag");
   if (tagElem) {
-    tagElem.textContent = persistent ? "DESVÍO CONTINUO ∞" : "DESVÍO ACTIVO";
+    tagElem.textContent = persistent ? "DESVÍO CONTINUO (TODAS)" : "DESVÍO TEMPORAL (1 DESCARGA)";
   }
   const folderNameElem = activeView.querySelector(".hud-folder-name");
   if (folderNameElem) {
