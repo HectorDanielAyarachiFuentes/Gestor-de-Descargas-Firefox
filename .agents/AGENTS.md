@@ -75,7 +75,7 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 ### ⚠️ Regla de Cabecera Minimalista (Single-Row Header)
 - **NUNCA** permitir que la cabecera `.popup-header` se parta en 2 pisos (`flex-wrap: wrap;` o con `border-top` en `.header-right-group`).
 - En pantallas estrechas (`< 370px` y `body.mode-sidebar`), ocultar `.status-badge`, `.brand-meta-row` y `.header-actions` (`display: none !important;`) para mantener el logo, título y toggle switch en una **única fila horizontal limpia de ~38px**.
-- La versión de la app y el estado se ubican de forma sutil en la segunda fila (`.brand-meta-row`: `● Organización Activa · v1.2.8`), evitando saturar horizontalmente la primera fila para que el título `Gestor de Descargas` nunca se corte con elipsis (`Gestor de ...`).
+- La versión de la app y el estado se ubican de forma sutil en la segunda fila (`.brand-meta-row`: `● Organización Activa · v1.3.0`), evitando saturar horizontalmente la primera fila para que el título `Gestor de Descargas` nunca se corte con elipsis (`Gestor de ...`).
 - El botón de fijar a la barra lateral (`#openSidebar`) se mantiene accesible en la cabecera junto al toggle. Los accesos a pantalla completa / ajustes se encuentran organizados dentro de la pestaña `Ajustes`.
 
 ### 📱 Diseño Responsivo Dual (Popup vs Barra Lateral)
@@ -83,6 +83,11 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 2. **Modo Barra Lateral (Sidebar):** `body.mode-sidebar` (ancho variable, desde ~260px hasta ancho completo de pantalla).
 3. **Container Queries:** Se utiliza `@container popup (max-width: 370px)` y `@container popup (max-width: 300px)` porque el contenedor principal tiene `container-type: inline-size; container-name: popup;`. Siempre mantener sincronizados los fallbacks en `@media (max-width: 370px)`.
 4. **Transición y Cierre de Popup:** Al pulsar `#openSidebar` o `#openSidebarBtn`, se añade `.popup-closing-to-sidebar` al body para animar la salida del popup hacia la izquierda (deslizamiento + fade) y se cierra el popup con `window.close()` a los 220ms. Al pulsar `#openFullOptionsBtn` o `#openFullTabBtn`, el popup también se cierra automáticamente (`window.close()`) para no tapar la nueva pestaña abierta.
+
+### ⚠️ Regla Crítica de Interceptación en Navegación Web (`content-script.js`)
+- **NUNCA** incluir extensiones de páginas web (`html`, `htm`, `xhtml`, `mhtml`, `php`, `asp`, `aspx`) en `DOWNLOAD_EXTENSIONS` ni en `extRegex` de `content-script.js`.
+- *Motivo:* Los portales web y de noticias (Clarín, La Nación, blogs, etc.) tienen enlaces a artículos que terminan en `.html`. Si se incluyen en la lista de extensiones descargables, cualquier clic del usuario para leer un artículo se confunde con una descarga y secuestra la navegación normal.
+- Si un archivo HTML realmente debe descargarse, debe tener el atributo explícito `download` en su etiqueta `<a>`, o ser descargado mediante el menú del navegador / atajo `Ctrl+S` (donde sí interviene `rules-engine.js`).
 
 ---
 
@@ -112,25 +117,22 @@ Este documento contiene las **directrices obligatorias** para asistentes de Inte
 - **Líneas ~1181-1350:** Historial de descargas local (`loadHistory`, filtrado y eliminación de archivos fantasma).
 
 ### [`js/content-script.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/content-script.js)
-- Interceptación directa en 1 paso para descargas en la página web:
+- Interceptación directa limpia de descargas en la página web (restaurado de v1.2.5):
   - Escucha clics del usuario en enlaces con atributo `download` o extensiones reconocidas (`DOWNLOAD_EXTENSIONS`), enviando mensaje `DIRECT_DOWNLOAD_INTERCEPT` para organizar directamente sin pasar por la raíz.
-  - Intercepta clics programáticos en `HTMLAnchorElement.prototype.click` generados por bibliotecas JavaScript cliente (como **jsPDF**, **FileSaver**, Canvas `toBlob`), convirtiendo URLs `blob:` a URLs `data:` en el contexto del documento (mediante `FileReader`) antes de enviarlas al background. Esto evita el error de permisos/origen cruzado en Firefox y previene descargas duplicadas o desorganizadas en la raíz.
-  - Listener para `CONVERT_BLOB_TO_DATA_URL` bajo demanda para convertir blobs si `background.js` lo solicita.
+  - Escucha llamadas a `HTMLAnchorElement.prototype.click` notificando a `DIRECT_DOWNLOAD_INTERCEPT` sin secuestrar ni bloquear la ejecución nativa de blobs para prevenir fallos en Firefox.
 
 ### [`js/rules-engine.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/rules-engine.js)
 - Motor de categorización de extensiones a carpetas (`getFolderNameByExtension`).
-- Soporta formatos web y multimedia extendidos (`htm`, `xhtml`, `mhtml` en Código; `jfif`, `avif`, `heic` en Imágenes; `opus`, `wma` en Audio; `wmv`, `m4v` en Video; `tgz` en Comprimidos; `deb`, `rpm`, `appimage` en Programas).
+- Clasifica en 20 categorías estándar (`zip`, `rar`, `7z`, `tar`, `gz`, `bz2`, `xz` en Comprimidos; `html` y `htm` en Código, etc.).
 - Respeta las preferencias del usuario en `defaultCategories`.
 
 ### [`js/background.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/background.js)
-- Maneja `DIRECT_DOWNLOAD_INTERCEPT` para guardar descargas en la subcarpeta correcta en un solo paso.
-- Escucha `browser.downloads.onCreated` y `onChanged` en Firefox (cancel & restart) y `browser.downloads.onDeterminingFilename` en Chromium.
-- Si una descarga en Firefox usa una URL `blob:`, solicita la conversión a `data:` URL a la pestaña de origen mediante `CONVERT_BLOB_TO_DATA_URL` antes de relanzar.
-- Limpieza automática de IDs relanzados en `restartedDownloadIds` mediante temporizador de seguridad de 30 segundos.
+- Maneja `DIRECT_DOWNLOAD_INTERCEPT` para guardar descargas en la subcarpeta correcta en un solo paso, preservando `Referer` y `cookieStoreId`.
+- Escucha `browser.downloads.onCreated` y `onChanged` en Firefox y `browser.downloads.onDeterminingFilename` en Chromium.
+- **Salvaguarda de Integridad para Firefox:** Respeta descargas iniciadas por otras extensiones (`byExtensionId`) y solo aplica cancel & restart a URLs de red remotas (`http://`, `https://`, `ftp://`). Nunca cancela descargas locales de `blob:` o `data:` para garantizar que ninguna descarga resulte en "Falló".
 - Comprueba si hay una carpeta forzada activa (`forceNextDownload`). Si `persistent` es falso, la elimina tras la primera descarga exitosa.
 - Aplica reglas personalizadas (`customRules`) y luego reglas por categoría (`rules-engine.js`).
 - Gestiona menús contextuales (`contextMenus`) para guardar directamente a carpetas rápidas.
-- Contiene salvaguardas contra fallos de resolución de tipo MIME y control de excepciones en `organizeFirefoxItem`.
 
 ---
 

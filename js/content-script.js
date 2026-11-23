@@ -15,30 +15,16 @@
         // Video
         'mp4', 'mkv', 'avi', 'mov', 'webm', 'flv', 'wmv', 'm4v',
         // Imágenes
-        'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif', 'heic', 'avif', 'jfif',
+        'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif', 'heic', 'avif',
         // Programas y ejecutables
         'exe', 'msi', 'apk', 'deb', 'rpm', 'bin', 'jar', 'appimage',
         // Código y datos
-        'json', 'xml', 'sql', 'sqlite', 'db', 'yaml', 'yml', 'html', 'htm', 'xhtml', 'mhtml',
+        'json', 'xml', 'sql', 'sqlite', 'db', 'yaml', 'yml',
         // Diseño y 3D
         'psd', 'ai', 'sketch', 'fig', 'xd', 'blend', 'obj', 'stl', 'fbx', 'cad', 'dwg', 'dxf',
         // Torrents
         'torrent'
     ]);
-
-    function blobToDataUrl(blobUrl) {
-        return new Promise((resolve, reject) => {
-            fetch(blobUrl)
-                .then(res => res.blob())
-                .then(blob => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(blob);
-                })
-                .catch(reject);
-        });
-    }
 
     function extractExtension(urlStr, downloadAttr) {
         if (downloadAttr) {
@@ -66,9 +52,6 @@
         if (u.startsWith('javascript:') || u.startsWith('mailto:') || u.startsWith('tel:') || u.startsWith('#')) {
             return false;
         }
-        if (u.startsWith('blob:') || u.startsWith('data:')) {
-            return true;
-        }
         if (downloadAttr && downloadAttr.trim() !== '') {
             return true;
         }
@@ -79,29 +62,14 @@
         return false;
     }
 
-    async function handleDownload(url, suggestedFilename, e) {
+    function handleDownload(url, suggestedFilename, e) {
         if (!isDownloadable(url, suggestedFilename)) return false;
 
         const originUrl = window.location.href;
 
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-        }
-
-        let downloadUrl = url;
-        if (url.startsWith('blob:')) {
-            try {
-                downloadUrl = await blobToDataUrl(url);
-            } catch (err) {
-                console.warn("[Gestor] Error leyendo blob en handleDownload:", err);
-            }
-        }
-
         api.runtime.sendMessage({
             type: 'DIRECT_DOWNLOAD_INTERCEPT',
-            url: downloadUrl,
+            url: url,
             suggestedFilename: suggestedFilename || '',
             originUrl: originUrl
         }, (response) => {
@@ -111,6 +79,11 @@
             }
         });
 
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        }
         return true;
     }
 
@@ -132,47 +105,22 @@
         }, true);
     });
 
-    // 2. Interceptar descargas dinámicas creadas por JavaScript (Google Docs, Google Sheets, Canva, Mega, jsPDF, etc.)
+    // 2. Interceptar descargas dinámicas creadas por JavaScript (Google Docs, Google Sheets, Canva, Mega, etc.)
     try {
         const script = document.createElement('script');
         script.textContent = `
         (() => {
             const origClick = HTMLAnchorElement.prototype.click;
-            const extRegex = /\\.(pdf|epub|mobi|azw3|docx|doc|odt|rtf|txt|pages|xls|xlsx|ods|csv|tsv|ppt|pptx|odp|key|zip|rar|7z|tar|gz|bz2|xz|tgz|iso|dmg|mp3|wav|ogg|flac|aac|m4a|wma|opus|mp4|mkv|avi|mov|webm|flv|wmv|m4v|jpg|jpeg|png|gif|webp|svg|bmp|ico|tiff|tif|heic|avif|jfif|exe|msi|apk|deb|rpm|bin|jar|appimage|json|xml|sql|sqlite|db|yaml|yml|psd|ai|sketch|fig|xd|blend|obj|stl|fbx|cad|dwg|dxf|torrent|html|htm|xhtml)/i;
-
             HTMLAnchorElement.prototype.click = function() {
                 try {
                     const href = this.href || this.getAttribute('href') || '';
                     const downloadAttr = this.getAttribute('download') || this.download || '';
-                    if (href && (downloadAttr || extRegex.test(href) || extRegex.test(downloadAttr))) {
-                        if (href.startsWith('blob:')) {
-                            fetch(href)
-                                .then(res => res.blob())
-                                .then(blob => {
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => {
-                                        window.postMessage({
-                                            __gestorDownload: true,
-                                            url: reader.result,
-                                            download: downloadAttr || 'descarga',
-                                            isBlob: true
-                                        }, '*');
-                                    };
-                                    reader.readAsDataURL(blob);
-                                })
-                                .catch(() => {
-                                    origClick.apply(this, arguments);
-                                });
-                            return; // Prevenir descarga duplicada desorganizada en raíz
-                        } else if (href.startsWith('data:')) {
-                            window.postMessage({
-                                __gestorDownload: true,
-                                url: href,
-                                download: downloadAttr || 'descarga',
-                                isBlob: true
-                            }, '*');
-                            return; // Prevenir descarga duplicada en raíz
-                        }
+                    if (href && (downloadAttr || /\\.(pdf|epub|docx|xlsx|pptx|zip|rar|png|jpg|mp4|txt)/i.test(href) || /\\.(pdf|epub|docx|xlsx|pptx|zip|rar|png|jpg|mp4|txt)/i.test(downloadAttr))) {
+                        window.postMessage({
+                            __gestorDownload: true,
+                            url: href,
+                            download: downloadAttr
+                        }, '*');
                     }
                 } catch(e) {}
                 return origClick.apply(this, arguments);
@@ -183,26 +131,16 @@
         script.remove();
     } catch(e) {}
 
-    window.addEventListener('message', async (event) => {
+    window.addEventListener('message', (event) => {
         if (event.source !== window || !event.data || !event.data.__gestorDownload) return;
-        const { url, download, isBlob } = event.data;
-        if (url && (isBlob || isDownloadable(url, download))) {
+        const { url, download } = event.data;
+        if (url && isDownloadable(url, download)) {
             api.runtime.sendMessage({
                 type: 'DIRECT_DOWNLOAD_INTERCEPT',
                 url: url,
                 suggestedFilename: download || '',
                 originUrl: window.location.href
             });
-        }
-    });
-
-    // 3. Conversión de blobs bajo demanda si background.js lo requiere
-    api.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        if (request && request.type === 'CONVERT_BLOB_TO_DATA_URL' && request.url) {
-            blobToDataUrl(request.url)
-                .then(dataUrl => sendResponse({ dataUrl }))
-                .catch(err => sendResponse({ error: err.message }));
-            return true; // Respuesta asíncrona
         }
     });
 })();

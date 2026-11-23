@@ -183,8 +183,26 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                     conflictAction: 'uniquify',
                     saveAs: false
                 };
+                if (originUrl && (msg.url.startsWith('http://') || msg.url.startsWith('https://'))) {
+                    downloadOptions.headers = [{ name: 'Referer', value: originUrl }];
+                }
+                if (sender.tab && sender.tab.cookieStoreId) {
+                    downloadOptions.cookieStoreId = sender.tab.cookieStoreId;
+                }
 
-                const newId = await api.downloads.download(downloadOptions);
+                let newId = null;
+                try {
+                    newId = await api.downloads.download(downloadOptions);
+                } catch (e) {
+                    delete downloadOptions.headers;
+                    delete downloadOptions.cookieStoreId;
+                    try {
+                        newId = await api.downloads.download(downloadOptions);
+                    } catch (e2) {
+                        console.warn("[Gestor] Error en downloads.download:", e2);
+                    }
+                }
+
                 if (newId) {
                     restartedDownloadIds.add(newId);
                     setTimeout(() => restartedDownloadIds.delete(newId), 30000);
@@ -219,7 +237,7 @@ async function determineDestination(downloadItem, originUrl) {
             tempFilename = "descarga";
         }
     }
-    let baseFilename = tempFilename.split(/[/\\]/).pop() || "descarga";
+    const baseFilename = tempFilename.split(/[/\\]/).pop() || "descarga";
 
     if (forceNextDownload) {
         console.log("📋 [FORCE DEBUG] determineDestination - forceNextDownload found:", JSON.stringify(forceNextDownload));
@@ -447,84 +465,69 @@ async function processDownloadSuccess(downloadItem, result, originUrl) {
 // ======================================================================
 if (IS_FIREFOX) {
     async function organizeFirefoxItem(item) {
+        if (!item || !item.url) return;
+        if (restartedDownloadIds.has(item.id) || item.byExtensionId === api.runtime.id) return;
+
+        // 1. Si la descarga fue iniciada por otra extensión (ej: Bajar-Web-Docs), respetar su gestión
+        if (item.byExtensionId && item.byExtensionId !== api.runtime.id) {
+            return;
+        }
+
+        // 2. Solo re-lanzar descargas con URLs de red remotas seguras (http, https, ftp).
+        // Los blob: y data: residen en memoria volátil; cancelarlos en Firefox causaría error "Falló".
+        const isNetworkUrl = item.url.startsWith('http://') || item.url.startsWith('https://') || item.url.startsWith('ftp://');
+        if (!isNetworkUrl) {
+            return;
+        }
+
+        const originUrl = await getOriginUrl(item);
+        const dest = await determineDestination(item, originUrl);
+        if (!dest) return;
+
+        const safeFolder = dest.folderName.replace(/\\/g, '/').replace(/[<>:"|?*]+/g, '_');
+        const safeName = sanitize(dest.finalFilename);
+        const finalPath = `${safeFolder}/${safeName}`;
+
+        const normFilename = (item.filename || "").replace(/\\/g, '/');
+        // Si ya se encuentra dentro de la subcarpeta destino, no hacer nada
+        if (normFilename.includes(`/${safeFolder}/`) || normFilename.startsWith(`${safeFolder}/`)) {
+            return;
+        }
+
+        restartedDownloadIds.add(item.id);
+
+        const downloadOptions = {
+            url: item.url,
+            filename: finalPath,
+            conflictAction: 'uniquify',
+            saveAs: false
+        };
+        if (item.referrer) downloadOptions.headers = [{ name: 'Referer', value: item.referrer }];
+        if (item.cookieStoreId) downloadOptions.cookieStoreId = item.cookieStoreId;
+
+        let newId = null;
         try {
-            if (!item || !item.url) return;
-            if (restartedDownloadIds.has(item.id) || item.byExtensionId === api.runtime.id) return;
-
-            const originUrl = await getOriginUrl(item);
-            const dest = await determineDestination(item, originUrl);
-            if (!dest) return;
-
-            const safeFolder = dest.folderName.replace(/\\/g, '/').replace(/[<>:"|?*]+/g, '_');
-            const safeName = sanitize(dest.finalFilename);
-            const finalPath = `${safeFolder}/${safeName}`;
-
-            const normFilename = (item.filename || "").replace(/\\/g, '/');
-            // Si ya se encuentra dentro de la subcarpeta destino, no hacer nada
-            if (normFilename.includes(`/${safeFolder}/`) || normFilename.startsWith(`${safeFolder}/`)) {
-                return;
-            }
-
-            restartedDownloadIds.add(item.id);
-            setTimeout(() => restartedDownloadIds.delete(item.id), 30000);
-
-            let downloadUrl = item.url;
-            if (downloadUrl.startsWith('blob:')) {
-                try {
-                    let tabId = (item.tabId && item.tabId !== -1) ? item.tabId : null;
-                    if (!tabId) {
-                        const tabs = await api.tabs.query({ active: true, currentWindow: true });
-                        if (tabs && tabs[0]) tabId = tabs[0].id;
-                    }
-                    if (tabId) {
-                        const resp = await api.tabs.sendMessage(tabId, {
-                            type: 'CONVERT_BLOB_TO_DATA_URL',
-                            url: downloadUrl
-                        });
-                        if (resp && resp.dataUrl) {
-                            downloadUrl = resp.dataUrl;
-                        }
-                    }
-                } catch (e) {
-                    console.warn("[Gestor] Fallback blob->dataUrl error:", e);
-                }
-            }
-
-            const downloadOptions = {
-                url: downloadUrl,
-                filename: finalPath,
-                conflictAction: 'uniquify',
-                saveAs: false
-            };
-            if (item.referrer) downloadOptions.headers = [{ name: 'Referer', value: item.referrer }];
-            if (item.cookieStoreId) downloadOptions.cookieStoreId = item.cookieStoreId;
-
-            let newId = null;
+            newId = await api.downloads.download(downloadOptions);
+        } catch(e) {
+            delete downloadOptions.headers;
+            delete downloadOptions.cookieStoreId;
             try {
                 newId = await api.downloads.download(downloadOptions);
-            } catch(e) {
-                delete downloadOptions.headers;
-                delete downloadOptions.cookieStoreId;
-                try {
-                    newId = await api.downloads.download(downloadOptions);
-                } catch(e2) {
-                    console.warn("[Gestor] No se pudo relanzar:", e2);
-                }
+            } catch(e2) {
+                console.warn("[Gestor] No se pudo relanzar:", e2);
             }
+        }
 
-            if (newId) {
-                restartedDownloadIds.add(newId);
-                setTimeout(() => restartedDownloadIds.delete(newId), 30000);
+        if (newId) {
+            restartedDownloadIds.add(newId);
+            setTimeout(() => restartedDownloadIds.delete(newId), 30000);
 
-                // Cancelar y limpiar el archivo original de la raíz de Descargas
-                try { await api.downloads.cancel(item.id); } catch(e) {}
-                try { if (api.downloads.removeFile) await api.downloads.removeFile(item.id); } catch(e) {}
-                try { await api.downloads.erase({ id: item.id }); } catch(e) {}
+            // Cancelar y limpiar el archivo original de la raíz de Descargas
+            try { await api.downloads.cancel(item.id); } catch(e) {}
+            try { if (api.downloads.removeFile) await api.downloads.removeFile(item.id); } catch(e) {}
+            try { await api.downloads.erase({ id: item.id }); } catch(e) {}
 
-                processDownloadSuccess({ ...item, id: newId, filename: finalPath }, dest, originUrl);
-            }
-        } catch (err) {
-            console.error("[Gestor] Error en organizeFirefoxItem:", err);
+            processDownloadSuccess({ ...item, id: newId, filename: finalPath }, dest, originUrl);
         }
     }
 

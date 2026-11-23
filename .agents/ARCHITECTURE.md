@@ -56,9 +56,8 @@ El sistema cuenta con un flujo dual robusto optimizado tanto para Firefox como p
 
 ### A. Interceptación Directa en 1 Solo Paso (Content Script + Background)
 Para descargas iniciadas en la página web (clics en enlaces o generación dinámica mediante JavaScript):
-1. **Detección en página:** [`js/content-script.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/content-script.js) captura clics en enlaces descargables o llamadas a `HTMLAnchorElement.prototype.click` producidas por librerías cliente (ej: **jsPDF 2.5.1**, **FileSaver**, Canvas).
-2. **Conversión de Blobs a Data URLs:** Si la descarga proviene de un `blob:` generado en memoria local, el script de contenido lo lee inmediatamente con `FileReader.readAsDataURL` antes de que se revoque (`URL.revokeObjectURL`) y envía el `data:` URL a `background.js` mediante el mensaje `DIRECT_DOWNLOAD_INTERCEPT`.
-3. **Descarga Directa a Subcarpeta:** `background.js` calcula la carpeta destino mediante `determineDestination` y ejecuta `api.downloads.download({ url, filename: "Subcarpeta/archivo.ext" })`. La descarga nace directamente en la carpeta correcta sin pasar por la raíz de Descargas.
+1. **Detección en página:** [`js/content-script.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/content-script.js) captura clics en enlaces descargables (`<a>`) con atributo `download` o extensiones reconocidas, enviando el mensaje `DIRECT_DOWNLOAD_INTERCEPT`.
+2. **Descarga Directa a Subcarpeta:** `background.js` calcula la carpeta destino mediante `determineDestination` y ejecuta `api.downloads.download({ url, filename: "Subcarpeta/archivo.ext" })`. La descarga nace directamente en la carpeta correcta sin pasar por la raíz de Descargas.
 
 ### B. Ciclo de Reorganización Nativo (Firefox `onCreated` / `onChanged`)
 Para descargas que provienen de guardar como, menú contextual de Firefox o fuentes externas:
@@ -71,11 +70,11 @@ Para descargas que provienen de guardar como, menú contextual de Firefox o fuen
    - Criterios soportados: extensión de archivo, dominio de descarga, o coincidencia de texto en el nombre.
 4. **Prioridad 3 — Categorías por Defecto ([`js/rules-engine.js`](file:///c:/Users/Ramoncito/.antigravity-ide/Gestor-de-Descargas-Firefox/js/rules-engine.js)):**
    - Si ninguna regla personalizada coincide, se examina la extensión del archivo.
-   - Se clasifica en una de las 20 categorías predefinidas (`PDFs`, `Imágenes`, `Videos`, `Audio`, `Comprimidos`, `Documentos`, `Hojas de Cálculo`, `Presentaciones`, `Programas`, `Diseño`, `Código`, `Libros`, `3D`, `Fuentes`, etc.). Incluye soporte para páginas web guardadas (`htm`, `xhtml`, `mhtml` dirigidas a `Código`).
+   - Se clasifica en una de las 20 categorías predefinidas (`PDFs`, `Imágenes`, `Videos`, `Audio`, `Comprimidos`, `Documentos`, `Hojas de Cálculo`, `Presentaciones`, `Programas`, `Diseño`, `Código`, `Libros`, `3D`, `Fuentes`, etc.).
    - Se verifica que la categoría esté habilitada por el usuario en `defaultCategories`.
 5. **Determinación del Nombre Final:**
    - Se genera la ruta relativa: `Subcarpeta/archivo.ext`.
-   - En Firefox: Se relanza la descarga en la subcarpeta correcta y se cancela/elimina el archivo temporal en la raíz. Si la descarga original era un `blob:`, el background solicita su conversión a `data:` URL a la pestaña activa antes de relanzar.
+   - En Firefox: Se relanza la descarga en la subcarpeta correcta y se cancela/elimina el archivo temporal en la raíz solo si el relanzamiento fue exitoso. Las descargas iniciadas por otras extensiones o provenientes de blobs/data locales se respetan sin cancelación destructiva para prevenir fallos.
    - En Chromium: Se responde a `suggest({ filename: rutaFinal, conflictAction: 'uniquify' })` en `onDeterminingFilename`.
 6. **Registro en Historial y Notificación:**
    - La descarga finalizada se registra en `downloadHistory` con metadatos (fecha, tamaño, carpeta de destino, URL).
