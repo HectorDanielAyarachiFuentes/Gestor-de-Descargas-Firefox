@@ -410,6 +410,12 @@ async function loadAppSettings() {
     }
     showActiveForceView(forceNextDownload.folder, persistent);
   } else {
+    const radioOnce = document.getElementById("forceModeOnce");
+    const radioPersistent = document.getElementById("forceModePersistent");
+    const checkbox = document.getElementById("forcePersistentCheckbox");
+    if (radioOnce) radioOnce.checked = true;
+    if (radioPersistent) radioPersistent.checked = false;
+    if (checkbox) checkbox.checked = false;
     showIdleForceView();
   }
 }
@@ -1121,7 +1127,7 @@ async function resolveTargetFolder(url, filename) {
   }
 
   // 3. Comprobar reglas personalizadas de sync
-  const { customRules = [], enabledCategories = {} } = await api.storage.sync.get(["customRules", "enabledCategories"]);
+  const { customRules = [], defaultCategories = {} } = await api.storage.sync.get(["customRules", "defaultCategories"]);
   for (const rule of customRules) {
     if (rule.type === 'url' && url.toLowerCase().includes(rule.value.toLowerCase())) {
       return cleanFolderName(rule.folder);
@@ -1132,7 +1138,7 @@ async function resolveTargetFolder(url, filename) {
   }
 
   const ext = filename.split('.').pop() || "";
-  const catFolder = getFolderNameByExtension(ext, enabledCategories);
+  const catFolder = getFolderNameByExtension(ext, defaultCategories);
   if (catFolder) return cleanFolderName(catFolder);
 
   return cleanFolderName(api.i18n.getMessage("folder_images") || "Imágenes");

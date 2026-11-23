@@ -33,25 +33,25 @@ export function getFolderNameByExtension(ext, enabledCats = {}) {
     switch (lowerExt) {
         case 'pdf':
             return cats.pdf !== false ? getFolderMessage("folder_pdfs", "PDFs") : null;
-        case 'jpg': case 'jpeg': case 'png': case 'gif': case 'webp': case 'svg': case 'tiff': case 'heic': case 'raw': case 'bmp': case 'ico': case 'avif':
+        case 'jpg': case 'jpeg': case 'png': case 'gif': case 'webp': case 'svg': case 'tiff': case 'heic': case 'raw': case 'bmp': case 'ico': case 'avif': case 'jfif':
             return cats.images !== false ? getFolderMessage("folder_images", "Imágenes") : null;
-        case 'mp4': case 'mkv': case 'avi': case 'webm': case 'mov': case 'flv': case 'ts': case 'm3u8':
+        case 'mp4': case 'mkv': case 'avi': case 'webm': case 'mov': case 'flv': case 'ts': case 'm3u8': case 'wmv': case 'm4v':
             return cats.video !== false ? getFolderMessage("folder_videos", "Videos") : null;
-        case 'mp3': case 'wav': case 'ogg': case 'flac': case 'm4a': case 'aac':
+        case 'mp3': case 'wav': case 'ogg': case 'flac': case 'm4a': case 'aac': case 'wma': case 'opus':
             return cats.audio !== false ? getFolderMessage("folder_audio", "Audio") : null;
-        case 'zip': case 'rar': case '7z': case 'tar': case 'gz': case 'bz2': case 'xz':
+        case 'zip': case 'rar': case '7z': case 'tar': case 'gz': case 'bz2': case 'xz': case 'tgz':
             return cats.compressed !== false ? getFolderMessage("folder_compressed", "Comprimidos") : null;
         case 'docx': case 'doc': case 'odt': case 'txt': case 'md': case 'rtf': case 'pages':
             return cats.documents !== false ? getFolderMessage("folder_documents", "Documentos") : null;
         case 'csv': case 'xlsx': case 'xls': case 'ods': case 'tsv': case 'numbers':
             return cats.spreadsheets !== false ? getFolderMessage("folder_spreadsheets", "Hojas de Cálculo") : null;
-        case 'ppt': case 'pptx': case 'odp':
+        case 'ppt': case 'pptx': case 'odp': case 'key':
             return cats.presentations !== false ? getFolderMessage("folder_presentations", "Presentaciones") : null;
-        case 'exe': case 'msi': case 'apk': case 'appx': case 'bat': case 'cmd': case 'sh': case 'dmg': case 'pkg': case 'iso': case 'img':
+        case 'exe': case 'msi': case 'apk': case 'appx': case 'bat': case 'cmd': case 'sh': case 'dmg': case 'pkg': case 'iso': case 'img': case 'deb': case 'rpm': case 'appimage':
             return cats.programs !== false ? getFolderMessage("folder_programs", "Programas") : null;
         case 'psd': case 'ai': case 'indd': case 'blend': case 'fig': case 'cdr':
             return cats.design !== false ? getFolderMessage("folder_design", "Diseño") : null;
-        case 'html': case 'css': case 'js': case 'ts': case 'json': case 'xml': case 'py': case 'java': case 'cpp': case 'php': case 'sql':
+        case 'html': case 'htm': case 'xhtml': case 'mhtml': case 'css': case 'js': case 'ts': case 'json': case 'xml': case 'py': case 'java': case 'cpp': case 'php': case 'sql':
             return cats.code !== false ? getFolderMessage("folder_code", "Código") : null;
         case 'epub': case 'mobi': case 'azw3': case 'cbz': case 'cbr':
             return cats.books !== false ? getFolderMessage("folder_books", "Libros") : null;
